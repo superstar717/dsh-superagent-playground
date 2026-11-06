@@ -5,7 +5,7 @@
 
 ## 当前结论（已验证）
 
-- 成片已交付：`out/superagent-vertical.mp4`（1080×1920@30fps、58.17s、H.264+AAC、13.5MB），竖屏无人脸、中文配音+字幕，抽帧质检通过。
+- 成片已交付（v2）：`out/superagent-vertical.mp4`（1080×1920@30fps、53.63s、H.264+AAC、12.6MB），竖屏无人脸、中文配音+字幕（语速 +10%），已做每幕中点联览图全检。
 - 源码工程 `video-project/` 已提交 PR #3（分支 agent/make-oral-video-facd72c1a164），**未合并，留人工**。
 - 收尾复盘在 `work/项目复盘.md`；新坑已录全局错误录 E82。
 
