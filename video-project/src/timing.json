@@ -2,7 +2,7 @@
   "fps": 30,
   "width": 1080,
   "height": 1920,
-  "totalFrames": 1745,
+  "totalFrames": 1609,
   "scenes": [
     {
       "id": "s1",
@@ -10,17 +10,17 @@
       "text": "你有没有发现，我们的工作方式，正在发生质的变化？",
       "audioFile": "audio/s1.mp3",
       "startFrame": 0,
-      "durationFrames": 170,
+      "durationFrames": 157,
       "chunks": [
         {
-          "text": "你有没有发现我们的工作方式",
+          "text": "你有没有发现 我们的工作方式",
           "start": 5,
-          "end": 97
+          "end": 89
         },
         {
           "text": "正在发生质的变化",
-          "start": 97,
-          "end": 153
+          "start": 89,
+          "end": 140
         }
       ]
     },
@@ -29,18 +29,23 @@
       "chip": "第一阶段 · 聊天时代",
       "text": "最开始，AI 只能陪我们聊天。GPT、豆包，一问一答，结果还得自己复制粘贴。",
       "audioFile": "audio/s2.mp3",
-      "startFrame": 170,
-      "durationFrames": 283,
+      "startFrame": 157,
+      "durationFrames": 259,
       "chunks": [
         {
-          "text": "最开始 AI 只能陪我们聊天 GPT 豆包",
-          "start": 175,
-          "end": 309
+          "text": "最开始 AI 只能陪我们聊天 GPT",
+          "start": 162,
+          "end": 265
         },
         {
-          "text": "一问一答结果还得自己复制粘贴",
-          "start": 309,
-          "end": 436
+          "text": "豆包 一问一答",
+          "start": 265,
+          "end": 317
+        },
+        {
+          "text": "结果还得自己复制粘贴",
+          "start": 317,
+          "end": 399
         }
       ]
     },
@@ -49,23 +54,23 @@
       "chip": "第二阶段 · 通用智能体",
       "text": "后来，Claude Code、Cursor 这些通用智能体出现了，AI 开始自己动手干活。",
       "audioFile": "audio/s3.mp3",
-      "startFrame": 453,
-      "durationFrames": 236,
+      "startFrame": 416,
+      "durationFrames": 216,
       "chunks": [
         {
           "text": "后来 Claude Code",
-          "start": 458,
-          "end": 504
+          "start": 421,
+          "end": 463
         },
         {
           "text": "Cursor 这些通用智能体出现了",
-          "start": 504,
-          "end": 601
+          "start": 463,
+          "end": 551
         },
         {
           "text": "AI 开始自己动手干活",
-          "start": 601,
-          "end": 672
+          "start": 551,
+          "end": 615
         }
       ]
     },
@@ -74,18 +79,23 @@
       "chip": "第二阶段 · 通用智能体",
       "text": "但事情没有变轻松：每一步都要盯着、确认，不停地和它沟通。",
       "audioFile": "audio/s4.mp3",
-      "startFrame": 689,
-      "durationFrames": 201,
+      "startFrame": 632,
+      "durationFrames": 185,
       "chunks": [
         {
-          "text": "但事情没有变轻松每一步都要盯着",
-          "start": 694,
-          "end": 806
+          "text": "但事情没有变轻松",
+          "start": 637,
+          "end": 691
         },
         {
-          "text": "确认不停地和它沟通",
-          "start": 806,
-          "end": 873
+          "text": "每一步都要盯着 确认",
+          "start": 691,
+          "end": 753
+        },
+        {
+          "text": "不停地和它沟通",
+          "start": 753,
+          "end": 800
         }
       ]
     },
@@ -94,18 +104,23 @@
       "chip": "第三阶段 · superagent",
       "text": "直到 superagent 出现，我只需要像甲方一样，把需求说清楚。",
       "audioFile": "audio/s5.mp3",
-      "startFrame": 890,
-      "durationFrames": 193,
+      "startFrame": 817,
+      "durationFrames": 178,
       "chunks": [
         {
           "text": "直到 superagent 出现",
-          "start": 895,
-          "end": 954
+          "start": 822,
+          "end": 875
         },
         {
-          "text": "我只需要像甲方一样把需求说清楚",
-          "start": 954,
-          "end": 1066
+          "text": "我只需要像甲方一样",
+          "start": 875,
+          "end": 937
+        },
+        {
+          "text": "把需求说清楚",
+          "start": 937,
+          "end": 978
         }
       ]
     },
@@ -114,18 +129,18 @@
       "chip": "第三阶段 · superagent",
       "text": "剩下的拆解、执行、验证，它全部自己搞定，直接给我结果。",
       "audioFile": "audio/s6.mp3",
-      "startFrame": 1083,
-      "durationFrames": 208,
+      "startFrame": 995,
+      "durationFrames": 190,
       "chunks": [
         {
-          "text": "剩下的拆解执行验证它全部自己搞定",
-          "start": 1088,
-          "end": 1223
+          "text": "剩下的拆解 执行 验证",
+          "start": 1000,
+          "end": 1070
         },
         {
-          "text": "直接给我结果",
-          "start": 1223,
-          "end": 1274
+          "text": "它全部自己搞定 直接给我结果",
+          "start": 1070,
+          "end": 1168
         }
       ]
     },
@@ -134,18 +149,18 @@
       "chip": "第三阶段 · superagent",
       "text": "以前，是人不停地和 AI 工具沟通；现在，提需求、等交付，就够了。",
       "audioFile": "audio/s7.mp3",
-      "startFrame": 1291,
-      "durationFrames": 239,
+      "startFrame": 1185,
+      "durationFrames": 220,
       "chunks": [
         {
-          "text": "以前是人不停地和 AI 工具沟通现在",
-          "start": 1296,
-          "end": 1432
+          "text": "以前 是人不停地和 AI 工具沟通",
+          "start": 1190,
+          "end": 1295
         },
         {
-          "text": "提需求等交付就够了",
-          "start": 1432,
-          "end": 1513
+          "text": "现在 提需求 等交付 就够了",
+          "start": 1295,
+          "end": 1388
         }
       ]
     },
@@ -154,18 +169,18 @@
       "chip": "",
       "text": "这不是一次工具升级，这是工作方式的质变。",
       "audioFile": "audio/s8.mp3",
-      "startFrame": 1530,
-      "durationFrames": 215,
+      "startFrame": 1405,
+      "durationFrames": 204,
       "chunks": [
         {
           "text": "这不是一次工具升级",
-          "start": 1535,
-          "end": 1599
+          "start": 1410,
+          "end": 1468
         },
         {
           "text": "这是工作方式的质变",
-          "start": 1599,
-          "end": 1662
+          "start": 1468,
+          "end": 1526
         }
       ]
     }

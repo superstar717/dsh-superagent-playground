@@ -14,6 +14,7 @@ for (const scene of cfg.scenes) {
   console.log(`[tts] ${scene.id}: ${scene.text}`);
   execFileSync(EDGE_TTS, [
     "--voice", cfg.voice,
+    "--rate=+10%",
     "--text", scene.text,
     "--write-media", out,
   ], { stdio: "inherit" });

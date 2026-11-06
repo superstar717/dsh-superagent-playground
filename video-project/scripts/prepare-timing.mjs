@@ -24,7 +24,7 @@ function charWeight(ch) {
   return 0.5;
 }
 
-// Split scene text into display chunks (<= ~16 weight units) at punctuation.
+// Split scene text into display chunks (<= ~14 weight units) at punctuation.
 function splitChunks(text) {
   const parts = text
     .split(/(?<=[，。：；？！、])/)
@@ -35,13 +35,13 @@ function splitChunks(text) {
   let bufW = 0;
   const weight = (s) => [...s].reduce((acc, c) => acc + charWeight(c), 0);
   for (const part of parts) {
-    const w = weight(part);
-    if (buf && bufW + w > 16) {
+    const w = weight(part) + (buf ? 0.3 : 0); // joiner space
+    if (buf && bufW + w > 14) {
       chunks.push(buf);
       buf = part;
       bufW = w;
     } else {
-      buf += buf ? (/[a-zA-Z0-9]$/.test(buf) || /^[a-zA-Z0-9]/.test(part) ? " " : "") + part : part;
+      buf = buf ? buf + " " + part : part;
       bufW += w;
     }
   }

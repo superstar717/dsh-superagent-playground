@@ -298,14 +298,14 @@ const Scene4: FC = () => {
         >
           人
         </div>
-        <div style={{ position: "relative", height: 300, width: 700, marginTop: 8, marginBottom: 8 }}>
+        <div style={{ position: "relative", height: 340, width: 700, marginTop: 8, marginBottom: 8 }}>
           {[0, 1].map((i) => (
             <div
               key={i}
               style={{
                 position: "absolute",
-                left: i === 0 ? 150 : 470,
-                top: 30 + (i === 0 ? bounce : -bounce) + 60,
+                left: i === 0 ? 110 : 530,
+                top: 130 + (i === 0 ? bounce : -bounce),
                 fontSize: 56,
                 color: WARM,
                 opacity: 0.9,
@@ -314,38 +314,26 @@ const Scene4: FC = () => {
               {i === 0 ? "↑" : "↓"}
             </div>
           ))}
-          {labels.map((l, i) => (
-            <div
-              key={l}
-              style={{
-                position: "absolute",
-                left: 190 + i * 110,
-                top: 118,
-                padding: "12px 26px",
-                borderRadius: 999,
-                fontSize: 34,
-                fontWeight: 700,
-                border: `1.5px solid ${cycle === i ? "rgba(255,122,107,0.7)" : "rgba(255,255,255,0.12)"}`,
-                background: cycle === i ? "rgba(255,122,107,0.18)" : "rgba(255,255,255,0.05)",
-                color: cycle === i ? WARM : "rgba(255,255,255,0.45)",
-                transition: "none",
-              }}
-            >
-              {l}
-            </div>
-          ))}
-          <div
-            style={{
-              position: "absolute",
-              right: 0,
-              top: 60,
-              fontSize: 64,
-              fontWeight: 800,
-              color: WARM,
-              opacity: 0.75 + 0.25 * Math.sin(frame / 9),
-            }}
-          >
+          <div style={{ position: "absolute", right: 10, top: 0, fontSize: 60, fontWeight: 800, color: WARM, opacity: 0.75 + 0.25 * Math.sin(frame / 9) }}>
             ×N
+          </div>
+          <div style={{ position: "absolute", left: 0, right: 0, top: 28, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+            {labels.map((l, i) => (
+              <div
+                key={l}
+                style={{
+                  padding: "12px 40px",
+                  borderRadius: 999,
+                  fontSize: 36,
+                  fontWeight: 700,
+                  border: `1.5px solid ${cycle === i ? "rgba(255,122,107,0.7)" : "rgba(255,255,255,0.12)"}`,
+                  background: cycle === i ? "rgba(255,122,107,0.18)" : "rgba(255,255,255,0.05)",
+                  color: cycle === i ? WARM : "rgba(255,255,255,0.5)",
+                }}
+              >
+                {l}
+              </div>
+            ))}
           </div>
         </div>
         <div
