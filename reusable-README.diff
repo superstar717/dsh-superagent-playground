@@ -1,0 +1,55 @@
+--- /Users/huweixing/.dsh/backup/memory-frame-20261106T0945/reusable-README.md	2026-10-28 20:34:11
++++ /Users/huweixing/.dsh/assets/reusable/README.md	2026-11-06 09:47:04
+@@ -10,7 +10,7 @@
+ ```
+ ~/.dsh/                            ← 全局层 (所有项目自动加载)
+ ├── AGENTS.md                      项目收尾必做 + 诚实原则 + 工程纪律
+-└── LESSONS.md                     全局错误录 (跨项目累积, 当前 17 条)
++└── LESSONS.md                     全局错误录（唯一运行版，收尾追加；条数见文件本身）
+ 
+ <项目>/reusable/                    ← 项目层 (可独立分发)
+ ├── README.md                      本文件
+@@ -18,26 +18,25 @@
+ ├── INSIGNIFICANCE.md              ★ 不显著诊断决策树 (含 TOST 等效性检验)
+ ├── METHOD_MAP.md                  ★ 方法选择矩阵 (表A: 设计→方法, 14 方法族)
+ ├── PREPROCESSING.md               ★ 预处理对照清单 (表B: 方法→数据处理)
+-├── LESSONS.md                     ★ 错误录详版 (快照)
++├── LESSONS.md                     ★ 错误录快照（只读分发版；权威源=~/.dsh/LESSONS.md，收尾单向刷新）
+ └── templates/
+     ├── AGENTS_template.md         ★ 项目 AGENTS.md 模板 (方法论 + 待填现状段)
+     ├── verify_template.py         ★ 数值自动校验框架 (最高复用价值)
+     └── analysis_template.do       ★ Stata 流程骨架 (已实测 0 错误)
+ ```
+ 
+-### 新项目初始化三步
++### 新项目初始化（newproj 一步完成）
+ 
+ ```bash
+-# 1. 拷模板为项目 AGENTS.md
+-cp reusable/templates/AGENTS_template.md  <新项目>/AGENTS.md
++# newproj 生成项目骨架 + 引用全局库的项目 AGENTS.md（方法论不拷贝进项目）
++newproj <新项目目录>
+ 
+-# 2. 拷复用资产目录
+-cp -r reusable/  <新项目>/reusable/
+-
+-# 3. git init (稳定项目根识别)
+-cd <新项目> && git init
++# 资产统一只读引用 ~/.dsh/assets/reusable/，项目内不放副本（E41 约定）
++# git init 由 newproj 完成
+ ```
+ 
++> 旧版「拷贝 reusable/ 进项目」的初始化方式已废弃（E41：拷贝分发制 → 版本漂移）。
++
+ 然后填 `AGENTS.md` 第七节「项目现状」(开工时填初始状态, 复盘时更新)。
+ 
+ **两层分工**:
+@@ -78,7 +77,7 @@
+ ```bash
+ mkdir -p ~/.dsh
+ cp ../AGENTS.md ~/.dsh/AGENTS.md          # 项目级, 按需改写
+-cp LESSONS.md ~/.dsh/LESSONS.md
++cp LESSONS.md ~/.dsh/LESSONS.md           # ⚠ 仅当目标不存在时执行；已存在则禁止覆盖（快照可能滞后，见 AGENTS.md 第七节）
+ ```
+ 
+ ### 第 1 步: 读 CHECKLIST 的"开工前 8 问"
