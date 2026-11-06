@@ -1,0 +1,21 @@
+{
+  "name": "superagent-oral-video",
+  "private": true,
+  "scripts": {
+    "timing": "node scripts/prepare-timing.mjs",
+    "tts": "node scripts/generate-tts.mjs",
+    "audio": "node scripts/make-audio.mjs",
+    "frames": "remotion render src/index.ts SuperagentVertical /tmp/frames-full --sequence",
+    "video": "bash scripts/finalize.sh"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.448",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "4.0.448"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "typescript": "^5.5.4"
+  }
+}
