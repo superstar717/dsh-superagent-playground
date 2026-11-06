@@ -12,4 +12,4 @@
 
 1. **知乎抓取**：curl 直连 zhuanlan 返回 403（反爬拦截非浏览器指纹），非登录态问题；真实 Chrome 渲染即可公开读取。抓取路径：bb-browser 托管 Chrome（CDP 127.0.0.1:19825）+ Python Playwright `connect_over_cdp`。
 2. **bb-browser 坑**：托管 Chrome 无标签页时 daemon/CLI 报 "No page target found"，先 `curl -X PUT http://127.0.0.1:19825/json/new?about:blank`；其 profile（`~/.bb-browser/browser/user-data`）独立于用户日常浏览器，**无知乎登录态**（详见 LESSONS E86）。
-3. **本机 GitHub 网络**：api.github.com TLS 间歇被重置 → gh REST 不可用且会误报「账号被暂停/token 失效」；git 智能传输（github.com）始终正常。验证 GitHub 状态一律用 `git ls-remote` 交叉验证（详见 LESSONS E87）。相关教训：E85/E86/E87。
+3. **本机 GitHub 网络/账号**：api.github.com TLS 间歇被重置 → gh REST 不可用；后段 git **push** 也报「Your account is suspended」（读仍正常）——账号 648267586 疑似被停用，待人工网页核查。验证一律先 git 读通道交叉验证（详见 LESSONS E87）。相关教训：E85/E86/E87。
