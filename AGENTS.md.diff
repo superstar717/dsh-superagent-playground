@@ -1,0 +1,50 @@
+--- /Users/huweixing/.dsh/backup/memory-frame-20261106T0945/AGENTS.md	2026-10-28 21:29:51
++++ /Users/huweixing/.dsh/AGENTS.md	2026-11-06 09:46:44
+@@ -28,6 +28,9 @@
+    发现"资产有、清单没有"的漂移项，必须同步进清单模板再收尾——
+    **清单驱动拦截（gate hook）的强制范围 = 清单模板内容，不同步 = 新规范形同虚设**。
+ 
++5. **记忆合并清理**：按第七节跑 memory-consolidate + 跨源查重，
++   最后把 `~/.dsh/assets/reusable/LESSONS.md` 快照从运行版单向刷新（先并回快照独有内容）。
++
+ **为什么强制**：
+ 经验不会自动迁移。不写下来的坑，下个项目会原样再踩一遍。
+ 
+@@ -49,6 +52,8 @@
+ 
+ `~/.dsh/LESSONS.md` — 跨项目累积的错误清单。
+ 开工前扫一遍；结束时追加新条目。
++**唯一运行版**；`~/.dsh/assets/reusable/LESSONS.md` 是可分发快照，
++只读、只许从运行版单向刷新，禁止反向覆盖（见第七节）。
+ 
+ ## 五、错误检索（常驻规则）
+ 
+@@ -99,3 +104,28 @@
+ - Python（linearmodels/statsmodels）只用于交叉校验，不直接产出交付数字
+ - 注意事项（实测教训）：linearmodels `PanelOLS(entity_effects=False)` 不自动加常数项，
+   混合OLS 必须手动 `sm.add_constant(X)`；双跑结果必须位位比对（系数/se/p/R²）后才可写进报告
++
++## 七、知识源分工与写入查重（2026-11-06，防双写/防过期）
++
++**四类权威源，一类内容只落一处；其余位置只放一行指针：**
++
++| 内容类型 | 唯一权威源 | 他处只允许 |
++|---|---|---|
++| 跨项目错误/坑（症状→原因→预防） | `~/.dsh/LESSONS.md`（运行版） | 指针：`LESSONS Exxx：关键词` |
++| 常驻规则/全局约定 | `~/.dsh/AGENTS.md` | 引用节号，不复制正文 |
++| 跨项目事实/环境事实/速查 | memory 全局轨（MEMORY.md，确认制） | 与前两类重复的不写 |
++| 项目长期事实（约定/决策/架构） | memory target=key（按项目/分支） | 教训→LESSONS 指针；全局规则→节号 |
++
++- project/daily 是日志流水，不承担权威事实；结论沉淀进 key。
++- 写 key 建议时，教训类内容只写「LESSONS Exxx」指针行，不重述全文。
++
++**写入前查重（LESSONS / AGENTS / memory key / 全局建议，四类写操作通用）：**
++1. 先查重再写：`grep "<症状关键词>" ~/.dsh/LESSONS.md`，memory 轨用工具 `list filter=<关键词>`；
++2. 命中 → **不新增**：在既有条目内更新（LESSONS 条目内补预防/检查代码；memory 提 replace 建议；AGENTS 修订对应节）；
++3. 未命中 → 按上表归类，写唯一权威源。
++
++**定期合并清理（每月一次，项目收尾时也做）：**
++1. memory 轨：跑 memory-consolidate 技能（`scan_memory.mjs` 预扫 → 逐簇裁决 → archive 可逆归档）；
++2. 跨源审计：LESSONS↔AGENTS↔memory 互查重复（教训类改指针）、清理已落定的过期状态（"正在跑/待确认"）、
++   把 reusable/LESSONS 快照从运行版单向刷新（**同步前先把快照独有内容并回运行版**，防信息丢失）；
++3. 到期提醒走 dtodo work 轨「记忆合并清理」任务：完成后把该任务 due 改到下月（自续期）。

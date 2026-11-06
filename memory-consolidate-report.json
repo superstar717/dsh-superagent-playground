@@ -1,0 +1,291 @@
+{
+  "generatedAt": "2026-11-06T01:47:21.649Z",
+  "dir": "/Users/huweixing/.dsh/memories",
+  "threshold": 0.42,
+  "stats": {
+    "files": 24,
+    "entries": 410,
+    "archivedContext": 0,
+    "clusters": 8,
+    "hints": {
+      "supersede": 1,
+      "duplicate": 1,
+      "conflict": 0,
+      "similar": 6
+    }
+  },
+  "clusters": [
+    {
+      "id": "cluster-5",
+      "hint": "duplicate",
+      "members": [
+        {
+          "id": "eb63be7f",
+          "file": "projects/37a9b993ceee/MEMORY.md",
+          "track": "project-log",
+          "project": "37a9b993ceee",
+          "date": "2026-10-29",
+          "protected": false,
+          "excerpt": "[git master] 数据地图已含检验期新增层（stockyield/staff/tfp_energy三个新数据件+AIrel/AItech2等6类变量+判定）；论文实证部分v2含两轮渠道全景表，登记册96条重新封存。注意：写文档用ASCII负号，Unicode减号会致数字登记匹配失败。"
+        },
+        {
+          "id": "0bd92b31",
+          "file": "projects/37a9b993ceee/MEMORY.md",
+          "track": "project-log",
+          "project": "37a9b993ceee",
+          "date": "2026-10-29",
+          "protected": false,
+          "excerpt": "[git master] 数据地图已含检验期新增层（stockyield/staff/tfp_energy三个新数据件+AIrel/AItech2等6类变量+判定结果）；论文实证部分v2含两轮渠道全景表，登记册96条重新封存。注意：文档用ASCII负号，Unicode减号会致数字登记匹配失败。"
+        }
+      ],
+      "pairs": [
+        {
+          "a": "eb63be7f",
+          "b": "0bd92b31",
+          "sim": 0.943,
+          "reasons": [
+            "duplicate"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cluster-6",
+      "hint": "similar",
+      "members": [
+        {
+          "id": "11e3eab6",
+          "file": "projects/37a9b993ceee/MEMORY.md",
+          "track": "project-log",
+          "project": "37a9b993ceee",
+          "date": "2026-10-29",
+          "protected": false,
+          "excerpt": "[git master] E34 新增 H2 专属文献诊断节：整合 H2 专属检索记录（4622命中）与 v2.1 证据，三层齐备。结论=H2 不成立有直接同类文献（孙德娟资本密集型）、条件性解释（能源早期性）与方法学排除（六口径）。至此三条主结论各有：专属检索记录+三层诊断+登记册数字。"
+        },
+        {
+          "id": "fa2749aa",
+          "file": "projects/37a9b993ceee/MEMORY.md",
+          "track": "project-log",
+          "project": "37a9b993ceee",
+          "date": "2026-10-29",
+          "protected": false,
+          "excerpt": "[git master] E34 新增 H2 专属文献诊断节：整合 H2 专属检索记录（4622命中）与 v2.1 证据，三层齐备。至此三条主结论（H1/H1′/H2）各有：专属检索记录+三层诊断+登记册数字，全闭环。"
+        }
+      ],
+      "pairs": [
+        {
+          "a": "11e3eab6",
+          "b": "fa2749aa",
+          "sim": 0.743,
+          "reasons": [
+            "similar"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cluster-3",
+      "hint": "similar",
+      "members": [
+        {
+          "id": "3282061a",
+          "file": "projects/2902c2d8c0e0/MEMORY.md",
+          "track": "project-log",
+          "project": "2902c2d8c0e0",
+          "date": "2026-11-05",
+          "protected": false,
+          "excerpt": "Autopilot 已在工作台上线（用户环境重启完成，handler 存活验证 ✔）。预期用户点击芯片后的行为：紫色「运行中」→ 自动推进 n05 探索（真实数据描述统计，schema 无关会成功）→ n06 主回归诚实失败暂停（分析脚本绑定演示 schema tfp/digital，真实数据无此列）→ 暂停原因即「变"
+        },
+        {
+          "id": "541cc4c0",
+          "file": "projects/2902c2d8c0e0/MEMORY.md",
+          "track": "project-log",
+          "project": "2902c2d8c0e0",
+          "date": "2026-11-05",
+          "protected": false,
+          "excerpt": "工作台 v1.14.1 全部改动已上线（用户环境重启完成，/api/autopilot 存活 ✔）。Autopilot 预期行为：启动 → n05 探索（真实数据描述统计成功）→ n06 主回归诚实失败暂停（演示 schema 边界）→ 暂停原因含真实 Stata 报错（日志路径修复后可见）→ 该原因即「变量映射配置」"
+        }
+      ],
+      "pairs": [
+        {
+          "a": "3282061a",
+          "b": "541cc4c0",
+          "sim": 0.494,
+          "reasons": [
+            "similar"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cluster-2",
+      "hint": "similar",
+      "members": [
+        {
+          "id": "c89909d6",
+          "file": "projects/2902c2d8c0e0/KEY.md",
+          "track": "key",
+          "project": "2902c2d8c0e0",
+          "date": "2026-11-05",
+          "protected": false,
+          "excerpt": "[summary:Electron 新 IPC 通道三件套：handler+preload 白名单+前端调用缺一即静默失败；三向对齐审计必须跑]\n【新 IPC 通道三件套缺一即静默失败】Electron 应用加新 IPC 通道 = 三件套缺一不可：①主进程 ipcMain.handle ②preload 白名单（con"
+        },
+        {
+          "id": "8be3aed2",
+          "file": "projects/2902c2d8c0e0/MEMORY.md",
+          "track": "project-log",
+          "project": "2902c2d8c0e0",
+          "date": "2026-11-05",
+          "protected": false,
+          "excerpt": "IPC 三向对齐审计纳入审查报告惯例：新通道 = ipcMain.handle + preload 白名单 + 前端 invoke 三件套，缺一即静默失败；对齐审计三向跑（main handlers ↔ preload whitelist ↔ 前端 invoke）。R31 已修复待真机点击验证。"
+        }
+      ],
+      "pairs": [
+        {
+          "a": "c89909d6",
+          "b": "8be3aed2",
+          "sim": 0.448,
+          "reasons": [
+            "similar"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cluster-1",
+      "hint": "similar",
+      "members": [
+        {
+          "id": "aeb410ca",
+          "file": "projects/1340730ee05d/KEY.md",
+          "track": "key",
+          "project": "1340730ee05d",
+          "date": "2026-10-27",
+          "protected": false,
+          "excerpt": "[summary:权威软件=Stata SE，Python仅处理数据，R仅交叉校验]\n权威统计软件 = Stata SE：本项目论文全部数字只出自 Stata（stata-se -b do）；Python 仅数据处理，R 仅交叉校验，双跑结果须位位比对后才可写入报告。"
+        },
+        {
+          "id": "ba95b835",
+          "file": "projects/1340730ee05d/MEMORY.md",
+          "track": "project-log",
+          "project": "1340730ee05d",
+          "date": "2026-10-27",
+          "protected": false,
+          "excerpt": "[git master] 权威统计软件已定为 Stata SE（stata-se -b do 批处理），写入 AGENTS.md 环境节；分工：Stata 出论文数字，Python(pandas) 数据处理，R 交叉校验。"
+        }
+      ],
+      "pairs": [
+        {
+          "a": "aeb410ca",
+          "b": "ba95b835",
+          "sim": 0.432,
+          "reasons": [
+            "similar"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cluster-8",
+      "hint": "similar",
+      "members": [
+        {
+          "id": "5879157d",
+          "file": "projects/80f877747ccc/MEMORY.md",
+          "track": "project-log",
+          "project": "80f877747ccc",
+          "date": "2026-10-28",
+          "protected": false,
+          "excerpt": "[git master] 无新项目事实（澄清轮）。"
+        },
+        {
+          "id": "c20c37b1",
+          "file": "projects/80f877747ccc/MEMORY.md",
+          "track": "project-log",
+          "project": "80f877747ccc",
+          "date": "2026-10-28",
+          "protected": false,
+          "excerpt": "[git master] 无新项目事实（风险评估轮）。"
+        }
+      ],
+      "pairs": [
+        {
+          "a": "5879157d",
+          "b": "c20c37b1",
+          "sim": 0.43,
+          "reasons": [
+            "similar"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cluster-4",
+      "hint": "similar",
+      "members": [
+        {
+          "id": "92be8a6e",
+          "file": "projects/2ff7f67a088d/MEMORY.md",
+          "track": "project-log",
+          "project": "2ff7f67a088d",
+          "date": "2026-11-01",
+          "protected": false,
+          "excerpt": "[git main] B站视频理解：目标视频链接连续两轮未送达（消息无链接、共享浏览器无B站历史、工作目录无用户视频文件）。当前阻塞=等用户粘贴链接；已提示确认在会话 session-8daf3099（B站视频理解）的输入框发送。"
+        },
+        {
+          "id": "94842ec4",
+          "file": "projects/2ff7f67a088d/MEMORY.md",
+          "track": "project-log",
+          "project": "2ff7f67a088d",
+          "date": "2026-11-01",
+          "protected": false,
+          "excerpt": "[git main] B站视频理解：连续三轮「总结这个视频」但链接始终未到达（消息无链接、共享浏览器无新访问、工作目录无用户视频）。若用户走 IM 渠道发消息，链接卡片可能被剥成纯文本——下一轮若仍无链接，建议用户检查发送渠道或在 DSH 网页输入框直接发。"
+        }
+      ],
+      "pairs": [
+        {
+          "a": "92be8a6e",
+          "b": "94842ec4",
+          "sim": 0.429,
+          "reasons": [
+            "similar"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cluster-7",
+      "hint": "supersede",
+      "members": [
+        {
+          "id": "1a53ce28",
+          "file": "projects/80f877747ccc/KEY.md",
+          "track": "key",
+          "project": "80f877747ccc",
+          "date": "2026-10-28",
+          "protected": false,
+          "excerpt": "[summary:DSH hook 协议实锤：exit2+stderr阻断、additionalContext注入、fail-closed、分阶段门禁]\nDSH hook 协议（源码实锤，hook v2 已按此实现）：PreToolUse 阻断=exit 2+理由写 stderr（stdout 不进模型上下文）；Pos"
+        },
+        {
+          "id": "1c2cc98d",
+          "file": "projects/80f877747ccc/MEMORY.md",
+          "track": "project-log",
+          "project": "80f877747ccc",
+          "date": "2026-10-28",
+          "protected": false,
+          "excerpt": "[git master] Codex 复核定论（以宿主源码 22ddee37 为准）：①PreToolUse 正确阻断=exit 2+stderr 或 hookSpecificOutput.permissionDecision:deny+exit 0，stdout 普通输出不进上下文（软提醒不可行）；②PostTool"
+        }
+      ],
+      "pairs": [
+        {
+          "a": "1a53ce28",
+          "b": "1c2cc98d",
+          "sim": 0.353,
+          "reasons": [
+            "supersede"
+          ]
+        }
+      ]
+    }
+  ]
+}
