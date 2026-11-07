@@ -1,0 +1,28 @@
+dsh-superagent stopped.
+Log: /Users/huweixing/dsh-superagent-prototype/.artifacts/dsh-superagent-superagent-20261107-130806-12908.log
+{
+  "pids": [
+    12918
+  ],
+  "cwd": "/Users/huweixing/dsh-superagent-prototype",
+  "url": "http://127.0.0.1:3082",
+  "manually_stopped": false,
+  "health": {
+    "runtime": "ready",
+    "relay": "ready",
+    "notice": "ready",
+    "launch": "ready",
+    "delivery": "ready",
+    "assessment": "ready",
+    "reply": "ready",
+    "evals": "ready",
+    "models": "ready",
+    "github": "starting",
+    "feishu": "starting",
+    "history": "starting"
+  },
+  "errors": {},
+  "setup": null,
+  "feishu": null
+}
+2026-11-07T05:08:24Z restart_exit=0
