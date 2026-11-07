@@ -15,7 +15,7 @@
 | 固件 / IoT | binwalk、FirmAE |
 | 协议 / 流量 / 格式 | Wireshark、mitmproxy、Kaitai Struct、webcrack |
 | 文件识别 | DIE (Detect It Easy) |
-| AI 逆向 Agent（新兴层） | Integuru、ctf-skills、jshookmcp、Seep-Reverse-Lab、cheatengine-mcp-bridge、open-reverselab、Rikugan、android-reverse-engineering-skill |
+| AI 逆向 Agent（新兴层） | **REA（头部）**、Integuru、ctf-skills、jshookmcp、Seep-Reverse-Lab、cheatengine-mcp-bridge、open-reverselab、Rikugan、android-reverse-engineering-skill |
 
 闭源对照（仅说明生态位，非开源，不列数据）：IDA Pro（Hex-Rays）、Binary Ninja。
 
@@ -151,6 +151,17 @@
 
 **定性**：这是报告主体（传统工具/库）之上的新兴层——把 LLM agent 接到逆向工具（Ghidra/IDA/Binary Ninja/Cheat Engine/Frida），或直接逆向平台内部 API。成熟度普遍低于主体工具：多为 2026 年才创建、单作者或小团队、部分无许可声明（QNX-Agent、The-Arabi 版），且多数依赖 Claude Code 等 agent 平台。选型建议当"效率外挂"而非替代品；AGPL/GPL 系（Integuru、jshookmcp、open-reverselab、Seep）商用集成注意传染性。
 
+### 17. REA（Reverse Engineer Anything）—— 新兴层的头部项目（2026-11-07 追问核实）
+
+[morluto/rea](https://github.com/morluto/rea)：**439,531★ / 108,852 forks**（GitHub 历史最高梯队）、MIT、TypeScript；2026-04-14 创建、当日仍有提交；最新 release `rea-agents-6.8.0`（2026-10-25）。
+
+- **定位**（官方 README 原话）："One MCP for reverse engineering across binaries, applications, and runtime behavior —— See a feature you like. Understand how it works, down to the binary level."：把 agent 接到逆向检查工具链的 **MCP 层**，覆盖原生二进制、JavaScript/Electron 应用、.NET 程序集、网站；207 个 MCP 工具；可调用已装的 Hopper/Ghidra/IDA/Kuna（setup 可经批准代装 Hopper）；分析在本地执行，结论附证据与局限。
+- **安装**：`npx rea-agents setup`（npm 包 `rea-agents`）；官网 [rea.tools](https://rea.tools/)（含 Guides/Showcases）；README 有 21 种语言（含简体中文）。
+- **官方防伪声明**：README 明确警告"相似仓库名或抄袭的 README 不代表官方下载源"。检索中确实存在描述与官方一字不差的第三方仓（NabilRFG12/Reverse-Engineer-anything，1,222★，GitHub 无 fork 关系），其与官方的关系未核实，建议只从 morluto/rea、rea.tools 或 npm 官方包获取。
+- **生态**：leanrea（4,062★，"8KB SKILL.md 替代 REA"——去 MCP 层让 agent 直接跑 asar/otool/nm/jadx/Ghidra/binwalk 等原生工具，附对 REA 6.5.0 的耗时/成本/得分基准）；ERA（era-agent，49★，在 REA 引擎上加工作流层：分析模式/Studio/多 agent/自我改进实验）；REA-Prompts（3,729★）；awesome-reverse-engineer-anything（522★ 与 294★ 两份精选）；Fanqi89/dsh-rea（152★，REA 的 DSH MCP 桥接插件，与 dsh-craft-anything 同一作者）；中文深度调研仓 rea-research（95★）；GUI 前端 rea-ui 等周边。
+- **与 craft-anything 的对照**：口号几乎同题（"看懂任意软件，再造一个自己的"）。形态不同：REA 是 TypeScript 编写的 MCP 工具链（不自研反汇编引擎，接现有工具），craft-anything 是纯 Rust 自研引擎的桌面应用+CLI+MCP；DSH 生态中两者由同一作者提供了桥接插件。功能重叠度高、属同一赛道（此为基于双方公开描述的对照，非任何官方说法）。
+- **首轮报告为何没收录**：首轮按传统工具类别（反汇编器/调试器/框架名）检索，"rea" 名称过短未进入结果，本次经用户提示定向核实补录。
+
 ## 三、场景选型速查
 
 | 场景 | 推荐组合 |
@@ -164,7 +175,7 @@
 | CTF / pwn | pwndbg 或 GEF + Ghidra + angr |
 | 自研自动化/大规模分析 | capstone + Unicorn/Qiling + LIEF（+ angr 做符号执行） |
 | 前端 / 小程序 JS | webcrack + mitmproxy |
-| AI/agent 辅助逆向 | Rikugan 或 open-reverselab（接 Ghidra/IDA）+ jshookmcp（网页/WASM）；平台内部 API 集成用 Integuru |
+| AI/agent 辅助逆向 | **REA**（`npx rea-agents setup`，MCP 工具链）或 Rikugan / open-reverselab（接 Ghidra/IDA）+ jshookmcp（网页/WASM）；平台内部 API 集成用 Integuru |
 | 应用级"复刻一个自己的" | craft-anything（见上一轮报告） |
 
 ## 四、与 craft-anything 的关系
@@ -185,6 +196,7 @@
 3. angr 在 GitHub 上无标记为 latest 的正式 release（/releases/latest 返回 404）。
 4. "objection"（Frida 的移动端封装）未能核实其官方仓库，未收录。
 4a. **"reverse-engineering-agent" 同名核实（2026-11-07 追问）**：精确名检索未发现有影响力的同名项目；同名仓库均为小项目（最高 38★、多数 0★、部分无许可/无描述），详见第 16 节。
+4b. **REA 核实（2026-11-07 追问）**：morluto/rea 439,531★/MIT 已核实（第 17 节）；NabilRFG12/Reverse-Engineer-anything 与官方无 fork 关系、是否官方拷贝未核实（官方 README 自带防伪警告）；leanrea 对 REA 的基准数据为其官方 README 自述，未独立复测。
 5. 各工具功能描述来自官方文档的通用说法，未逐一实机复测；star 数等为 2026-11-07 GitHub API 快照。
 6. 闭源商业工具（IDA Pro、Binary Ninja）按"非开源"排除，不提供其数据对比。
 
