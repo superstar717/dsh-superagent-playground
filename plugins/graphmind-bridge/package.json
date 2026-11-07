@@ -1,6 +1,6 @@
 {
   "name": "graphmind-bridge",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Expose a running GraphMind knowledge-graph service (LightRAG) as read-only DSH model tools: datasets, graph RAG search, entity/neighborhood lookups.",
   "type": "module",
   "main": "lib/index.js",

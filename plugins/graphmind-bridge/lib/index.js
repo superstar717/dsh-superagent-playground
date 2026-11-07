@@ -431,6 +431,198 @@ function registerTools(ctx, config) {
       return { dataset, stats: lines.join('\n') }
     },
   })
+
+  register({
+    name: 'kg_path',
+    description: '在 GraphMind 图谱里查找两个实体之间的关联路径：最短路径、加权路径（Dijkstra，按关系强度算成本）或最多 k 条路径。适合回答「A 和 C 之间有什么联系」这类多跳关系问题。实体名先用 kg_find_entities 确认。',
+    parameters: {
+      type: 'object',
+      properties: {
+        source: { type: 'string', description: '起点实体名（精确）' },
+        target: { type: 'string', description: '终点实体名（精确）' },
+        dataset: { type: 'string', description: '数据集 id；缺省用默认数据集' },
+        weighted: { type: 'boolean', description: 'true=按关系强度加权（Dijkstra），默认 false（跳数最少）' },
+        k: { type: 'number', description: '最多返回几条路径，默认 1，上限 5' },
+      },
+      required: ['source', 'target'],
+      additionalProperties: false,
+    },
+    output: {
+      schema: {
+        type: 'object',
+        properties: {
+          dataset: { type: 'string' },
+          weighted: { type: 'boolean' },
+          note: { type: 'string' },
+          paths: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                nodes: { type: 'array', items: { type: 'string' } },
+                length: { type: 'number' },
+                hops: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      from: { type: 'string' },
+                      to: { type: 'string' },
+                      relation: { type: 'string' },
+                      weight: { type: 'number' },
+                    },
+                    required: ['from', 'to', 'relation', 'weight'],
+                    additionalProperties: false,
+                  },
+                },
+              },
+              required: ['nodes', 'length', 'hops'],
+              additionalProperties: false,
+            },
+          },
+        },
+        required: ['dataset', 'weighted', 'note', 'paths'],
+        additionalProperties: false,
+      },
+      render: (_args, value) => [{
+        type: 'text',
+        text: value.paths.length === 0
+          ? `${value.note || '没有找到路径'}`
+          : value.paths.map((p, i) => [
+              `路径${i + 1}（${p.length} 跳）：${p.nodes.join(' → ')}`,
+              ...p.hops.map(h => `  ${h.from} → ${h.to}${h.relation === '' ? '' : '：' + h.relation}`),
+            ].join('\n')).join('\n\n'),
+      }],
+    },
+    async execute(args, exec) {
+      if (exec.signal.aborted) throw new Error('已取消')
+      const source = String(args?.source ?? '').trim()
+      const target = String(args?.target ?? '').trim()
+      if (source === '' || target === '') throw new Error('source 和 target 不能为空')
+      const dataset = await resolveDataset(upstream, config, args?.dataset, exec.signal)
+      const weighted = Boolean(args?.weighted)
+      const k = Math.max(1, Math.min(5, Number(args?.k ?? 1) || 1))
+      const q = `source=${encodeURIComponent(source)}&target=${encodeURIComponent(target)}&weighted=${weighted}&k=${k}`
+      const value = await api(upstream, `/api/datasets/${encodeURIComponent(dataset)}/graph/path?${q}`, { timeoutMs: FAST_TIMEOUT_MS * 2, signal: exec.signal })
+      return { dataset, weighted, note: String(value?.note ?? ''), paths: Array.isArray(value?.paths) ? value.paths : [] }
+    },
+  })
+
+  register({
+    name: 'kg_centrality',
+    description: '按中心性指标列出 GraphMind 图谱里最重要的实体：degree（连接最多）、pagerank（影响力）、betweenness（桥梁作用）、closeness（到达最短）。适合回答「这个领域里最核心/最关键的实体是什么」。',
+    parameters: {
+      type: 'object',
+      properties: {
+        dataset: { type: 'string', description: '数据集 id；缺省用默认数据集' },
+        metric: { type: 'string', description: 'degree | pagerank | betweenness | closeness，默认 degree' },
+        top: { type: 'number', description: '返回前 N 个，默认 10，上限 20' },
+      },
+      additionalProperties: false,
+    },
+    output: {
+      schema: {
+        type: 'object',
+        properties: {
+          dataset: { type: 'string' },
+          metric: { type: 'string' },
+          entities: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                entity_type: { type: 'string' },
+                score: { type: 'number' },
+                summary: { type: 'string' },
+              },
+              required: ['name', 'entity_type', 'score', 'summary'],
+              additionalProperties: false,
+            },
+          },
+        },
+        required: ['dataset', 'metric', 'entities'],
+        additionalProperties: false,
+      },
+      render: (_args, value) => [{
+        type: 'text',
+        text: `${value.dataset} · ${value.metric} top ${value.entities.length}\n` +
+          value.entities.map((e, i) => `${i + 1}. ${e.name}（${e.entity_type || '?'}，${e.score}）${e.summary === '' ? '' : '：' + e.summary}`).join('\n'),
+      }],
+    },
+    async execute(args, exec) {
+      if (exec.signal.aborted) throw new Error('已取消')
+      const dataset = await resolveDataset(upstream, config, args?.dataset, exec.signal)
+      const metric = ['degree', 'pagerank', 'betweenness', 'closeness'].includes(args?.metric) ? args.metric : 'degree'
+      const top = Math.max(1, Math.min(20, Number(args?.top ?? 10) || 10))
+      const value = await api(upstream, `/api/datasets/${encodeURIComponent(dataset)}/graph/centrality?metric=${metric}&top=${top}`, { timeoutMs: FAST_TIMEOUT_MS * 4, signal: exec.signal })
+      const entities = (Array.isArray(value?.entities) ? value.entities : []).map(e => ({
+        name: String(e?.name ?? ''),
+        entity_type: String(e?.entity_type ?? ''),
+        score: Number(e?.score ?? 0),
+        summary: String(e?.description ?? '').slice(0, 100),
+      }))
+      return { dataset, metric, entities }
+    },
+  })
+
+  register({
+    name: 'kg_communities',
+    description: '对 GraphMind 图谱做社区检测（Louvain），返回联系最紧密的实体群组及每群的核心实体和类型构成。适合回答「这个知识库整体分成几大块/几大主题」。',
+    parameters: {
+      type: 'object',
+      properties: {
+        dataset: { type: 'string', description: '数据集 id；缺省用默认数据集' },
+        max_groups: { type: 'number', description: '返回前 N 个最大社区，默认 10' },
+      },
+      additionalProperties: false,
+    },
+    output: {
+      schema: {
+        type: 'object',
+        properties: {
+          dataset: { type: 'string' },
+          total_groups: { type: 'number' },
+          communities: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                group: { type: 'number' },
+                size: { type: 'number' },
+                core_entities: { type: 'array', items: { type: 'string' } },
+                entity_types: { type: 'string' },
+              },
+              required: ['group', 'size', 'core_entities', 'entity_types'],
+              additionalProperties: false,
+            },
+          },
+        },
+        required: ['dataset', 'total_groups', 'communities'],
+        additionalProperties: false,
+      },
+      render: (_args, value) => [{
+        type: 'text',
+        text: `${value.dataset} · 共 ${value.total_groups} 个社区，返回前 ${value.communities.length}\n` +
+          value.communities.map(c =>
+            `群${c.group}（${c.size} 实体）：${c.core_entities.join('、')}${c.entity_types === '' ? '' : ' | 类型: ' + c.entity_types}`,
+          ).join('\n'),
+      }],
+    },
+    async execute(args, exec) {
+      if (exec.signal.aborted) throw new Error('已取消')
+      const dataset = await resolveDataset(upstream, config, args?.dataset, exec.signal)
+      const maxGroups = Math.max(1, Math.min(15, Number(args?.max_groups ?? 10) || 10))
+      const value = await api(upstream, `/api/datasets/${encodeURIComponent(dataset)}/graph/communities?max_groups=${maxGroups}`, { timeoutMs: FAST_TIMEOUT_MS * 6, signal: exec.signal })
+      const communities = (Array.isArray(value?.communities) ? value.communities : []).map(c => ({
+        group: Number(c?.group ?? 0),
+        size: Number(c?.size ?? 0),
+        core_entities: (Array.isArray(c?.entities) ? c.entities : []).map(e => String(e?.name ?? '')).filter(Boolean),
+        entity_types: Object.entries(c?.entity_types ?? {}).map(([k, v]) => `${k}:${v}`).join(', '),
+      }))
+      return { dataset, total_groups: Number(value?.total_groups ?? 0), communities }
+    },
+  })
 }
 
 /** Cordis plugin entry. */
