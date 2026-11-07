@@ -99,6 +99,27 @@ restarts the service in a detached tmux session. The plugin's board data
 (written after install) is not removed by the rollback; delete the plugin's
 per-workspace board store first if a pristine state is wanted.
 
+## Post-restart re-verification (2026-11-07 ~20:50, after the 16:39 operator restart)
+
+The service was restarted again at 16:39 (not via these scripts; new token,
+direct tmux pane). Re-verified with screenshots in `work/`:
+
+- `empty-board-default-workspace.png` — what the operator saw: Board open in
+  a freshly created workspace (`kanban-empty-board-226d5178fb80`), all
+  columns "No cards".
+- `board-with-card-enable-kanban.png` — the same board switched to the
+  `enable-kanban-937d8cafda22` workspace: the card created during the
+  original e2e is still there, i.e. board data survived two restarts.
+
+Diagnosis of the "看板没有任务内容" report — **expected behavior, not a
+failure**: boards are per-workspace and start empty; the plugin does not
+import dsh-superagent tickets. Content appears only via manual cards or the
+plugin's `kanban_*` agent tools. Disk evidence: exactly one
+`.dsh-kanban.json` exists across all workspaces (this ticket's, 1 card).
+The boot-time "Startup check ... check failed cannot read .dsh-kanban.json:
+not found" lines are benign per-workspace checks for workspaces whose boards
+have not been created yet.
+
 ## Known limitations
 
 - The plugin's 19 `kanban_*` agent tools were not exercised separately in an
