@@ -1,0 +1,24 @@
+OK  add-insight-dedupe-01fda0466da2                cards=1 marker_col=Done expect=Done
+OK  ai-creator-cases-4e738507521e                  cards=1 marker_col=Done expect=Done
+OK  ai-trend-report-609e0c97b6f3                   cards=1 marker_col=In Progress expect=In Progress
+OK  analyze-0924-project-9b33021c7a61              cards=1 marker_col=Done expect=Done
+OK  audit-workbench-value-1aa6e17325c3             cards=1 marker_col=Done expect=Done
+OK  enable-kanban-937d8cafda22                     cards=1 marker_col=In Progress expect=In Progress
+OK  fetch-zhihu-article-867415173221               cards=1 marker_col=Done expect=Done
+OK  install-memory-routing-4c0e81e47d38            cards=1 marker_col=Done expect=Done
+OK  install-plugins-batch-090502375e8d             cards=1 marker_col=Done expect=Done
+OK  kanban-empty-board-226d5178fb80                cards=1 marker_col=In Progress expect=In Progress
+OK  local-stats-analysis-8dacb4c34ff2              cards=1 marker_col=Done expect=Done
+OK  make-oral-video-facd72c1a164                   cards=1 marker_col=In Progress expect=In Progress
+OK  optimize-memory-frame-37a79150ca0b             cards=1 marker_col=In Progress expect=In Progress
+OK  polish-ppt-pages-336b183de26b                  cards=1 marker_col=Done expect=Done
+OK  port-devtools-worktree-3a1cd0f2fb74            cards=1 marker_col=Done expect=Done
+OK  port-plugin-setup-2ed871648430                 cards=1 marker_col=Done expect=Done
+OK  reproduce-knowledge-graph-674ee22d5ab8         cards=1 marker_col=In Progress expect=In Progress
+OK  research-anything-tools-f6ab06b778df           cards=1 marker_col=Done expect=Done
+OK  research-workbuddy-6959da901177                cards=1 marker_col=Done expect=Done
+OK  retro-two-analyses-acb4265da46b                cards=1 marker_col=Done expect=Done
+OK  revive-second-brain-760511438506               cards=1 marker_col=Done expect=Done
+OK  switch-model-glm-02c40359b4ff                  cards=1 marker_col=Done expect=Done
+
+== 22 OK, 0 FAIL ==
