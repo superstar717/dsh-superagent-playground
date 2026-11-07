@@ -1,0 +1,21 @@
+{
+  "name": "graphmind-bridge",
+  "version": "0.2.0",
+  "description": "Expose a running GraphMind knowledge-graph service (LightRAG) as read-only DSH model tools: datasets, graph RAG search, entity/neighborhood lookups.",
+  "type": "module",
+  "main": "lib/index.js",
+  "license": "MIT",
+  "files": [
+    "lib/*.js",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  }
+}
