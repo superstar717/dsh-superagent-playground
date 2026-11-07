@@ -1,0 +1,23 @@
+NationalSecurityAgency/ghidra	98491	11162	Apache-2.0	Java	2019-03-01	2026-11-06	2188	Ghidra is a software reverse engineering (SRE) framework	false
+radareorg/radare2	25350	3428	NOASSERTION	C	2012-07-03	2026-11-07	793	UNIX-like reverse engineering framework and command-line toolset	false
+rizinorg/rizin	4148	698	LGPL-3.0	C	2020-09-30	2026-11-05	618	UNIX-like reverse engineering framework and command-line toolset.	false
+rizinorg/cutter	20174	1541	GPL-3.0	C++	2017-09-25	2026-11-03	498	Free and Open Source Reverse Engineering Platform powered by rizin	false
+angr/angr	9337	1232	BSD-2-Clause	Python	2015-08-06	2026-11-07	803	A powerful and user-friendly binary analysis platform!	false
+Get "https://api.github.com/repos/frida/frida": EOF
+x64dbg/x64dbg	50233	2936	NOASSERTION	C++	2015-04-11	2026-10-28	576	An open-source user mode debugger for Windows. Optimized for reverse engineering	false
+skylot/jadx	51659	5910	Apache-2.0	Java	2013-03-18	2026-11-02	478	Dex to Java decompiler	false
+iBotPeaches/Apktool	27063	4235	Apache-2.0	Java	2012-03-19	2026-11-02	76	A tool for reverse engineering Android apk files	false
+ReFirmLabs/binwalk	14628	1869	MIT	Rust	2013-11-15	2026-08-11	103	Firmware Analysis Tool	false
+kaitai-io/kaitai_struct	4729	214	none	Shell	2016-02-20	2026-10-26	532	Kaitai Struct: declarative language to generate binary data parsers in C++ / C# 	false
+avast/retdec	8668	1001	MIT	C++	2017-12-12	2026-05-26	470	RetDec is a retargetable machine-code decompiler based on LLVM.	false
+capstone-engine/capstone	9171	1741	none	C	2013-11-27	2026-11-04	351	Capstone disassembly/disassembler framework for ARM, ARM64 (ARMv8), Alpha, BPF, 	false
+unicorn-engine/unicorn	9544	1588	GPL-2.0	C	2015-08-20	2026-10-18	257	Unicorn CPU emulator framework (ARM, AArch64, M68K, Mips, Sparc, PowerPC, RiscV,	false
+lief-project/LIEF	5638	761	Apache-2.0	C++	2017-03-16	2026-11-07	29	LIEF - Library to Instrument Executable Formats (C++, Python, Rust)	false
+qilingframework/qiling	6167	799	GPL-2.0	Python	2019-08-22	2026-10-23	116	A True Instrumentable Binary Emulation Framework	false
+vivisect/vivisect	1002	194	Apache-2.0	Python	2014-11-14	2026-10-21	127		false
+horsicq/DIE-engine	3344	412	MIT	C++	2014-10-13	2026-11-07	19	DIE engine	false
+wireshark/wireshark	10166	2254	GPL-2.0	C	2014-06-29	2026-11-07	2	Read-only mirror of Wireshark's Git repository at https://gitlab.com/wireshark/w	false
+mitmproxy/mitmproxy	46699	4943	MIT	Python	2010-02-16	2026-11-04	542	An interactive TLS-capable intercepting HTTP proxy for penetration testers and s	false
+{"message":"Not Found","documentation_url":"https://docs.github.com/rest/repos/repos#get-a-repository","status":"404"}gh: Not Found (HTTP 404)
+pwndbg/pwndbg	11164	1314	MIT	Python	2015-02-22	2026-11-07	220	Exploit Development and Reverse Engineering with GDB & LLDB Made Easy	false
+hugsy/gef	8425	842	MIT	Python	2015-03-26	2026-08-20	18	GEF (GDB Enhanced Features) - a modern experience for GDB with advanced debuggin	false
