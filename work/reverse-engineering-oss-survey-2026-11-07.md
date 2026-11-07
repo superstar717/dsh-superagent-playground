@@ -15,6 +15,7 @@
 | 固件 / IoT | binwalk、FirmAE |
 | 协议 / 流量 / 格式 | Wireshark、mitmproxy、Kaitai Struct、webcrack |
 | 文件识别 | DIE (Detect It Easy) |
+| AI 逆向 Agent（新兴层） | Integuru、ctf-skills、jshookmcp、Seep-Reverse-Lab、cheatengine-mcp-bridge、open-reverselab、Rikugan、android-reverse-engineering-skill |
 
 闭源对照（仅说明生态位，非开源，不列数据）：IDA Pro（Hex-Rays）、Binary Ninja。
 
@@ -129,6 +130,27 @@
 - **缺点**：只做"识别"，不做深入分析。
 - **适用**：任何逆向工作的第一步（先搞清目标是什么）。
 
+### 16. AI 逆向 Agent（2025–2026 新兴层，2026-11-07 追问补充）
+
+**先回答"reverse-engineering-agent 这个开源项目"**：GitHub 精确名检索（含大小写变体、in:name）**没有发现一个有影响力的同名项目**。命中的同名仓库全部是小项目：最高的 [The-Arabi/Reverse-engineering-agent](https://github.com/The-Arabi/Reverse-engineering-agent) 仅 38★（无描述、无许可声明、2026-08-04 后无提交），其余多为 0★ 个人实验（如 sojiang75-byte 版"解 crackmes 的小 agent（WIP）"、若干韩语/葡语/LangChain 练手仓）。若你指的是其中某一个，请给链接再核实；你更可能想问的是下面这批"AI agent + 逆向"的新兴项目（元数据已核实，2026-11-07）：
+
+| 项目 | ★ / 许可 | 定位（据官方 README） | 活跃度 |
+|---|---|---|---|
+| [Integuru](https://github.com/Integuru-AI/Integuru) | 4,792 / AGPL-3.0 | "第一个通过逆向平台内部 API 构建无许可集成的 AI agent"：分析浏览器网络请求（HAR）→ 生成调用平台内部端点的可运行 Python 代码。**开源仓只是 v0 快照，新版已转商业站 integuru.com** | 2026-06 后停更 |
+| [android-reverse-engineering-skill](https://github.com/SimoneAvogadro/android-reverse-engineering-skill) | 8,673 / Apache-2.0 | Android App 逆向的 Claude Code skill（agent 执行层，非传统工具） | 2026-10-12 有提交 |
+| [ctf-skills](https://github.com/ljagiello/ctf-skills) | 3,641 / MIT | 解 CTF 的 agent skills（web / pwn / crypto / 逆向） | 当周有提交 |
+| [jshookmcp](https://github.com/vmoranv/jshookmcp) | 2,102 / AGPL-3.0 | "面向 AI agent 的搜索优先逆向工作区"（MCP）：hook 页面、抓网络、反混淆 bundle、反汇编 WASM、插桩进程 | 当周有提交 |
+| [Seep-Reverse-Lab](https://github.com/angusdevgo/Seep-Reverse-Lab) | 2,091 / GPL-3.0 | Agent-native 多平台逆向 + CWE-602 客户端授权审计工作台（中英文档） | 2026-11-04 有提交 |
+| [cheatengine-mcp-bridge](https://github.com/miscusi-peek/cheatengine-mcp-bridge) | 1,756 / MIT | 把 AI agent 经 MCP 直连 Cheat Engine，自动化逆向/找指针 | 2026-08 有提交 |
+| [open-reverselab](https://github.com/LING71671/open-reverselab) | 1,346 / GPL-3.0 | "AI 逆向 Agent & MCP 实验室"：100+ MCP 工具，面向 Claude Code/Codex/OpenCode 等 agent，覆盖 Ghidra/Frida/x64dbg/Rizin、PE/APK/恶意样本/CTF；Sentry 赞助；有中文文档 | 2026-10-21 有提交 |
+| [Rikugan（六眼）](https://github.com/buzzer-re/Rikugan) | 707 / MIT | IDA Pro + Binary Ninja 内直接集成多 provider LLM 的逆向 agent | 2026-11-04 有提交 |
+| [reverse-engineering-assistant](https://github.com/cyberkaida/reverse-engineering-assistant) | ≈950 / 未核实 | Ghidra 的 MCP server，把逆向任务交给 agent | 见仓库 |
+| 早期/小体量：[era-agent](https://github.com/dav1dngy/era-agent)（49★/MIT，"Evolve & Reverse Engineer Anything"）、[blackbox-re-agent](https://github.com/maosasagawa/blackbox-re-agent)（34★/Apache-2.0，pi coding agent 上的对话式黑盒逆向，支持 apk/.o/.hex/exe）、[Shiyou-Qi/QNX-Agent](https://github.com/Shiyou-Qi/QNX-Agent)（20★/无许可，**DeepSeek Harness 专用**逆向 agents）、ghidra-skill-for-dsh（11★，DSH 的 Ghidra headless 技能） | | | |
+
+名字相近的学习资源（非工具）：mytechnotalent/Reverse-Engineering（15,125★，免费系统教程，覆盖 x86/x64/ARM 等）、wtsxDev/reverse-engineering（10,767★，资源清单）、0xZ0F/Z0FCourse_ReverseEngineering（5,996★，x64 Windows）、alphaSeclab/awesome-reverse-engineering（5,195★）。
+
+**定性**：这是报告主体（传统工具/库）之上的新兴层——把 LLM agent 接到逆向工具（Ghidra/IDA/Binary Ninja/Cheat Engine/Frida），或直接逆向平台内部 API。成熟度普遍低于主体工具：多为 2026 年才创建、单作者或小团队、部分无许可声明（QNX-Agent、The-Arabi 版），且多数依赖 Claude Code 等 agent 平台。选型建议当"效率外挂"而非替代品；AGPL/GPL 系（Integuru、jshookmcp、open-reverselab、Seep）商用集成注意传染性。
+
 ## 三、场景选型速查
 
 | 场景 | 推荐组合 |
@@ -142,11 +164,12 @@
 | CTF / pwn | pwndbg 或 GEF + Ghidra + angr |
 | 自研自动化/大规模分析 | capstone + Unicorn/Qiling + LIEF（+ angr 做符号执行） |
 | 前端 / 小程序 JS | webcrack + mitmproxy |
+| AI/agent 辅助逆向 | Rikugan 或 open-reverselab（接 Ghidra/IDA）+ jshookmcp（网页/WASM）；平台内部 API 集成用 Integuru |
 | 应用级"复刻一个自己的" | craft-anything（见上一轮报告） |
 
 ## 四、与 craft-anything 的关系
 
-上述工具是**二进制/协议/格式级**逆向（看清代码与数据）；craft-anything 是**应用级**逆向（看清整个软件如何工作并让 agent 复刻）。二者互补：craft-anything 的 Deep 模式自带反汇编/反编译引擎，并可调用已安装的 Ghidra——即它与 Ghidra 是上下游集成关系，不是替代关系。
+上述工具是**二进制/协议/格式级**逆向（看清代码与数据）；craft-anything 是**应用级**逆向（看清整个软件如何工作并让 agent 复刻）。二者互补：craft-anything 的 Deep 模式自带反汇编/反编译引擎，并可调用已安装的 Ghidra——即它与 Ghidra 是上下游集成关系，不是替代关系。另外，DSH 生态也已出现专用逆向 agent（QNX-Agent、ghidra-skill-for-dsh，见第 16 节）。
 
 ## 五、总体观察
 
@@ -161,6 +184,7 @@
 2. capstone 主仓 GitHub 许可字段为空、LICENSE 内容本次未获取成功；Kaitai 主仓无 SPDX（子组件各自许可）。
 3. angr 在 GitHub 上无标记为 latest 的正式 release（/releases/latest 返回 404）。
 4. "objection"（Frida 的移动端封装）未能核实其官方仓库，未收录。
+4a. **"reverse-engineering-agent" 同名核实（2026-11-07 追问）**：精确名检索未发现有影响力的同名项目；同名仓库均为小项目（最高 38★、多数 0★、部分无许可/无描述），详见第 16 节。reverse-engineering-assistant 的许可本次未核实到（API 两次超时）。
 5. 各工具功能描述来自官方文档的通用说法，未逐一实机复测；star 数等为 2026-11-07 GitHub API 快照。
 6. 闭源商业工具（IDA Pro、Binary Ninja）按"非开源"排除，不提供其数据对比。
 

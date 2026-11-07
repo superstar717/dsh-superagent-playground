@@ -1,0 +1,11 @@
+Integuru-AI/Integuru
+buzzer-re/Rikugan
+LING71671/open-reverselab
+angusdevgo/Seep-Reverse-Lab
+vmoranv/jshookmcp
+miscusi-peek/cheatengine-mcp-bridge
+ljagiello/ctf-skills
+dav1dngy/era-agent
+The-Arabi/Reverse-engineering-agent
+Shiyou-Qi/QNX-Agent
+maosasagawa/blackbox-re-agent
