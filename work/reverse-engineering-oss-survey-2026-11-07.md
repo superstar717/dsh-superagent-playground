@@ -144,7 +144,7 @@
 | [cheatengine-mcp-bridge](https://github.com/miscusi-peek/cheatengine-mcp-bridge) | 1,756 / MIT | 把 AI agent 经 MCP 直连 Cheat Engine，自动化逆向/找指针 | 2026-08 有提交 |
 | [open-reverselab](https://github.com/LING71671/open-reverselab) | 1,346 / GPL-3.0 | "AI 逆向 Agent & MCP 实验室"：100+ MCP 工具，面向 Claude Code/Codex/OpenCode 等 agent，覆盖 Ghidra/Frida/x64dbg/Rizin、PE/APK/恶意样本/CTF；Sentry 赞助；有中文文档 | 2026-10-21 有提交 |
 | [Rikugan（六眼）](https://github.com/buzzer-re/Rikugan) | 707 / MIT | IDA Pro + Binary Ninja 内直接集成多 provider LLM 的逆向 agent | 2026-11-04 有提交 |
-| [reverse-engineering-assistant](https://github.com/cyberkaida/reverse-engineering-assistant) | ≈950 / 未核实 | Ghidra 的 MCP server，把逆向任务交给 agent | 见仓库 |
+| [reverse-engineering-assistant](https://github.com/cyberkaida/reverse-engineering-assistant) | 950 / Apache-2.0 | Ghidra 的 MCP server，把逆向任务交给 agent | 2026-11-03 有提交 |
 | 早期/小体量：[era-agent](https://github.com/dav1dngy/era-agent)（49★/MIT，"Evolve & Reverse Engineer Anything"）、[blackbox-re-agent](https://github.com/maosasagawa/blackbox-re-agent)（34★/Apache-2.0，pi coding agent 上的对话式黑盒逆向，支持 apk/.o/.hex/exe）、[Shiyou-Qi/QNX-Agent](https://github.com/Shiyou-Qi/QNX-Agent)（20★/无许可，**DeepSeek Harness 专用**逆向 agents）、ghidra-skill-for-dsh（11★，DSH 的 Ghidra headless 技能） | | | |
 
 名字相近的学习资源（非工具）：mytechnotalent/Reverse-Engineering（15,125★，免费系统教程，覆盖 x86/x64/ARM 等）、wtsxDev/reverse-engineering（10,767★，资源清单）、0xZ0F/Z0FCourse_ReverseEngineering（5,996★，x64 Windows）、alphaSeclab/awesome-reverse-engineering（5,195★）。
@@ -184,7 +184,7 @@
 2. capstone 主仓 GitHub 许可字段为空、LICENSE 内容本次未获取成功；Kaitai 主仓无 SPDX（子组件各自许可）。
 3. angr 在 GitHub 上无标记为 latest 的正式 release（/releases/latest 返回 404）。
 4. "objection"（Frida 的移动端封装）未能核实其官方仓库，未收录。
-4a. **"reverse-engineering-agent" 同名核实（2026-11-07 追问）**：精确名检索未发现有影响力的同名项目；同名仓库均为小项目（最高 38★、多数 0★、部分无许可/无描述），详见第 16 节。reverse-engineering-assistant 的许可本次未核实到（API 两次超时）。
+4a. **"reverse-engineering-agent" 同名核实（2026-11-07 追问）**：精确名检索未发现有影响力的同名项目；同名仓库均为小项目（最高 38★、多数 0★、部分无许可/无描述），详见第 16 节。
 5. 各工具功能描述来自官方文档的通用说法，未逐一实机复测；star 数等为 2026-11-07 GitHub API 快照。
 6. 闭源商业工具（IDA Pro、Binary Ninja）按"非开源"排除，不提供其数据对比。
 
