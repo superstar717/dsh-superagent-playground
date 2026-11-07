@@ -1,0 +1,5 @@
+# Bundle patch: the package's Host entry is a plain Cordis plugin exposing
+# read-only model tools; there is no browser half.
+- insert:
+    - id: graphmind-bridge
+      name: graphmind-bridge
