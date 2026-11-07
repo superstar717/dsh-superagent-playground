@@ -15,7 +15,7 @@
 | 固件 / IoT | binwalk、FirmAE |
 | 协议 / 流量 / 格式 | Wireshark、mitmproxy、Kaitai Struct、webcrack |
 | 文件识别 | DIE (Detect It Easy) |
-| AI 逆向 Agent（新兴层） | **REA（头部）**、Integuru、ctf-skills、jshookmcp、Seep-Reverse-Lab、cheatengine-mcp-bridge、open-reverselab、Rikugan、android-reverse-engineering-skill |
+| AI 逆向 Agent（新兴层） | **REA（头部）**、**reverse-skill（技能路由，44.3k★）**、Integuru、ctf-skills、jshookmcp、Seep-Reverse-Lab、cheatengine-mcp-bridge、open-reverselab、Rikugan、android-reverse-engineering-skill |
 
 闭源对照（仅说明生态位，非开源，不列数据）：IDA Pro（Hex-Rays）、Binary Ninja。
 
@@ -162,6 +162,15 @@
 - **与 craft-anything 的对照**：口号几乎同题（"看懂任意软件，再造一个自己的"）。形态不同：REA 是 TypeScript 编写的 MCP 工具链（不自研反汇编引擎，接现有工具），craft-anything 是纯 Rust 自研引擎的桌面应用+CLI+MCP；DSH 生态中两者由同一作者提供了桥接插件。功能重叠度高、属同一赛道（此为基于双方公开描述的对照，非任何官方说法）。
 - **首轮报告为何没收录**：首轮按传统工具类别（反汇编器/调试器/框架名）检索，"rea" 名称过短未进入结果，本次经用户提示定向核实补录。
 
+### 18. reverse-skill 与"逆向技能包"层（2026-11-07 追问核实）
+
+[zhaoxuya520/reverse-skill](https://github.com/zhaoxuya520/reverse-skill)：**44,268★ / 6,588 forks**、MIT、PowerShell；2026-05-13 创建，最新提交 2026-09-22，最新 release v1.0.1（2026-08-08）。
+
+- **定位**（官方 README）："Cybersecurity Skills Router · 逆向技能路由包"——当 AI agent（Claude Code/Codex/Cursor/OpenCode 等）遇到 APK、二进制、前端 JS 加密、CTF 或授权渗透目标时，把它**路由到正确方法论、检查可用工具、执行可复现工作流**（任务 → RULES.md → 路由 → 执行），而不是让 agent 猜命令。README 专门提供 README_AI.md 供 agent 自读；中文文档齐全，另有项目网站与在线教程。
+- **性质**：与 REA（§17，工具链 MCP）不同——它是"方法论路由包"（SKILL/RULES 集合），本身不提供逆向引擎，而是指挥 agent 用现有工具按规范流程干活；定位为授权渗透测试/安全研究，MIT。
+- **同类技能包生态**（已核实元数据）：P4nda0s/reverse-skills（2,349★，Claude Code 逆向技能插件，**无许可声明**，2026-05-06 后停更）、WhiteNightShadow/hello_js_reverse_skill（1,403★，JS 逆向全链路）、dhicoc/dsh-reverse-skill（332★，**88 个 SKILL.md 打包成 DeepSeek Harness Cordis 插件**）、cellebrite-labs/ghidra-rpc（397★，Cellebrite 出品的 Ghidra agentic skill）、r0crawl_skills（364★，web/Android/iOS/Frida 技能库）、android-reverse-engineering-skill（8.7k★，见§16）。
+- **定性**：AI 逆向生态的第三层——"技能/方法论层"（SKILL.md 路由包），介于传统工具（第一层）与 REA 类工具链（第二层）之间，本层更新快、以中文社区为重要策源地。选型提示：reverse-skill 为 MIT 可直接采用；无许可声明的技能包商用前需向作者确认授权。
+
 ## 三、场景选型速查
 
 | 场景 | 推荐组合 |
@@ -175,7 +184,7 @@
 | CTF / pwn | pwndbg 或 GEF + Ghidra + angr |
 | 自研自动化/大规模分析 | capstone + Unicorn/Qiling + LIEF（+ angr 做符号执行） |
 | 前端 / 小程序 JS | webcrack + mitmproxy |
-| AI/agent 辅助逆向 | **REA**（`npx rea-agents setup`，MCP 工具链）或 Rikugan / open-reverselab（接 Ghidra/IDA）+ jshookmcp（网页/WASM）；平台内部 API 集成用 Integuru |
+| AI/agent 辅助逆向 | **REA**（`npx rea-agents setup`，MCP 工具链）或 **reverse-skill**（44.3k★，方法论路由包）；Rikugan / open-reverselab（接 Ghidra/IDA）+ jshookmcp（网页/WASM）；平台内部 API 集成用 Integuru |
 | 应用级"复刻一个自己的" | craft-anything（见上一轮报告） |
 
 ## 四、与 craft-anything 的关系
