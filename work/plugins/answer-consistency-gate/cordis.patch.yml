@@ -1,0 +1,4 @@
+- insert:
+    - id: answer-consistency-gate
+      name: '@local/answer-consistency-gate'
+      config: {}

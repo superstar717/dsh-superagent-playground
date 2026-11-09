@@ -1,0 +1,19 @@
+{
+  "jianghushuo": {
+    "name": "姜胡说",
+    "sec_uid": "MS4wLjABAAAAxaSHyjKQyfWHKjIS1mYbpxxEQZpT8ogl_eyks2M_Twc",
+    "url": "https://www.douyin.com/user/MS4wLjABAAAAxaSHyjKQyfWHKjIS1mYbpxxEQZpT8ogl_eyks2M_Twc?from_tab_name=main",
+    "asr_dir": "~/姜胡说/asr",
+    "kb_root": "~/姜胡说/kb_para",
+    "kb_source": "asr",
+    "graph_dataset": "jianghushu-methodology_b0607c",
+    "created": "2026-11-08T13:15:00"
+  },
+  "ms4wljabaaaaazb6": {
+    "name": "闲人李公子",
+    "sec_uid": "MS4wLjABAAAAAZB65yxD7bNsnljzjDKBO86h-6RUuElSbsNmwJdnkwLcp0cgBrK3dmvNt5JZkbt9",
+    "url": "https://www.douyin.com/user/MS4wLjABAAAAAZB65yxD7bNsnljzjDKBO86h-6RUuElSbsNmwJdnkwLcp0cgBrK3dmvNt5JZkbt9?from_tab_name=main",
+    "graph_dataset": "ligongzi",
+    "created": "2026-11-08T20:20:57"
+  }
+}

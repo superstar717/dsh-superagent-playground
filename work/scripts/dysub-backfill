@@ -1,0 +1,184 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""dysub-backfill — 逐月历史回填驱动器（③ 历史回填，无人值守）。
+
+每晚 launchd 调一次：按队列逐月跑 `dysub sync <creator> --month M`，单月隔离——
+- 月失败重试 ≤3 次后标记 blocked（飞书提醒），跳到下月，不阻塞队列；
+- dysub 同步锁被占（当晚 21:00 定时同步或手动回填在跑）→ 本次直接退出，零干扰；
+- 时间预算内最多处理 N 个月，超预算留到明晚。
+
+队列文件：~/.local/share/dysub/backfill_queue.json
+{
+  "creator": "jianghushuo",
+  "months": ["2021-01", ...],       // 待回填月，升序
+  "done": {"2021-01": "2026-11-10T21:31:00"},
+  "attempts": {"2021-02": 1},
+  "blocked": {"2021-03": "原因"}
+}
+
+用法：
+    dysub-backfill                 # 常规 launchd 运行
+    dysub-backfill --init 2021-01:2023-12   # 生成队列（首次）
+    dysub-backfill --status        # 查看进度
+    dysub-backfill --dry-run       # 只显示将跑的月份
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+HOME = Path.home()
+DYSUB = HOME / ".local" / "douyin-subscription" / "bin" / "dysub"
+DATA_ROOT = HOME / ".local" / "share" / "dysub"
+LOCK_FILE = DATA_ROOT / ".sync.lock"
+QUEUE_FILE = DATA_ROOT / "backfill_queue.json"
+LOG_FILE = DATA_ROOT / "logs" / "backfill.log"
+
+MONTHS_PER_RUN = int(os.environ.get("DYSUB_BACKFILL_MONTHS", "1"))
+TIME_BUDGET_MIN = int(os.environ.get("DYSUB_BACKFILL_BUDGET_MIN", "180"))
+MONTH_TIMEOUT_MIN = int(os.environ.get("DYSUB_BACKFILL_MONTH_TIMEOUT", "150"))
+MAX_ATTEMPTS = 3
+
+
+def log(msg: str) -> None:
+    line = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {msg}"
+    print(line, flush=True)
+    try:
+        LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with LOG_FILE.open("a", encoding="utf-8") as f:
+            f.write(line + "\n")
+    except OSError:
+        pass
+
+
+def notify(msg: str) -> None:
+    try:
+        sys.path.insert(0, str(HOME / ".local" / "douyin-subscription"))
+        from dysub import browser
+        browser.feishu_notify(msg)
+    except Exception:
+        pass
+
+
+def lock_busy() -> bool:
+    if not LOCK_FILE.exists():
+        return False
+    try:
+        pid = int(LOCK_FILE.read_text().strip() or 0)
+        os.kill(pid, 0)
+        return True
+    except (ValueError, ProcessLookupError, PermissionError, OSError):
+        return False
+
+
+def month_range(a: str, b: str) -> list[str]:
+    out = []
+    y, m = map(int, a.split("-"))
+    ey, em = map(int, b.split("-"))
+    while (y, m) <= (ey, em):
+        out.append(f"{y:04d}-{m:02d}")
+        m += 1
+        if m > 12:
+            y, m = y + 1, 1
+    return out
+
+
+def load_queue() -> dict:
+    if not QUEUE_FILE.exists():
+        sys.exit(f"队列不存在：{QUEUE_FILE}（先 --init A:B 生成）")
+    return json.loads(QUEUE_FILE.read_text(encoding="utf-8"))
+
+
+def save_queue(q: dict) -> None:
+    tmp = QUEUE_FILE.with_suffix(".tmp")
+    tmp.write_text(json.dumps(q, ensure_ascii=False, indent=1), encoding="utf-8")
+    os.replace(tmp, QUEUE_FILE)
+
+
+def sync_month(creator: str, month: str) -> int:
+    """跑单月同步，返回 dysub 退出码。"""
+    cmd = [str(DYSUB), "sync", creator, "--month", month, "--no-notify"]
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True,
+                              timeout=MONTH_TIMEOUT_MIN * 60)
+        tail = ((proc.stdout or "") + (proc.stderr or "")).strip().splitlines()
+        for line in tail[-6:]:
+            log(f"  | {line[:160]}")
+        return proc.returncode
+    except subprocess.TimeoutExpired:
+        log(f"  | 月超时（{MONTH_TIMEOUT_MIN}min）")
+        return 124
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description="逐月历史回填驱动器")
+    ap.add_argument("--init", metavar="A:B", help="生成队列月份范围，如 2021-01:2023-12")
+    ap.add_argument("--creator", default="jianghushuo")
+    ap.add_argument("--status", action="store_true")
+    ap.add_argument("--dry-run", action="store_true")
+    args = ap.parse_args()
+
+    if args.init:
+        a, b = args.init.split(":")
+        q = {"creator": args.creator, "months": month_range(a, b),
+             "done": {}, "attempts": {}, "blocked": {}}
+        save_queue(q)
+        log(f"队列生成：{args.creator} {a}→{b} 共 {len(q['months'])} 月")
+        return 0
+
+    q = load_queue()
+    done, attempts, blocked = q.get("done", {}), q.get("attempts", {}), q.get("blocked", {})
+    pending = [m for m in q["months"] if m not in done and m not in blocked]
+
+    if args.status:
+        print(json.dumps({"creator": q["creator"], "total": len(q["months"]),
+                          "done": len(done), "blocked": len(blocked),
+                          "pending": len(pending), "next": pending[:3]}, ensure_ascii=False))
+        return 0
+
+    if not pending:
+        log("队列已全部完成，无事可做")
+        return 0
+    if lock_busy():
+        log("dysub 同步锁被占（定时同步或手动回填进行中），本次退出")
+        return 0
+
+    budget = TIME_BUDGET_MIN * 60
+    started = time.time()
+    ran = 0
+    for month in pending:
+        if ran >= MONTHS_PER_RUN or time.time() - started > budget:
+            break
+        if args.dry_run:
+            log(f"[dry] 将跑 {month}")
+            ran += 1
+            continue
+        log(f"== 回填 {month} 开始 ==")
+        code = sync_month(q["creator"], month)
+        attempts[month] = attempts.get(month, 0) + 1
+        if code == 0:
+            done[month] = time.strftime("%Y-%m-%dT%H:%M:%S")
+            attempts.pop(month, None)
+            log(f"== {month} 完成（{len(done)}/{len(q['months'])}）==")
+        elif attempts[month] >= MAX_ATTEMPTS:
+            blocked[month] = f"连续 {MAX_ATTEMPTS} 次失败（exit {code}）"
+            notify(f"dysub 回填：{q['creator']} {month} 连续失败已跳过（{blocked[month]}），"
+                   f"队列继续。进度 {len(done)}/{len(q['months'])}。")
+            log(f"== {month} 标记 blocked ==")
+        else:
+            log(f"== {month} 失败 exit={code}（第 {attempts[month]} 次），明晚重试 ==")
+        save_queue(q)
+        ran += 1
+
+    log(f"本轮结束：跑 {ran} 月，累计完成 {len(done)}/{len(q['months'])}，"
+        f"blocked {len(blocked)}，剩余 {len(pending)}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
