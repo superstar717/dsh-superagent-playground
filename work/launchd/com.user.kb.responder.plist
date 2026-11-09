@@ -18,7 +18,7 @@
     <string>/Users/huweixing/姜胡说/scripts/kb-responder.py</string>
   </array>
   <key>StandardOutPath</key>
-  <string>/Users/huweixing/姜胡说/logs/kb-responder.log</string>
+  <string>/Users/huweixing/姜胡说/logs/kb-responder-launchd.out</string>
   <key>StandardErrorPath</key>
   <string>/Users/huweixing/姜胡说/logs/kb-responder.err</string>
 </dict>

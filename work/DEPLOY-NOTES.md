@@ -89,5 +89,27 @@ lark-cli 通道；CLI 无法截图飞书客户端，无聊天界面截图。
 - 双回答风险：@机器人问句现在有两条应答路径（本 responder 快速图谱回答 + DSH 工单流的
   慢速回答）。已用问句形态+工单动词排除+线程内已回复检测收敛；实测若仍有噪音，
   可在 kb-responder.py 的 WORK_RE/QUESTION_START_RE 调词，或加显式触发词（如"问图谱"）。
-- 当前洞见推送（11-07 起）疑似因 MiniMax 余额问题未发出（群内只见 11-06 一条），
-  洞见闭环依赖推送恢复，属另一问题未在本工单处理。
+
+## 追加（2026-11-10 01:5x）：每日三洞见推送断供诊断与修复（用户指正后更正）
+
+**此前"11-07 起疑似因 MiniMax 余额没推送"的说法是错的**，实测时间线：
+- 11-06 / 11-07 推送均成功（日志 SENT feishu ✓）；
+- 11-08 失败＝飞书 API 网络故障（EOF），11-09 失败＝DNS 解析失败（accounts.feishu.cn
+  no such host）——与 LLM 无关；
+- 真缺陷：脚本归档先行、发送失败仅本地通知，而同日防重直接 SKIP → 当天推送**永久丢失**；
+- MiniMax 402 是 11-06 修复前的旧日志：引擎 GLM 切换当时已落在 keys.env
+  （`kb status`：key from keys.env / KB_PARA_LLM_API_KEY）。
+
+**修复**：
+- kb-daily-three.py 增加 .msg 旁车 + .sent 标记重试机制：发送失败后每次运行自动补发
+  （旁车缺失则发归档全文），超 7 天放弃；同日防重改为「已生成且已推送」才跳过。
+- 11-09 丢失期已人工补推成功，responder 已注册（采纳闭环对该期生效）。
+- responder 初始化回看改为翻页（--page-all，最多 10 页）——此前单页 50 条漏注册 11-07 推送；
+  launchd stdout/stderr 分流，消除日志双行。
+- **LLM 升级（用户指示）**：kb_para 三元组切至 GLM 5.3 —— KB_PARA_LLM_MODEL
+  glm-4.6 → **glm-5.3-flash**，key 直接取 DSH 侧 cc-switch（127.0.0.1:15721 代理）当前
+  provider（Bigmodel, open.bigmodel.cn/api/anthropic）的 ANTHROPIC_AUTH_TOKEN 写入
+  keys.env（备份 keys.env.bak-glm53-20261110）。干净环境（launchd 同款）活体验证：
+  配置链 glm-5.3-flash + keys.env key，chat 返回正常 JSON。
+  注意：worker 会话继承的旧 env 里 KB_PARA_LLM_MODEL=glm-4.6 仍会覆盖 keys.env，
+  仅影响 DSH 会话内直接调 kb（launchd 定时任务与 responder 不受影响，走 keys.env）。

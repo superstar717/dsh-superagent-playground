@@ -444,7 +444,9 @@ def poll_once(dry: bool, st: dict) -> None:
         "im", "+chat-messages-list", "--chat-id", CHAT_ID,
         "--start", iso(lookback), "--end", iso(end),
         "--order", "asc", "--no-reactions", "--format", "ndjson",
-    ], timeout=90)
+        # 初始化回看翻页（busy 群 7 天远超单页 50 条，漏页会漏注册推送）
+        "--page-all", "--page-limit", "10",
+    ], timeout=180)
     for msg in tops:
         mid = msg.get("message_id")
         if not mid or mid in seen:
