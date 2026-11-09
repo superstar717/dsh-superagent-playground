@@ -1,0 +1,22 @@
+{
+  "name": "@local/answer-consistency-gate",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "同题作答一致性门禁：比对性问题作答前强制检索存量结论（AGENTS.md 第十一节 / LESSONS E104）",
+  "exports": {
+    ".": "./index.js",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "icon.svg",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

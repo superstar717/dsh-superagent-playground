@@ -113,3 +113,21 @@ lark-cli 通道；CLI 无法截图飞书客户端，无聊天界面截图。
   配置链 glm-5.3-flash + keys.env key，chat 返回正常 JSON。
   注意：worker 会话继承的旧 env 里 KB_PARA_LLM_MODEL=glm-4.6 仍会覆盖 keys.env，
   仅影响 DSH 会话内直接调 kb（launchd 定时任务与 responder 不受影响，走 keys.env）。
+
+## 追加（2026-11-10 02:5x）：同题作答一致性插件化（用户拍板"应该做成插件"）
+
+背景：第十一节注入式规则（AGENTS.md）+ LESSONS E104 落位后，用户要求升级为插件级机制。
+
+- **新插件** `~/.dsh/plugins/answer-consistency-gate/`（git 2e0a18e，tag v0.1.0）：
+  `answer_preflight` 工具——比对性问题（「X是不是Y/什么关系/为什么两次回答不同」）作答前
+  检索存量结论（LESSONS + ~/src/*/work/{DEPLOY-NOTES,项目复盘} + 可选 dirs，grep OR 语义，
+  args 直传防注入）。工具描述即常驻规则（每轮进模型上下文），把第十一节三条规则钉在入口。
+- **为什么不用 guard**：纯文本回答没有可拦截的工具执行面；E44 已证 hooks 桥接不可靠，
+  进程内 ctx.tools.* 是唯一可靠面（官方架构文档与生产样例双确认）。
+- **契约双源核实**：ToolSchema{name,description,parameters} = packages/llm/llm/lib/types/types.d.ts:472；
+  output/execute/apply(disposer) 形状对照生产样例 stat-research-gate v2.10.1。
+- **装配**：profile node_modules/@local symlink + package.json dependency(link:) + dsh.profile.bundles
+  追加；`dsh --profile superagent --dump-config` 确认服务插入装配树（3 处命中）。
+- **e2e（组件级）**：node 实例化 apply() → 工具注册 ✓；真实检索（keywords 第二大脑/姜胡说）
+  10 文件 21 命中 44ms ✓，summary 措辞符合规则。**会话级 e2e（模型真调用）在下一个新会话
+  自然发生**——本会话早于插件装载，无法自证；已按 E44 标准注明。
