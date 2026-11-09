@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.dysub.graphfeed</string>
+  <key>Comment</key>
+  <string>dysub 每晚补喂：asr_dir 未喂图 txt 排队上传 GraphMind（错峰在 21:00 同步之后）</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-c</string>
+    <string>~/.local/douyin-subscription/bin/dysub feed-graph ms4wljabaaaaazb6 --max 20; sleep 120; ~/.local/douyin-subscription/bin/dysub feed-graph jianghushuo --max 10</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>21</integer>
+    <key>Minute</key>
+    <integer>40</integer>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>/Users/huweixing/.local/share/dysub/logs/graphfeed-launchd.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/huweixing/.local/share/dysub/logs/graphfeed-launchd.log</string>
+</dict>
+</plist>

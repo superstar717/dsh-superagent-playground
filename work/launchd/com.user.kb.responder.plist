@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.user.kb.responder</string>
+  <key>Comment</key>
+  <string>kb-responder：飞书群图谱问答 + 洞见采纳闭环（轮询旁挂，不订阅事件总线）</string>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>30</integer>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python3</string>
+    <string>/Users/huweixing/姜胡说/scripts/kb-responder.py</string>
+  </array>
+  <key>StandardOutPath</key>
+  <string>/Users/huweixing/姜胡说/logs/kb-responder.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/huweixing/姜胡说/logs/kb-responder.err</string>
+</dict>
+</plist>
