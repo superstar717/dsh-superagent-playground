@@ -1,0 +1,140 @@
+diff --git a/docs/007-architecture.md b/docs/007-architecture.md
+index 184ea54..951e5fe 100644
+--- a/docs/007-architecture.md
++++ b/docs/007-architecture.md
+@@ -591,7 +591,7 @@ These messages are steered into the main Session's turn:
+ 
+ Other notices are injected without waking the main Session: `ticket_ended`, `settings_saved`, prompt saves, Trigger requeues, dropped Subscriptions and context follows. A settings notice names the block, changed paths and `read: settings/<block>`. The main Session receives no redundant notice for a save, requeue, unsubscribe or attach it performed itself.
+ 
+-Workers receive assignments and Inputs inline. The first message includes the title, up to 1,500 characters of assignment text and the source Trigger card. Inputs carry a Trigger card with up to 600 characters and `replies_to`, or plain Input text. Read pointers appear only for truncated content.
++Workers receive assignments inline, and Inputs queued at a turn boundary: an Input that arrives while the worker's turn runs waits in its inbox for the next turn, so a delivered message never preempts work in progress, and an idle worker starts a turn with it at once. The first message includes the title, up to 1,500 characters of assignment text and the source Trigger card. Inputs carry a Trigger card with up to 600 characters and `replies_to`, or plain Input text. Read pointers appear only for truncated content.
+ 
+ ### Panel-only actions
+ 
+diff --git a/prompts/dispatch.md b/prompts/dispatch.md
+index 5e02ffd..699a3b4 100644
+--- a/prompts/dispatch.md
++++ b/prompts/dispatch.md
+@@ -5,6 +5,7 @@ Config or access changes invalidate in-flight assessments; the host re-queues th
+ Explicit requests from allowed senders arrive as candidates with strength=explicit.
+ Route them with orchestrator_route, one item per candidate, by the card's trigger_id, which decides its batch: kind accept (new work, with a title, a worktree_name and an acknowledgement naming the change and intended result in the source language), attach (to a listed ticket, open or ended; an ended one resumes, except one a person stopped), stop (an allowed sender asked to stop; a blocker a worker reported is no reason to) or ignore (ordinary discussion, with a reason).
+ Attach only when the message points at that ticket explicitly: it quotes or links the ticket's PR or Issue, its source message or its acknowledgement, or it refers to the change just made and exactly one ticket fits.
++A question about a ticket's progress may attach to that ticket, but a message that opens new work on the same subject, such as redoing, extending or re-testing what a ticket does, is a new request: accept it instead of attaching, even when exactly one ticket fits.
+ When related_tickets is empty or none fits, read tickets with orchestrator_read to look up open and ended ones before deciding.
+ A message on a similar subject is a new request: accept or ignore it, never attach it.
+ A duplicate ticket can be closed; a wrong attachment subscribes the ticket to the whole thread and stays.
+diff --git a/prompts/work.md b/prompts/work.md
+index b6f532c..7c769c3 100644
+--- a/prompts/work.md
++++ b/prompts/work.md
+@@ -7,6 +7,7 @@ If direction is unresolved or code inspection reveals changed behavior, public i
+ 
+ A thread attached to this ticket after it started may turn out not to be about it: read its original messages first, and if it is unrelated, call orchestrator_thread_unrelated with the thread key and a one-sentence reason; do not acknowledge it or reply there.
+ Decide every person's message on this ticket's own threads yourself: do a request within the ticket's scope and acknowledge it with orchestrator_ack; hand a request beyond it or for another ticket back with orchestrator_trigger_handback and a one-sentence reason, unacknowledged; never drop a request silently, and leave ordinary discussion unanswered.
++Inputs are queued behind a running turn and reach you at a turn boundary, never mid-task: finish and report the running task before taking up what arrived; only a person typing in your Session can redirect you mid-task.
+ Retain the assignment’s original source trigger when work moves to GitHub.
+ Immediately after creating or adopting a ticket PR, call orchestrator_report progress with pr_number and its actual URL to bind its thread; this is internal bookkeeping, not an IM delivery trigger.
+ Continue checks and review silently until ready.
+diff --git a/src/executor/dsh.ts b/src/executor/dsh.ts
+index 26234f3..3b46874 100644
+--- a/src/executor/dsh.ts
++++ b/src/executor/dsh.ts
+@@ -264,7 +264,7 @@ export class DshExecutor implements Executor {
+   start(ticket: Ticket, assignment: Assignment): void {
+     this.host.effects.enqueue('launch', assignment.id, { ticketId: ticket.id, assignmentId: assignment.id })
+   }
+-  /** Enqueues a `delivery` effect to steer pending inputs into `ticket`'s running worker session. */
++  /** Enqueues a `delivery` effect to deliver pending inputs to `ticket`'s worker session. */
+   deliver(ticket: Ticket, _assignment: Assignment): void { this.host.effects.enqueue('delivery', ticket.id, { ticketId: ticket.id }) }
+   /** Launches a queued assignment unless its ticket ended or a newer assignment replaced it meanwhile. */
+   private async launchQueued({ ticketId, assignmentId }: { ticketId: string; assignmentId: string }): Promise<void> {
+@@ -339,7 +339,9 @@ export class DshExecutor implements Executor {
+     const message = inputMessage(input, trigger)
+     if (message === undefined) return
+     const text = message.length > ASSIGNMENT_CHARS ? JSON.stringify(capped(message, ASSIGNMENT_CHARS, inputResource(ticket.id, input.id))) : message
+-    await this.host.sessions.prompt(workerSessionId(ticket.id), input.id, text, 'steer', live)
++    // Queued, never steered: an input that arrives while the worker's turn runs waits in its inbox for the next turn, so a
++    // delivered message cannot preempt the work in progress; an idle worker starts a turn with it at once (see dsh-agent's `followup`).
++    await this.host.sessions.prompt(workerSessionId(ticket.id), input.id, text, 'queue', live)
+   }
+   /** Formats a trigger on `ticket` for the worker, including a preview of the replied-to message when the worker has not yet seen it. */
+   private async triggerCard(ticket: Ticket, triggerId: string, note?: string): Promise<object | undefined> {
+diff --git a/tests/fixtures/host.ts b/tests/fixtures/host.ts
+index 70ace2e..ed5db5a 100644
+--- a/tests/fixtures/host.ts
++++ b/tests/fixtures/host.ts
+@@ -162,7 +162,7 @@ export async function startRuntime(seed?: (store: Store) => void) {
+   }) }
+   const agents = new Map<string, FakeAgent>()
+   /** Each Session's next step, which takes the messages that wait for one. */
+-  const steps = new Map<string, () => void>(), claims = new Map<string, () => void>()
++  const steps = new Map<string, () => void>(), claims = new Map<string, () => void>(), starts = new Map<string, () => void>()
+   const tools = new Map<string, Map<string, RegisteredTool>>()
+   const deliveries = vi.fn<(request: Delivery) => void>()
+   let http!: HttpHandler
+@@ -199,6 +199,7 @@ export async function startRuntime(seed?: (store: Store) => void) {
+       }
+       steps.set(sessionId, () => { take(false) })
+       claims.set(sessionId, () => { take(false, true) })
++      starts.set(sessionId, () => { take(true) })
+       const deliver = (mode: 'queue' | 'steer') => vi.fn((message: UserMessage) => {
+         inbox[mode === 'queue' ? 'nextTurn' : 'nextStep'].push(message)
+         deliveries({ sessionId, mode, id: message.id, text: message.content.map(block => block.type === 'text' ? block.text : '').join('') })
+@@ -293,7 +294,9 @@ export async function startRuntime(seed?: (store: Store) => void) {
+   const step = (sessionId: string) => { steps.get(sessionId)!() }
+   /** A step of the worker claims what waits for it, and is cut off before the Session took it. */
+   const claim = (sessionId: string) => { claims.get(sessionId)!() }
++  /** The driver continues into the next turn its inbox queues, whose first step takes one queued message, as dsh-agent's kick does. */
++  const turnStart = (sessionId: string) => { starts.get(sessionId)!() }
+   return { runtime, ctx, directory, agents, tools, deliveries, relays, candidates, runTool, route, acceptedTicket, api, controller, subprocess, hooks, resolveDefault, stop,
+-    jobs, subagents, step, claim }
++    jobs, subagents, step, claim, turnStart }
+ }
+ export type Host = Awaited<ReturnType<typeof startRuntime>>
+diff --git a/tests/runtime-concurrency.spec.ts b/tests/runtime-concurrency.spec.ts
+index 1a7eac3..87a81b8 100644
+--- a/tests/runtime-concurrency.spec.ts
++++ b/tests/runtime-concurrency.spec.ts
+@@ -639,11 +639,11 @@ describe('what a worker read', () => {
+   }
+   /** Deliveries to a Session of a message with `text` fail until the returned function lets them through. */
+   function failing(sessionId: string, text: string) {
+-    const agent = h.agents.get(sessionId)!, steer = agent.steer.getMockImplementation()!
++    const agent = h.agents.get(sessionId)!, followup = agent.followup.getMockImplementation()!
+     let fail = true
+-    agent.steer.mockImplementation(message => {
++    agent.followup.mockImplementation(message => {
+       if (fail && message.content.some(block => block.type === 'text' && block.text.includes(text))) throw new Error('Session busy')
+-      steer(message)
++      followup(message)
+     })
+     return () => { fail = false }
+   }
+@@ -721,9 +721,11 @@ describe('what a worker read', () => {
+   })
+   it('counts a message that woke a ticket as read by a later dropped report once a step of its worker took it', async () => {
+     const { one, thanks } = await completed()
+-    // The resumed Assignment's message wakes the worker; its next step takes the note that it resumed and the message.
++    // The resumed Assignment's message wakes the worker and its turn takes the assignment; each continuing turn's first step
++    // takes one queued message: first the note that it resumed, then the message itself.
+     h.runtime.receive(thanks); await h.runtime.idle()
+-    h.step(one.sessionId)
++    h.turnStart(one.sessionId)
++    h.turnStart(one.sessionId)
+     await later()
+     await h.runTool(one.sessionId, 'orchestrator_report', { state: 'dropped', summary: 'Nothing to do' })
+     await h.runtime.pump(); await h.runtime.idle()
+@@ -736,9 +738,12 @@ describe('what a worker read', () => {
+     idle(one.sessionId)
+     await vi.waitFor(() => expect(latestAssignment(ticket())?.report?.state).toBe('waiting'))
+     pass()
+-    // The retry wakes the worker, whose first step takes the message.
++    // The retry wakes the worker, whose turn takes the note that it resumed; the driver continues into the turn the queued
++    // message waits for, whose first step takes it before the report.
+     await retried(async () => {
+       expect(h.agents.get(one.sessionId)!.status).toBe('running')
++      h.turnStart(one.sessionId)
++      await later()
+       vi.setSystemTime(Date.now() + 1000)
+       await h.runTool(one.sessionId, 'orchestrator_report', { state: 'dropped', summary: 'Nothing to do' })
+     })
