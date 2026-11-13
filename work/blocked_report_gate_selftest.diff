@@ -1,0 +1,34 @@
+--- /tmp/blocked_report_gate_selftest.sh.orig	2026-11-13 13:51:33
++++ /Users/huweixing/.dsh/bin/blocked_report_gate_selftest.sh	2026-11-13 13:51:54
+@@ -1,16 +1,24 @@
+ #!/bin/bash
+-# 阻塞报告门禁自测：重启 DSH 宿主后跑一次，确认 hook 已生效（脚本级，不依赖宿主）。
++# 报告证据门禁自测（脚本级，不依赖宿主）：改脚本后必跑；宿主重启后再跑一次确认 hooks.json 仍指向本脚本。
+ GATE="$HOME/.dsh/bin/blocked_report_gate.sh"
+ pass=0; fail=0
+ run() { # name expected_exit payload
+   echo "$3" | bash "$GATE" >/dev/null 2>&1; got=$?
+   if [ "$got" = "$2" ]; then pass=$((pass+1)); else fail=$((fail+1)); echo "FAIL $1: expected $2 got $got"; fi
+ }
+-run deny-no-evidence 2 '{"tool_name":"orchestrator_report","tool_input":{"state":"blocked","summary":"卡住了","human_action":"帮我登录"}}'
+-run allow-marker 0 '{"tool_name":"orchestrator_report","tool_input":{"state":"blocked","summary":"排障证据：已查官方文档与 GitHub","human_action":"要 key"}}'
+-run allow-tokens 0 '{"tool_name":"orchestrator_report","tool_input":{"state":"blocked","summary":"查过官方文档与 GitHub 源码","human_action":"要 key"}}'
+-run allow-ready 0 '{"tool_name":"orchestrator_report","tool_input":{"state":"ready","summary":"done"}}'
+-run allow-no-ask 0 '{"tool_name":"orchestrator_report","tool_input":{"state":"blocked","summary":"内部记录"}}'
+-run allow-other 0 '{"tool_name":"Bash","tool_input":{"command":"ls"}}'
++# blocked + 要人决策：无证据拒绝 / 有证据放行
++run deny-blocked-no-evidence 2 '{"tool_name":"orchestrator_report","tool_input":{"state":"blocked","summary":"卡住了","human_action":"帮我登录"}}'
++run allow-blocked-marker 0 '{"tool_name":"orchestrator_report","tool_input":{"state":"blocked","summary":"排障证据：已查官方文档与 GitHub，重试 3 次仍失败","human_action":"要 key"}}'
++run allow-blocked-tokens 0 '{"tool_name":"orchestrator_report","tool_input":{"state":"blocked","summary":"查过官方文档与 GitHub 源码","human_action":"要 key"}}'
++# 任何 state 带 human_action 都受管（2026-11-13 扩展）
++run deny-ready-question-no-evidence 2 '{"tool_name":"orchestrator_report","tool_input":{"state":"ready","summary":"做完了，但想确认下一步","human_action":"要不要继续"}}'
++run deny-progress-question-no-evidence 2 '{"tool_name":"orchestrator_report","tool_input":{"state":"progress","summary":"进行中","human_action":"选哪个模型"}}'
++run allow-progress-question-evidence 0 '{"tool_name":"orchestrator_report","tool_input":{"state":"progress","summary":"排障证据：官方文档 + GitHub 都查过，两个免费方案均不可用","human_action":"请开通付费 key"}}'
++# 不带 human_action：内部记录/普通 ready 不拦
++run allow-ready-no-question 0 '{"tool_name":"orchestrator_report","tool_input":{"state":"ready","summary":"done"}}'
++run allow-blocked-no-question 0 '{"tool_name":"orchestrator_report","tool_input":{"state":"blocked","summary":"内部记录"}}'
++run allow-other-tool 0 '{"tool_name":"Bash","tool_input":{"command":"ls"}}'
++run allow-malformed 0 'not-json'
++run allow-empty 0 ''
+ echo "gate selftest: pass=$pass fail=$fail"
+ [ "$fail" = 0 ]
