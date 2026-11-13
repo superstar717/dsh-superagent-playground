@@ -17,7 +17,7 @@ This is by an automated agent, not a human.
 
 根因：① `Tickets.wake()` 以普通 `launch` 入队，普通 launch 上限 = `maxWorkers - 正在跑`；文档 003 已承诺「人的消息有保留槽位」，续单路径没走。② `end()` 已把未读消息释放给 Eval，但 `DshExecutor.stop()` 在 worker 自己结束 turn 时保留收件箱，释放消息仍起 turn，而工具已收回。
 
-### 改动（9 个文件，patch 261 行）
+### 改动（9 个文件，patch 261 行；宿主本地提交 `e573f68`，基于 `061d1c9`）
 
 1. `src/app/effects.ts` + `src/executor/dsh.ts`：新增 `resume` effect kind 与 `WorkerSlots.resumed()`；`Executor.start(ticket, assignment, resumed?)` 仅 `Tickets.wake()` 传 `true`，续单以 `'person'` 预留槽位启动（并发上限 +1），不再排队等普通槽位。
 2. `src/executor/dsh.ts`：`stop()` 在 `ticket.ended` 时移除该 ticket 各 Input 在 worker Session 收件箱里的待处理消息（它们已由 end 释放给 Eval），避免工具已收回的空转 turn。
