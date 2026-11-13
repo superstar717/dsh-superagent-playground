@@ -63,7 +63,11 @@ fi
 start=$(date +%s)
 ( HOME="$FAKE_HOME" PATH="$BIN:$PATH" GH_AUTH_DRY_RUN=1 GH_AUTH_DRY_HOLD=2 "$WRAP" refresh -s workflow ) >"$TMP/a.out" 2>"$TMP/a.err" &
 p1=$!
-sleep 0.3
+# 等第一位真正拿到锁再启动第二位，避免调度延迟把「并发」变成「串行无等待」
+for _i in $(seq 1 50); do
+  [ -d "$FAKE_HOME/.dsh/state/gh-auth.lock" ] && break
+  sleep 0.1
+done
 ( HOME="$FAKE_HOME" PATH="$BIN:$PATH" GH_AUTH_DRY_RUN=1 GH_AUTH_DRY_HOLD=2 "$WRAP" refresh -s workflow ) >"$TMP/b.out" 2>"$TMP/b.err" &
 p2=$!
 wait "$p1"; r1=$?

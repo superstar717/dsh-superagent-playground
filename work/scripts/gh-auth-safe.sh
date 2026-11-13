@@ -144,7 +144,7 @@ running_flows() {
 }
 
 wait_running_flows() {
-  local start now waited flows
+  local start now waited flows announced=0
   start="$(date +%s)"
   while :; do
     flows="$(running_flows)"
@@ -154,8 +154,11 @@ wait_running_flows() {
     if [ "$waited" -ge "$PROC_WAIT" ]; then
       die 75 "仍有其他 gh auth 流程在运行（不会杀它，GH_AUTH_PROC_WAIT=${PROC_WAIT}s）：${flows}"
     fi
-    if [ $((waited % 15)) -eq 0 ]; then
-      say "检测到已在运行的 gh auth 流程，等待其自然结束（不杀进程）…已等 ${waited}s"
+    if [ "$announced" = 0 ]; then
+      say "检测到已在运行的 gh auth 流程，等待其自然结束（不杀进程）…"
+      announced=1
+    elif [ $((waited % 15)) -eq 0 ]; then
+      say "继续等待在跑 gh auth 流程（不杀进程）…已等 ${waited}s"
     fi
     sleep 2
   done

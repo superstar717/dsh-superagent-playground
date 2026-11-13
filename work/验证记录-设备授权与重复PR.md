@@ -43,13 +43,18 @@ E-6/E-7 的临时仓库：`gh repo clone superstar717/dsh-superagent-playground 
 
 ## 3. 脚本级自测
 
+> 真实 e2e 还发现一个门禁误报：`pkill -f <无关模式>; pgrep -f gh-auth-safe_selftest` 被当成
+> 「pgrep gh auth + kill」拦截（`gh-auth-safe` 命中了 `gh[-_]auth` 正则）。已把 pgrep 分支收窄为
+> 只认 `gh` / `gh auth` / `gh.*auth`，并加 `allow-pgrep-own-selftest`、`allow-cleanup-combo` 两个用例。
+
+
 | 套件 | 覆盖 | 结果 |
 |---|---|---|
-| `gate_pretool_selftest.sh` | 直接/嵌套/sudo 包裹的 `gh auth login/refresh` 拦截；`pkill`/`killall`/`kill $(pgrep …)`/`pgrep \| xargs kill` 拦截；非 gh 目标放行；非法 payload fail-closed；工单目录缺 SCOPE 拦截/有 SCOPE 放行 | **18/18** |
+| `gate_pretool_selftest.sh` | 直接/嵌套/sudo 包裹的 `gh auth login/refresh` 拦截；`pkill`/`killall`/`kill $(pgrep …)`/`pgrep \| xargs kill` 拦截；非 gh 目标放行；`gh-auth-safe*` 自测/清理命令不被误判；非法 payload fail-closed；工单目录缺 SCOPE 拦截/有 SCOPE 放行 | **21/21** |
 | `gh-pr-overlap-precheck_selftest.sh` | 有重叠警告（#12 + 文件）；无重叠静默；`DSH_PR_OVERLAP_OK=1` 静默；非 git 目录静默；gh 失败静默；仅簿记文件重叠静默；日志落盘 | **7/7** |
 | `gh-auth-safe_selftest.sh` | scope 通过/缺少（rc=3）；两个 dry-run 并发串行（第 2 个等待、锁释放）；失效锁清理；等待在跑 gh auth 流（不杀）；status/doctor；日志 | **9/9** |
 
-仓库副本同样通过（CI 路径）：`SELFTEST_BIN=$PWD/work/scripts bash work/scripts/…` → 18/18、6/6、9/9。
+仓库副本同样通过（CI 路径）：`SELFTEST_BIN=$PWD/work/scripts bash work/scripts/…` → 21/21、7/7、9/9。
 CI 工作流：`.github/workflows/gh-auth-pr-gate-selftest.yml`（ubuntu-latest，fake gh，无需真实凭证）。
 
 ## 4. 手工补充验证

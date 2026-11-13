@@ -92,8 +92,9 @@ stderr，**在 PR 创建之前**就进入工具输出，比「创建后再提醒
 3. **P2 真实链路**：在含重叠文件的临时 clone（分支改动 `work/gate_pretool.v3.sh`，与 open PR #12
    同文件）执行 `gh pr create --help`，命令输出**先**出现警告（#12 / 文件），`DSH_PR_OVERLAP_OK=1`
    时不出现。
-4. **脚本级**：gate 18/18、precheck 7/7、wrapper 9/9（并发串行、失效锁、等待在跑流程、scope
-   通过/缺少、簿记文件过滤、日志）；用 `SELFTEST_BIN=work/scripts` 跑仓库副本同样通过（CI 路径）。
+4. **脚本级**：gate 21/21、precheck 7/7、wrapper 9/9（并发串行、失效锁、等待在跑流程、scope
+   通过/缺少、簿记文件过滤、`gh-auth-safe*` 不被误判为 gh auth、日志）；用 `SELFTEST_BIN=work/scripts`
+   跑仓库副本同样通过（CI 路径）。
 
 ## 7. 回滚
 

@@ -216,12 +216,10 @@ def kill_violation(segs) -> bool:
             if "pgrep" in joined and ("gh auth" in joined.lower() or GH_AUTH_RE.search(joined.lower())):
                 return True
         elif name == "pgrep":
+            # 只把「gh / gh auth / gh.*auth」当授权进程目标；不要把 gh-auth-safe*（本机制自身）
+            # 误判成 gh auth（否则清理/诊断命令会被误拦）
             low_args = [a.lower() for a in args]
-            if (
-                any(a in ("gh", "gh auth", "gh.*auth") for a in low_args)
-                or "gh auth" in joined.lower()
-                or GH_AUTH_RE.search(joined.lower())
-            ):
+            if any(a in ("gh", "gh auth", "gh.*auth") for a in low_args) or "gh auth" in joined.lower():
                 pgrep_hit = True
         elif name == "xargs":
             if any(a in ("kill", "killall", "pkill") for a in args):

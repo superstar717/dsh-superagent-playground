@@ -66,6 +66,9 @@ check deny-kill-pgrep             2 'kill $(pgrep -f "gh auth")' "/tmp"
 check deny-pgrep-xargs-kill       2 'pgrep -f "gh auth refresh" | xargs kill' "/tmp"
 check allow-kill-other-pid        0 "kill 999999" "/tmp"
 check allow-pgrep-other           0 "pgrep -f my-service" "/tmp"
+check allow-pgrep-own-selftest    0 "pgrep -f gh-auth-safe_selftest | xargs kill" "/tmp"
+check allow-cleanup-combo         0 "pkill -f 'for i in 1 2 3'; pgrep -f gh-auth-safe_selftest | xargs kill" "/tmp"
+check deny-pkill-auth-wrapper     2 'pkill -f "gh-auth-safe.sh"' "/tmp"
 
 # ---------- 原开工门禁：受管工单目录缺 SCOPE 拦截 / 有 SCOPE 放行 ----------
 FAKE_WT="$TMP/ticket"
