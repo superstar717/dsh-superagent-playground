@@ -75,10 +75,14 @@ $ ls -A /tmp/negative | wc -l    # 0
 - 字体白名单：把 Heiti SC QA 构建当交付件 → BLOCKED。
 - 白名单缺原因 → 判 gate 错误（fail-closed），不是静默放行。
 
-### 2.4 既有交付核验
+### 2.4 既有交付核验（含一次真实内容修订的发货）
 
-对 `~/project/F240ppt` 的 D 版跑 `--verify-only`：`VERIFIED`；lint 0 fail / 2 warn；
-cite 98 claims / 5 allowlisted / 0 blocking；manifest 写入交付目录。
+- 对 `~/project/F240ppt` 的 D 版跑 `--verify-only`：`VERIFIED`；lint 0 fail / 2 warn；
+  cite 98 claims / 5 allowlisted / 0 blocking；manifest 写入交付目录。
+- **真实二次发货（01:34，另一会话完成用户的内容修订后）**：同一门禁对修订版（多图，20.19 MB）
+  执行全链 → `SHIPPED`，2 文件（pptx + pdf）哈希与 manifest 记录一致，lint 0 fail / 2 warn，
+  字体仅微软雅黑，cite 98 claims / 5 allowlisted / 0 blocking，PDF 16 页 13.33×7.5in。
+  这是"机制不是摆设"的直接证据：内容变了，门禁照跑、manifest 照写。
 
 ## 3. 并发覆盖事故（如实记录）
 
