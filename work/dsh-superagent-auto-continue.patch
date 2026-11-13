@@ -1,0 +1,261 @@
+diff --git a/src/core/ports.ts b/src/core/ports.ts
+index 08c7a1c..492f87f 100644
+--- a/src/core/ports.ts
++++ b/src/core/ports.ts
+@@ -57,8 +57,11 @@ export interface Assessor {
+  * commands, so each method only queues work, which reports back through the Engine's callbacks.
+  */
+ export interface Executor {
+-  /** Queue a pending assignment for launch; reports back through `Engine.assignmentStarted` or a `failed` report. */
+-  start(ticket: Ticket, assignment: Assignment): void
++  /**
++   * Queue a pending assignment for launch; reports back through `Engine.assignmentStarted` or a `failed` report. `resumed` is
++   * set when a person's message resumed an ended Ticket: its Assignment starts in the slot kept for a person's message.
++   */
++  start(ticket: Ticket, assignment: Assignment, resumed?: boolean): void
+   /**
+    * Queue delivery of the ticket's waiting Inputs to its running assignment; reports back through `Engine.inputsDelivered`
+    * or `Engine.deliveryFailed`, and through `Engine.inputsRead` once its worker's Session takes them into a step.
+diff --git a/src/core/tickets.ts b/src/core/tickets.ts
+index 21376e1..46f17f4 100644
+--- a/src/core/tickets.ts
++++ b/src/core/tickets.ts
+@@ -245,9 +245,11 @@ export class Tickets extends EnginePart {
+   }
+   /**
+    * Resume an ended ticket under its unchanged Mandate when a person's message on one of its Threads waits for it: no Eval
+-   * and no Decision, since nothing new is authorized. One whose Mandate the current Policy no longer holds stays ended and
+-   * takes nothing (see `refuse`). While processing is paused the message waits, and the first pass after the pause resumes
+-   * the ticket under the Policy then. Reads the ticket afresh, so it is idempotent and leaves an already-resumed ticket alone.
++   * and no Decision, since nothing new is authorized. Its Assignment starts in the slot kept for a person's message, so the
++   * message continues the ticket at once, ahead of new launches. One whose Mandate the current Policy no longer holds stays
++   * ended and takes nothing (see `refuse`). While processing is paused the message waits, and the first pass after the pause
++   * resumes the ticket under the Policy then. Reads the ticket afresh, so it is idempotent and leaves an already-resumed
++   * ticket alone.
+    */
+   wake(ticketId: string): void {
+     const ticket = this.repo.tickets.get(ticketId)
+@@ -265,7 +267,7 @@ export class Tickets extends EnginePart {
+     const resumed: TicketInput = { id: key('input', ticket.id, 'resumed', first.triggerId), kind: 'resumed', triggerId: first.triggerId, at }
+     ticket.inputs.push(resumed); ticket.undelivered.unshift(resumed.id)
+     this.repo.tickets.save(ticket)
+-    this.options.executor.start(ticket, assignment)
++    this.options.executor.start(ticket, assignment, true)
+     this.emit('ticket.resumed', { ticketId, triggerId: first.triggerId })
+   }
+   /** The Triggers of a ticket's trigger Inputs, or of those of them whose Input ids are `ids`. */
+diff --git a/src/app/effects.ts b/src/app/effects.ts
+index 9255cda..c04b7dc 100644
+--- a/src/app/effects.ts
++++ b/src/app/effects.ts
+@@ -13,6 +13,11 @@ export interface EffectPayloads {
+   assessment: { triggerId: string }
+   /** Launch a pending Assignment; the key is the Assignment ID. */
+   launch: { ticketId: string; assignmentId: string }
++  /**
++   * Launch a pending Assignment a person's message resumed, in the slot kept for a person's message; the key is the
++   * Assignment ID. Its own kind lets that continuation start without waiting for a normal launch slot.
++   */
++  resume: { ticketId: string; assignmentId: string }
+   /** Hand a ticket's waiting Inputs to its running Assignment; the key is the Ticket ID. */
+   delivery: { ticketId: string }
+   /** Steer a report or a candidate into the main Session; the key is the request ID. */
+diff --git a/src/executor/dsh.ts b/src/executor/dsh.ts
+index 3b46874..515b68a 100644
+--- a/src/executor/dsh.ts
++++ b/src/executor/dsh.ts
+@@ -183,6 +183,11 @@ export class WorkerSlots {
+     const wakes = [...this.starting].flatMap(([ticketId, by]) => by !== 'launch' ? [ticketId] : [])
+     return this.max() - new Set([...this.running(), ...wakes]).size
+   }
++  /**
++   * How many resumed assignments may launch now: a person's message that resumed an ended ticket takes the slot kept beyond
++   * the limit, so it starts ahead of new launches even while every normal slot is held.
++   */
++  resumed(): number { return Math.max(0, this.max() + 1 - this.used()) }
+   /**
+    * Reserves a startup slot for `ticketId`; idempotent if `ticketId` already holds a starting slot.
+    * A wake for a person's message (`by === 'person'`) may use one extra slot beyond `max()`.
+@@ -224,13 +229,16 @@ export class DshExecutor implements Executor {
+   private readonly personal = new Map<string, string>()
+   /** The timers of workers that go on after a passing failure, which dispose clears. */
+   private readonly timers = new Set<ReturnType<typeof setTimeout>>()
+-  /** Registers the `launch` and `delivery` effect handlers; both are held (concurrency limit 0) while processing is paused. */
++  /** Registers the `launch`, `resume` and `delivery` effect handlers; all are held (concurrency limit 0) while processing is paused. */
+   constructor(private readonly host: ExecutorHost) {
+     this.slots = new WorkerSlots(() => host.store.tickets.open().filter(ticket => this.running(ticket)).map(ticket => ticket.id),
+       () => host.store.settings().executor.maxWorkers)
+     // Each launch reserves a worker slot so launches run concurrently while slots are free.
+     host.effects.handle('launch', payload => this.launchQueued(payload), { limit: () => host.paused() ? 0 : this.slots.launches(),
+       retry: [5000, 300_000] })
++    // A resumed assignment is a person's message continuing its ticket, so it may take the slot kept beyond the limit.
++    host.effects.handle('resume', payload => this.launchQueued(payload, 'person'), { limit: () => host.paused() ? 0 : this.slots.resumed(),
++      retry: [5000, 300_000] })
+     // Failed input deliveries are recorded on the ticket itself rather than reported through the `delivery` effect health entry (`quiet: true`).
+     host.effects.handle('delivery', payload => this.deliverQueued(payload.ticketId), { limit: () => host.paused() ? 0 : 4, quiet: true })
+   }
+@@ -260,18 +268,23 @@ export class DshExecutor implements Executor {
+     await mkdir(directory, { recursive: true })
+     await verifyDirectory(directory, this.host.context.subprocess, this.host.lifetime)
+   }
+-  /** Enqueues a `launch` effect for an accepted or resumed assignment; launches start in queue order as worker slots free up. */
+-  start(ticket: Ticket, assignment: Assignment): void {
+-    this.host.effects.enqueue('launch', assignment.id, { ticketId: ticket.id, assignmentId: assignment.id })
++  /**
++   * Enqueues a launch for an accepted assignment, or a `resume` for one a person's message resumed, which takes the slot kept
++   * for a person's message; launches start in queue order as worker slots free up.
++   */
++  start(ticket: Ticket, assignment: Assignment, resumed = false): void {
++    const payload = { ticketId: ticket.id, assignmentId: assignment.id }
++    if (resumed) this.host.effects.enqueue('resume', assignment.id, payload)
++    else this.host.effects.enqueue('launch', assignment.id, payload)
+   }
+   /** Enqueues a `delivery` effect to deliver pending inputs to `ticket`'s worker session. */
+   deliver(ticket: Ticket, _assignment: Assignment): void { this.host.effects.enqueue('delivery', ticket.id, { ticketId: ticket.id }) }
+   /** Launches a queued assignment unless its ticket ended or a newer assignment replaced it meanwhile. */
+-  private async launchQueued({ ticketId, assignmentId }: { ticketId: string; assignmentId: string }): Promise<void> {
++  private async launchQueued({ ticketId, assignmentId }: { ticketId: string; assignmentId: string }, by: 'launch' | 'person' = 'launch'): Promise<void> {
+     const ticket = this.host.store.tickets.get(ticketId)
+     const assignment = ticket && latestAssignment(ticket)
+     if (!ticket || !liveTicket(ticket) || assignment?.id !== assignmentId || assignment.state !== 'pending') return
+-    this.slots.reserve(ticketId, 'launch')
++    this.slots.reserve(ticketId, by)
+     try { await this.launch(ticket, assignment); this.transient.delete(`launch:${assignmentId}`) }
+     catch (error) {
+       // Shutdown or pause re-queues the launch for resume, and transient network/provider errors retry with backoff.
+@@ -354,7 +367,8 @@ export class DshExecutor implements Executor {
+   /**
+    * After the ending transaction commits (so a rollback leaves the worker working, and a launch the same transaction queued
+    * starts after it): ends the look at its background work, cancels its turn unless its last word was a `ready` or `dropped`
+-   * report with no Input delivered since, and stops its shell jobs and subagents, including jobs it left to a person.
++   * report with no Input delivered since, drops the messages a ticket that ended let go of, and stops its shell jobs and
++   * subagents, including jobs it left to a person.
+    */
+   stop(ticket: Ticket, assignment: Assignment, reason: string): void {
+     this.transient.delete(assignment.id); this.transient.delete(`launch:${assignment.id}`)
+@@ -365,6 +379,13 @@ export class DshExecutor implements Executor {
+     this.host.store.afterCommit(() => {
+       this.settling.get(ticket.id)?.abort()
+       if (!ownTurn) this.host.context.agents.get(sessionId as SessionId)?.cancel({ kind: 'user' }, { keepInbox: false })
++      // A ticket that ended takes no further message: the end queued what its worker never read for Eval, and a turn on a
++      // Session whose tools are withdrawn could only be cut off. Drop those messages so none starts such a turn, also when
++      // the worker ended its own turn and keeps its inbox for the report it is writing.
++      if (ticket.ended) {
++        const agent = this.host.context.agents.get(sessionId as SessionId)
++        if (agent) for (const input of ticket.inputs) agent.inbox.remove(this.host.sessions.promptedId(input.id))
++      }
+       // Its shell jobs and subagents stop with it, also those of a worker that ends its own turn.
+       this.stopWork(ticket.id, reason)
+       this.left.get(ticket.id)?.collect.abort(); this.left.delete(ticket.id); this.personal.delete(ticket.id)
+diff --git a/src/client/locales.ts b/src/client/locales.ts
+index d81d0d4..187c156 100644
+--- a/src/client/locales.ts
++++ b/src/client/locales.ts
+@@ -39,6 +39,7 @@ const TEXT = {
+   'health.models': ['模型服务', 'Model service'],
+   'health.assessment': ['发给主 Session 的评估', 'Evals sent to the main Session'],
+   'health.launch': ['派工启动', 'Assignment launches'],
++  'health.resume': ['续单启动', 'Resumed Assignment launches'],
+   'health.delivery': ['输入送达', 'Input delivery to Assignments'],
+   'health.relay': ['转达给主 Session 的消息', 'Relays to the main Session'],
+   'health.notice': ['给主 Session 的通知', 'Notices to the main Session'],
+diff --git a/tests/runtime-concurrency.spec.ts b/tests/runtime-concurrency.spec.ts
+index 87a81b8..04a8902 100644
+--- a/tests/runtime-concurrency.spec.ts
++++ b/tests/runtime-concurrency.spec.ts
+@@ -155,6 +155,38 @@ it('wakes an idle worker for a person\'s message at once, in the slot kept beyon
+   expect(h.agents.get(one.sessionId)!.status).toBe('running')
+ })
+ 
++it('launches a resumed assignment at once in the slot kept for a person\'s message', async () => {
++  const settings = h.runtime.store.settings()
++  h.runtime.store.saveSettings({ ...settings, executor: { ...settings.executor, maxWorkers: 1 } })
++  const one = await h.acceptedTicket(feishu('1', '@bot 修一'))
++  await h.runTool(one.sessionId, 'orchestrator_report', { state: 'ready', summary: 'Done' }); await h.runtime.idle()
++  idle(one.sessionId)
++  expect(h.runtime.store.tickets.get(one.ticket.id)!.ended).toBeDefined()
++  // Ticket two holds the only normal worker slot.
++  const two = await h.acceptedTicket(feishu('5', '@bot 修二'))
++  expect(h.agents.get(two.sessionId)!.status).toBe('running')
++  // A person's message on ticket one's thread resumes it at once in the slot kept beyond the limit, ahead of new launches.
++  h.runtime.receive(feishu('2', '@bot 继续', { root_id: 'om_1' })); await h.runtime.idle()
++  const resumed = h.runtime.store.tickets.get(one.ticket.id)!
++  expect(resumed.ended).toBeUndefined()
++  expect(resumed.assignments.at(-1)!.state).toBe('running')
++  expect(h.agents.get(one.sessionId)!.status).toBe('running')
++})
++
++it('takes the messages a ticket let go of out of its worker Session when it ends, so none starts a turn with its tools withdrawn', async () => {
++  const one = await h.acceptedTicket(feishu('1', '@bot 修一'))
++  const agent = h.agents.get(one.sessionId)!
++  // A bot's message on the ticket's thread waits in the running worker's inbox for a next turn.
++  h.runtime.receive(botMessage()); await h.runtime.idle()
++  const bot = h.deliveries.mock.calls.map(([call]) => call).filter(call => call.sessionId === one.sessionId).at(-1)!
++  expect(bot.text).toContain('CI 失败')
++  expect(agent.inbox.nextTurn.some(message => message.id === bot.id)).toBe(true)
++  // Its ready report ends the ticket: the message its worker never read goes to Eval, not to a worker whose tools are withdrawn.
++  await h.runTool(one.sessionId, 'orchestrator_report', { state: 'ready', summary: 'Done' }); await h.runtime.idle()
++  expect(h.runtime.store.tickets.get(one.ticket.id)!.ended).toBeDefined()
++  expect(agent.inbox.nextTurn.some(message => message.id === bot.id)).toBe(false)
++})
++
+ it('counts a launch under way against maxWorkers, so a bot\'s Input for an idle worker waits for the slot', async () => {
+   const settings = h.runtime.store.settings()
+   h.runtime.store.saveSettings({ ...settings, executor: { ...settings.executor, maxWorkers: 1, prepare: 'make worktree' } })
+diff --git a/tests/locales.spec.ts b/tests/locales.spec.ts
+index 8938581..a9afe56 100644
+--- a/tests/locales.spec.ts
++++ b/tests/locales.spec.ts
+@@ -27,7 +27,7 @@ it('words a reason by its code with its values, each of a batch, and words a per
+ it('names every health entry of dsh-superagent itself, which the overview shows when it fails', () => {
+   // Each entry by its writer: dsh-superagent, the model budget retries, every kind of the effect queue, Channel messages, the
+   // Executor and the unavailable Evals of the last hour.
+-  const entries = { runtime: 0, models: 0, reply: 0, worker: 0, assessment: 0, launch: 0, delivery: 0, relay: 0,
++  const entries = { runtime: 0, models: 0, reply: 0, worker: 0, assessment: 0, launch: 0, resume: 0, delivery: 0, relay: 0,
+     notice: 0, evals: 0 } satisfies Record<EffectKind | 'runtime' | 'models' | 'reply' | 'worker' | 'evals', 0>
+   expect(Object.keys(entries).filter(name => !(`health.${name}` in zh))).toEqual([])
+ })
+diff --git a/docs/003-execution.md b/docs/003-execution.md
+index 6cb33a8..1a57a2a 100644
+--- a/docs/003-execution.md
++++ b/docs/003-execution.md
+@@ -34,7 +34,7 @@ When a turn ends with shell jobs or subagents still running, the Ticket keeps it
+ 
+ After each turn, background work has at most 30 minutes to finish. At that limit, shell jobs are killed and the Ticket is reported waiting. The report includes the Executor's last words and which jobs were killed or subagents remain active. Subagents are allowed to continue. The Executor reads killed-job results on its next turn.
+ 
+-A handoff to a person frees the slot immediately and leaves the Report in effect. This applies after a `ready` Report or a question, unless another Input arrived since, and after any `blocked` or `failed` Report.
++A handoff to a person frees the slot immediately and leaves the Report in effect. This applies after a `ready` Report or a question, unless another Input arrived since, and after any `blocked` or `failed` Report. A Ticket that ends drops the messages it let go of from its worker Session's inbox: they go to Eval, and a turn on a Session whose tools the end withdrew could only be cut off.
+ 
+ At handoff, subagents stop. Shell jobs, such as a server offered for review, may continue until the Assignment ends. They hold no slot and are exempt from the 30-minute limit, including after later turns. Their completion does not wake the Executor; it reads the results on its next turn.
+ 
+@@ -56,7 +56,7 @@ A failed command fails the Ticket and records its output. A retry or a person's
+ 
+ A Ticket holds a worker slot from the start of a launch, including preparation, or from the delivery that wakes its idle Executor. It also holds the slot throughout an active turn.
+ 
+-The configured concurrency limit applies to these slots, with one extra slot for a person's message or a status request. Such a wake can use the extra slot when normal slots are full, and takes the next free slot before a new launch. New work therefore cannot prevent a person from continuing an existing Ticket.
++The configured concurrency limit applies to these slots, with one extra slot for a person's message or a status request. Such a wake can use the extra slot when normal slots are full, and takes the next free slot before a new launch. A person's message that resumes an ended Ticket also starts its new Assignment in that slot, so the continuation never waits behind a new launch. New work therefore cannot prevent a person from continuing an existing Ticket.
+ 
+ Other Inputs, such as CI results, wait for a normal slot. A launch waits in `working / queued` until a slot is free. Launches run concurrently, so a slow prepare command delays only its own Ticket.
+ 
+@@ -195,7 +195,7 @@ Stops dispatch, new Evals, Eval timeouts, Input delivery and replies; a launch a
+ 
+ Sources keep recording Triggers, and a running Executor turn is not interrupted.
+ 
+-A person's message to an ended Ticket waits: the first pass after the pause resumes the Ticket, if its Mandate holds under the Policy then.
++A person's message to an ended Ticket waits: the first pass after the pause resumes the Ticket in the slot kept for a person's message, if its Mandate holds under the Policy then.
+ 
+ An Eval in progress does not expire during a pause; its deadline moves later by the pause's length.
+ ### Invalid configuration
+diff --git a/docs/007-architecture.md b/docs/007-architecture.md
+index 951e5fe..6b582b4 100644
+--- a/docs/007-architecture.md
++++ b/docs/007-architecture.md
+@@ -100,7 +100,7 @@ The Engine keeps batching, authorization, fan-out, resume and attention lifecycl
+ - `settled`: a Decision resolved the request; stop, unavailable, routed and refused-stop Decisions do not count.
+ - `ticketStage` (`src/core/stage.ts`): implements the stage table in [003 Execution](003-execution.md).
+ 
+-When a Ticket ends, unread follow-ups return to Eval unless another Ticket still owns them or another disposition settled them. Acknowledged, answered and handed-back messages are excluded. For older records without acknowledgement dispositions, the outbox receipt supplies that fact. A final Report also covers messages waiting when the Assignment began, including the message that resumed it. The message that stopped a Ticket is not automatically re-evaluated.
++When a Ticket ends, unread follow-ups return to Eval unless another Ticket still owns them or another disposition settled them. Acknowledged, answered and handed-back messages are excluded. For older records without acknowledgement dispositions, the outbox receipt supplies that fact. A final Report also covers messages waiting when the Assignment began, including the message that resumed it. The message that stopped a Ticket is not automatically re-evaluated. The worker Session drops the messages the end let go of, so none starts a turn whose tools the end withdrew; a later message on the Ticket's Threads resumes it and starts a new Assignment in the slot kept for a person's message.
+ 
+ After a change, the Engine emits an event from `DomainEvents` in `src/core/ports.ts`:
+ 
