@@ -100,7 +100,19 @@ else
   fail=$((fail + 1)); echo "FAIL gh-failure-silent expected rc=0 + empty stderr"
 fi
 
-# 6) 日志有记录
+# 6) 仅簿记文件重叠（work/SCOPE.md 等每单必改）不告警
+( cd "$REPO" && git checkout -q -b bookkeeping origin/main && mkdir -p work && printf 'x\n' > work/SCOPE.md && git add work/SCOPE.md && git commit -qm bookkeeping && git checkout -q feature ) 2>/dev/null
+write_fake_gh '[{"number":14,"title":"另一工单","headRefName":"agent/other","files":[{"path":"work/SCOPE.md"}]}]'
+( cd "$REPO" && git checkout -q bookkeeping ) 2>/dev/null
+rc="$(run_precheck)"
+( cd "$REPO" && git checkout -q feature ) 2>/dev/null
+if [ "$rc" = 0 ] && [ ! -s "$TMP/err.txt" ]; then
+  pass=$((pass + 1)); echo "ok   bookkeeping-only-silent                     rc=$rc"
+else
+  fail=$((fail + 1)); echo "FAIL bookkeeping-only-silent expected rc=0 + empty stderr"; sed 's/^/     /' "$TMP/err.txt" | head -5
+fi
+
+# 7) 日志有记录
 if [ -f "$FAKE_HOME/.dsh/state/gh-pr-overlap.log" ] && [ -s "$FAKE_HOME/.dsh/state/gh-pr-overlap.log" ]; then
   pass=$((pass + 1)); echo "ok   log-written"
 else

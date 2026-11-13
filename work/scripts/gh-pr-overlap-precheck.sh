@@ -17,6 +17,7 @@ fi
 
 python3 - "$LOG" <<'PY'
 import json
+import re
 import subprocess
 import sys
 import time
@@ -63,8 +64,12 @@ if rc != 0:
     log(f"skip: git diff rc={rc}")
     sys.exit(0)
 changed = {line.strip() for line in out.splitlines() if line.strip()}
+# 每单必改的簿记文件（SCOPE/复盘/DEPLOY-NOTES/验证记录）不作为重复 PR 证据，避免每个工单 PR
+# 都因这些共享路径互报重叠（E133「README、AGENTS 等共享文件易误伤」的同类问题）。
+BOOKKEEPING_RE = re.compile(r"^work/(SCOPE\.md|项目复盘\.md|DEPLOY-NOTES\.md|验证记录-[^/]*\.md)$")
+changed = {f for f in changed if not BOOKKEEPING_RE.match(f)}
 if not changed:
-    log(f"ok: no changed files vs {base}")
+    log(f"ok: no non-bookkeeping changed files vs {base}")
     sys.exit(0)
 
 argv = ["gh", "pr", "list", "--state", "open", "--limit", "50", "--json", "number,title,headRefName,files"]

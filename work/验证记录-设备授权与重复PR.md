@@ -15,6 +15,7 @@
 | E-5 | `~/.dsh/bin/gh-auth-safe.sh verify -s workflow` | 放行且校验 | ✅ 放行；输出「授权校验通过：github.com scopes=gist, read:org, repo, workflow；要求包含： workflow」，rc=0 |
 | E-6 | 临时 clone（分支改 `work/gate_pretool.v3.sh`，与 open PR #12 同文件）内 `gh pr create --help` | 放行 + 创建前警告 | ✅ 警告先于 gh 输出：`重复 PR 预检（警告，不拦截）：分支 test/overlap 与 1 个 open PR 存在同文件重叠：#12 门禁覆盖 v2 … → work/gate_pretool.v3.sh` |
 | E-7 | `DSH_PR_OVERLAP_OK=1 gh pr create --help`（同仓库/分支） | 放行且无警告 | ✅ 无警告，gh 正常输出 |
+| E-8 | 本工单真实 `gh pr create`（PR #22） | 只对代码/CI 类文件告警，不对每单必改簿记文件告警 | ⚠️→✅ 首次告警把 #12–#18 全部列为与 `work/SCOPE.md` 重叠（每单都改该文件），属系统噪声；已加簿记文件过滤（SCOPE/复盘/DEPLOY-NOTES/验证记录），selftest 增 `bookkeeping-only-silent`（7/7），过滤后同类 PR 不再误报 |
 
 E-6/E-7 的临时仓库：`gh repo clone superstar717/dsh-superagent-playground /tmp/e2e-pr-repo -- --depth 30`，
 分支 `test/overlap` 只新增 `work/gate_pretool.v3.sh`（与 PR #12 的既有文件同路径），未推送、未创建 PR。
@@ -45,7 +46,7 @@ E-6/E-7 的临时仓库：`gh repo clone superstar717/dsh-superagent-playground 
 | 套件 | 覆盖 | 结果 |
 |---|---|---|
 | `gate_pretool_selftest.sh` | 直接/嵌套/sudo 包裹的 `gh auth login/refresh` 拦截；`pkill`/`killall`/`kill $(pgrep …)`/`pgrep \| xargs kill` 拦截；非 gh 目标放行；非法 payload fail-closed；工单目录缺 SCOPE 拦截/有 SCOPE 放行 | **18/18** |
-| `gh-pr-overlap-precheck_selftest.sh` | 有重叠警告（#12 + 文件）；无重叠静默；`DSH_PR_OVERLAP_OK=1` 静默；非 git 目录静默；gh 失败静默；日志落盘 | **6/6** |
+| `gh-pr-overlap-precheck_selftest.sh` | 有重叠警告（#12 + 文件）；无重叠静默；`DSH_PR_OVERLAP_OK=1` 静默；非 git 目录静默；gh 失败静默；仅簿记文件重叠静默；日志落盘 | **7/7** |
 | `gh-auth-safe_selftest.sh` | scope 通过/缺少（rc=3）；两个 dry-run 并发串行（第 2 个等待、锁释放）；失效锁清理；等待在跑 gh auth 流（不杀）；status/doctor；日志 | **9/9** |
 
 仓库副本同样通过（CI 路径）：`SELFTEST_BIN=$PWD/work/scripts bash work/scripts/…` → 18/18、6/6、9/9。

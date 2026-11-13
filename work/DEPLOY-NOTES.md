@@ -74,6 +74,8 @@ stderr，**在 PR 创建之前**就进入工具输出，比「创建后再提醒
 - `gh-agent` 只在参数出现 `pr create`（子命令序列）且 `DSH_PR_OVERLAP_OK≠1` 时调用预检；
   其余 gh 命令零开销。
 - 预检：本地仓库 → `origin/main|master|HEAD` 为 base → `git diff --name-only base...HEAD`；
+  每单必改的簿记文件（`work/SCOPE.md`、`work/项目复盘.md`、`work/DEPLOY-NOTES.md`、`work/验证记录-*.md`）
+  不作为重叠证据，避免每个工单 PR 都因这些共享路径互报（E133 同类误伤）；
   `gh pr list --state open --limit 50 --json number,title,headRefName,files`；同名分支跳过；
   交集非空即输出警告（最多 5 个 PR、每个 8 个文件），并写
   `~/.dsh/state/gh-pr-overlap.log`。**任何失败/超时都静默 exit 0**，绝不阻断 PR 创建。
@@ -90,8 +92,8 @@ stderr，**在 PR 创建之前**就进入工具输出，比「创建后再提醒
 3. **P2 真实链路**：在含重叠文件的临时 clone（分支改动 `work/gate_pretool.v3.sh`，与 open PR #12
    同文件）执行 `gh pr create --help`，命令输出**先**出现警告（#12 / 文件），`DSH_PR_OVERLAP_OK=1`
    时不出现。
-4. **脚本级**：gate 18/18、precheck 6/6、wrapper 9/9（并发串行、失效锁、等待在跑流程、scope
-   通过/缺少、日志）；用 `SELFTEST_BIN=work/scripts` 跑仓库副本同样通过（CI 路径）。
+4. **脚本级**：gate 18/18、precheck 7/7、wrapper 9/9（并发串行、失效锁、等待在跑流程、scope
+   通过/缺少、簿记文件过滤、日志）；用 `SELFTEST_BIN=work/scripts` 跑仓库副本同样通过（CI 路径）。
 
 ## 7. 回滚
 
