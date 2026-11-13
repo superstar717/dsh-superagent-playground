@@ -104,6 +104,20 @@ superagent 优先窗口内的兜底，并修复了这次误答的两个直接缺
     （`local` 模式，query 为主题问题）→ HTTP 200，24.2s，返回 899 字答案（列出 6+ 个框架/方法论）。
     证明 worker 侧的图谱查询方式可用。
 
+## 6.5 机制化（2026-11-13，用户问「是否需要机制化」后落地）
+
+不靠人盯，三层同源门禁：
+
+| 层 | 位置 | 作用 |
+| --- | --- | --- |
+| 回归自测 | `work/scripts/kb-responder-selftest.py`（线上 `~/姜胡说/scripts/` 同源） | 20 项无网络断言：URL 问号、工单动词、线程已有机器人回复（含回执在当前消息之后这一事故回归点）、优先窗口、时间解析 |
+| 重载门禁 | `~/姜胡说/scripts/kb-responder-reload.sh` | py_compile → 自测 → `launchctl kickstart -k`；**自测不过不重启** |
+| CI（待激活） | `work/ci/kb-responder-selftest.yml` | 改动 `work/scripts/kb-responder.py` / 自测文件的 PR 与 `agent/**` 推送跑同一份自测。当前 gh token 无 `workflow` scope，无法直接提交 `.github/workflows/`；有权限时复制该文件即生效 |
+
+实跑证据：`bash ~/姜胡说/scripts/kb-responder-reload.sh` → `ALL PASS` → 重启成功
+（启动日志 18:55:31，PID 76932）。规则已写入 `~/.dsh/AGENTS.md §十三`「机制」条：
+新增任何自动回答入口照此办理（判定有回归样例、声明主处理方+兜底+来源标记、接管检测扫整条线程）。
+
 ## 7. 限制与风险（如实）
 
 - **GraphMind 的 jianghushu 数据集当前临时不可查**：18:10 实测
