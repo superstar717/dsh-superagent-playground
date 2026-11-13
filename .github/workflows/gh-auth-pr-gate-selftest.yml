@@ -1,0 +1,33 @@
+name: gh-auth-pr-gate-selftest
+
+# 工单 ae3297f806b9（P1 设备授权安全锁 / P2 重复 PR 预检）回归门禁。
+# 只跑脚本级自测（fake gh + 临时 git 仓库），不需要真实 GitHub 凭证。
+on:
+  push:
+    paths:
+      - 'work/scripts/gh-auth-safe.sh'
+      - 'work/scripts/gh-auth-safe_selftest.sh'
+      - 'work/scripts/gate_pretool.sh'
+      - 'work/scripts/gate_pretool_selftest.sh'
+      - 'work/scripts/gh-pr-overlap-precheck.sh'
+      - 'work/scripts/gh-pr-overlap-precheck_selftest.sh'
+      - 'work/scripts/gh-agent'
+      - '.github/workflows/gh-auth-pr-gate-selftest.yml'
+  pull_request:
+    paths:
+      - 'work/scripts/**'
+      - '.github/workflows/gh-auth-pr-gate-selftest.yml'
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    env:
+      SELFTEST_BIN: ${{ github.workspace }}/work/scripts
+    steps:
+      - uses: actions/checkout@v4
+      - name: P1 gate (设备授权直接调用 / 杀 gh 进程拦截)
+        run: bash work/scripts/gate_pretool_selftest.sh
+      - name: P2 precheck (同文件重叠警告 / 豁免)
+        run: bash work/scripts/gh-pr-overlap-precheck_selftest.sh
+      - name: P1 wrapper (串行锁 / 等待在跑流程 / 验 scopes)
+        run: bash work/scripts/gh-auth-safe_selftest.sh
