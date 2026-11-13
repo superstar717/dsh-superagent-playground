@@ -1,0 +1,43 @@
+--- /tmp/blocked_report_gate.sh.orig	2026-11-13 13:51:33
++++ /Users/huweixing/.dsh/bin/blocked_report_gate.sh	2026-11-13 13:51:48
+@@ -1,10 +1,12 @@
+ #!/bin/bash
+-# blocked_report_gate.sh — 阻塞报告证据门禁（PreToolUse: orchestrator_report）
+-# 背景：2026-11-13 用户明确要求「查官方文档、查 GitHub 应是默认动作，不该由用户提醒」。
+-#       提醒不生效 → 升级为硬门禁（AGENTS 第八节 / LESSONS E114）。
+-# 规则：state 属于 blocked/failed 且带 human_action（向人要决策）时，summary/人类可见文本里必须出现：
++# blocked_report_gate.sh — 报告证据门禁（PreToolUse: orchestrator_report）
++# 背景：2026-11-13 用户拍板「遇到问题先自己想办法解决，我只看结果和方案」
++#       （AGENTS 第八节排障门禁 + 第十二节自我定位与结果导向；LESSONS E114 / E126）。
++# 规则：报告只要带 human_action（向人要决策/资源），summary 或 human_action 里必须出现：
+ #       ①「排障证据：」标记后跟 ≥6 字符，或
+ #       ②至少 2 个证据词：官方文档 / GitHub / gh search / 源码 / 检索 / docs
++# 边界：不看 state——progress/ready 时向人提问同样受管；blocked/failed 但不带
++#       human_action 的内部记录不拦（那不构成打扰）。
+ # 协议：stdin 收 DSH hook payload（{tool_name, tool_input, ...}）；exit 2 + stderr 理由 = 拒绝该工具调用。
+ # fail-open 于无法解析的 payload（宿主必发合法 JSON；解析失败说明环境异常，不应锁死报告通道）。
+ input=$(cat)
+@@ -29,8 +31,6 @@
+ args = payload.get("tool_input") or {}
+ if not isinstance(args, dict):
+     sys.exit(0)
+-if str(args.get("state") or "") not in ("blocked", "failed"):
+-    sys.exit(0)
+ if not str(args.get("human_action") or "").strip():
+     sys.exit(0)
+ 
+@@ -42,9 +42,11 @@
+     sys.exit(0)
+ 
+ msg = (
+-    "阻塞报告门禁：报 blocked/failed 并向人要决策前，必须写排障证据。\n"
+-    "请在 summary 里补一行：排障证据：已查 <官方文档/接口说明>；GitHub 搜索 <关键词>；试过 <方案>；排除 <原因>。\n"
+-    "依据：AGENTS 第八节（排障先查文档 + GitHub）/ LESSONS E114。"
++    "报告证据门禁：向人要决策/资源前，先证明自己已经想过办法。\n"
++    "请在 summary 里补一行：排障证据：已查 <官方文档/接口说明>；GitHub 搜索 <关键词>；"
++    "试过 <方案>；排除 <原因>；为何必须由人 <最小动作>。\n"
++    "若这是你自己能定的常规选项（工具/免费 provider/顺序/重试路径），先自己定并给结果，别抛给人。\n"
++    "依据：AGENTS 第八节（排障先查文档 + GitHub）与第十二节（独立解题、只交结果与方案）/ LESSONS E114、E126。"
+ )
+ print(msg, file=sys.stderr)
+ sys.exit(2)
