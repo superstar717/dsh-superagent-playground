@@ -9,6 +9,7 @@ on:
     paths:
       - 'work/scripts/kb-responder.py'
       - 'work/scripts/kb-responder-selftest.py'
+      - '.github/workflows/kb-responder-selftest.yml'
   push:
     branches:
       - 'agent/**'
@@ -16,6 +17,7 @@ on:
     paths:
       - 'work/scripts/kb-responder.py'
       - 'work/scripts/kb-responder-selftest.py'
+      - '.github/workflows/kb-responder-selftest.yml'
 
 jobs:
   selftest:

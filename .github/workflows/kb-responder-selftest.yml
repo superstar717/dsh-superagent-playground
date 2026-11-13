@@ -1,0 +1,31 @@
+name: kb-responder routing selftest
+
+# 路由回归门禁（2026-11-13，工单 c568a58a9d7e）：
+# 任何改动 work/scripts/kb-responder.py 或其自测的 PR / 分支推送，都跑同一份回归自测。
+# 事故背景：问句判定把 URL 查询串的 ? 当问号 + 线程守卫漏掉机器人回执，导致同一条消息被两个处理方各答一次。
+
+on:
+  pull_request:
+    paths:
+      - 'work/scripts/kb-responder.py'
+      - 'work/scripts/kb-responder-selftest.py'
+      - '.github/workflows/kb-responder-selftest.yml'
+  push:
+    branches:
+      - 'agent/**'
+      - 'main'
+    paths:
+      - 'work/scripts/kb-responder.py'
+      - 'work/scripts/kb-responder-selftest.py'
+      - '.github/workflows/kb-responder-selftest.yml'
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run routing regression selftest
+        run: python3 work/scripts/kb-responder-selftest.py
