@@ -61,18 +61,18 @@ fi
 
 # 3) 并发串行锁：两个 dry-run 应串行（第二个等待第一个），结果都 rc=0
 start=$(date +%s)
-( HOME="$FAKE_HOME" PATH="$BIN:$PATH" GH_AUTH_DRY_RUN=1 GH_AUTH_DRY_HOLD=1 "$WRAP" refresh -s workflow ) >"$TMP/a.out" 2>"$TMP/a.err" &
+( HOME="$FAKE_HOME" PATH="$BIN:$PATH" GH_AUTH_DRY_RUN=1 GH_AUTH_DRY_HOLD=2 "$WRAP" refresh -s workflow ) >"$TMP/a.out" 2>"$TMP/a.err" &
 p1=$!
 sleep 0.3
-( HOME="$FAKE_HOME" PATH="$BIN:$PATH" GH_AUTH_DRY_RUN=1 GH_AUTH_DRY_HOLD=1 "$WRAP" refresh -s workflow ) >"$TMP/b.out" 2>"$TMP/b.err" &
+( HOME="$FAKE_HOME" PATH="$BIN:$PATH" GH_AUTH_DRY_RUN=1 GH_AUTH_DRY_HOLD=2 "$WRAP" refresh -s workflow ) >"$TMP/b.out" 2>"$TMP/b.err" &
 p2=$!
 wait "$p1"; r1=$?
 wait "$p2"; r2=$?
 elapsed=$(( $(date +%s) - start ))
-if [ "$r1" = 0 ] && [ "$r2" = 0 ] && [ "$elapsed" -ge 2 ] && grep -q '串行等待' "$TMP/b.err"; then
+if [ "$r1" = 0 ] && [ "$r2" = 0 ] && [ "$elapsed" -ge 3 ] && { grep -q '串行等待' "$TMP/a.err" || grep -q '串行等待' "$TMP/b.err"; }; then
   pass=$((pass + 1)); echo "ok   lock-serializes                              rc=$r1/$r2 elapsed=${elapsed}s"
 else
-  fail=$((fail + 1)); echo "FAIL lock-serializes expected rc=0/0 elapsed>=2 + 串行等待, got rc=$r1/$r2 elapsed=${elapsed}s"
+  fail=$((fail + 1)); echo "FAIL lock-serializes expected rc=0/0 elapsed>=3 + 串行等待(任一), got rc=$r1/$r2 elapsed=${elapsed}s"
   sed 's/^/     /' "$TMP/b.err" | head -4
 fi
 if [ ! -d "$FAKE_HOME/.dsh/state/gh-auth.lock" ]; then
@@ -97,7 +97,11 @@ printf '#!/bin/bash\nsleep 2\n' >"$SLOWBIN/gh"
 chmod +x "$SLOWBIN/gh"
 "$SLOWBIN/gh" auth refresh >/dev/null 2>&1 &
 slowpid=$!
-sleep 0.3
+# 等 pgrep 真能看到这个假流程再启动 wrapper，避免调度慢导致误判
+for _i in $(seq 1 30); do
+  pgrep -f "$SLOWBIN/gh auth refresh" >/dev/null 2>&1 && break
+  sleep 0.1
+done
 start=$(date +%s)
 rc="$( ( HOME="$FAKE_HOME" PATH="$BIN:$PATH" GH_AUTH_DRY_RUN=1 "$WRAP" refresh -s workflow ) >"$TMP/out.txt" 2>"$TMP/err.txt"; echo $? )"
 elapsed=$(( $(date +%s) - start ))
