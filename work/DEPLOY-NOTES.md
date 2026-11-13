@@ -4,7 +4,7 @@
 结论：**已在一台正在运行的 superagent 宿主上落地并完成「该拦时真拦」e2e**；未重启宿主、未改
 `~/.dsh/hooks.json`。P1 全部规则在已加载的 `gate_pretool.sh`（PreToolUse(Bash)，脚本每次调用现读）
 里生效；P2 因 hook 子进程拿不到登录钥匙串，改在 `gh` 入口 `~/.local/bin/gh-agent`（同一命令环境）
-实现，警告随命令 stderr 在 PR 创建前可见。三条自测共 33 项通过，CI 工作流已随 PR 提供。
+实现，警告随命令 stderr 在 PR 创建前可见。三条自测共 37 项通过，CI 工作流已随 PR 提供。
 
 ---
 
