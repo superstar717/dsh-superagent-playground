@@ -1,0 +1,104 @@
+{
+  "schema_version": "0.1",
+  "generated_at": "2026-11-14T17:43:33",
+  "source": {
+    "path": "cuts4.mp4",
+    "filename": "cuts4.mp4",
+    "duration": 12.0,
+    "size_bytes": 15876,
+    "width": 640,
+    "height": 360,
+    "fps": 30.0,
+    "video_codec": "h264",
+    "audio_codec": null
+  },
+  "detect": {
+    "engine": "scenedetect",
+    "threshold": 27.0,
+    "note": "PySceneDetect ContentDetector(threshold=27.0)",
+    "hard_cuts": 3,
+    "shots_elapsed": 1.99,
+    "visual_elapsed": 1.0
+  },
+  "shots": [
+    {
+      "start": 0.0,
+      "end": 3.0
+    },
+    {
+      "start": 3.0,
+      "end": 6.0
+    },
+    {
+      "start": 6.0,
+      "end": 9.0
+    },
+    {
+      "start": 9.0,
+      "end": 12.0
+    }
+  ],
+  "visual_changes": [],
+  "visual_mode": "shots",
+  "visual_stability": {
+    "median_shift_px": 179.0,
+    "median_score": 0.0,
+    "stable": false,
+    "reason": ""
+  },
+  "visual_segments": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "end": 3.0,
+      "duration": 3.0
+    },
+    {
+      "index": 1,
+      "start": 3.0,
+      "end": 6.0,
+      "duration": 3.0
+    },
+    {
+      "index": 2,
+      "start": 6.0,
+      "end": 9.0,
+      "duration": 3.0
+    },
+    {
+      "index": 3,
+      "start": 9.0,
+      "end": 12.0,
+      "duration": 3.0
+    }
+  ],
+  "keyframes": [
+    {
+      "segment": 0,
+      "time": 1.5,
+      "path": "keyframes/seg00_0001s.jpg"
+    },
+    {
+      "segment": 1,
+      "time": 4.5,
+      "path": "keyframes/seg01_0004s.jpg"
+    },
+    {
+      "segment": 2,
+      "time": 7.5,
+      "path": "keyframes/seg02_0007s.jpg"
+    },
+    {
+      "segment": 3,
+      "time": 10.5,
+      "path": "keyframes/seg03_0010s.jpg"
+    }
+  ],
+  "asr_meta": {
+    "engine": "skipped",
+    "elapsed": 0.0,
+    "note": "--no-asr"
+  },
+  "asr_segments": [],
+  "total_elapsed": 2.77
+}
