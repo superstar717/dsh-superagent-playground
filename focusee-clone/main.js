@@ -208,6 +208,10 @@ let controlWindow = null;
 // Set when the pill's own script ACKs after loading (its bridge is alive);
 // probed by the e2e recorder instead of injecting JS into the pill page.
 let pillBridgeReady = false;
+// Round camera-preview bubble window (its own page, like the pill). Harness
+// probes it the same event-driven way; null while the feature is absent.
+let previewWindow = null;
+let previewBridgeReady = false;
 
 function createMainWindow() {
   const win = new BrowserWindow({
@@ -661,6 +665,10 @@ function registerIpc() {
     // is alive. Event-based probe — no script injection into the pill.
     pillBridgeReady = true;
   });
+  ipcMain.on('control:previewReady', () => {
+    // Same ACK contract, from the camera-preview bubble page.
+    previewBridgeReady = true;
+  });
   ipcMain.on('control:pipResize', (_e, delta) => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('record:pipResize', { delta: Number(delta) || 0 });
@@ -716,6 +724,24 @@ function registerIpc() {
     setTimeout(() => app.quit(), 120);
     return true;
   });
+  // Window shots for before/after evidence of the pill/preview surfaces.
+  // capturePage of those windows' own webContents — no screen-recording
+  // permission involved, deterministic, and never writes inside the bundle.
+  const shotWindow = async (win, name) => {
+    try {
+      if (!win || win.isDestroyed() || !win.isVisible()) return null;
+      const img = await win.webContents.capturePage();
+      const dir = path.join(dataRoot(), 'artifacts');
+      await fsp.mkdir(dir, { recursive: true });
+      const file = path.join(dir, `${name}.png`);
+      await fsp.writeFile(file, img.toPNG());
+      return file;
+    } catch (err) {
+      return null;
+    }
+  };
+  ipcMain.handle('e2e:shotControl', (_e, name) => shotWindow(controlWindow, `control-${name}`));
+  ipcMain.handle('e2e:shotPreview', (_e, name) => shotWindow(previewWindow, `preview-${name}`));
 }
 
 // ---------------------------------------------------------------------------
@@ -802,92 +828,38 @@ async function runE2EOpenFirst(win) {
 // E2E recording scenario: drive the real record flow end to end without a
 // person (open dialog -> pick first screen -> skip countdown -> record 3s ->
 // stop from the pill path -> verify the project persists).
+//
+// --e2e-rec-two runs TWO consecutive takes against ONE app process — the
+// exact path behind the 2026-11-15 user report: the first take stops fine,
+// the second take's stop button does nothing. The pill window is REUSED
+// across takes, so only this harness can catch state that latches in it.
 // ---------------------------------------------------------------------------
 
 async function runE2ERecording(win) {
   const withCamera = process.argv.includes('--e2e-rec-cam');
+  const takeCount = process.argv.includes('--e2e-rec-two') ? 2 : 1;
   const wc = win.webContents;
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const evalJs = (code) => wc.executeJavaScript(code, true);
-  const report = { steps: [], withCamera };
-  const step = (name, ok, extra) => { report.steps.push({ name, ok, ...(extra ? { extra } : {}) }); console.log('[e2e-rec]', name, ok ? 'ok' : 'FAIL', extra || ''); };
+  const report = { steps: [], withCamera, takes: takeCount };
+  const step = (name, ok, extra) => {
+    report.steps.push({ name, ok, ...(extra !== undefined ? { extra } : {}) });
+    console.log('[e2e-rec]', name, ok ? 'ok' : 'FAIL', extra === undefined ? '' : String(extra));
+  };
+  const artifactDir = path.join(dataRoot(), 'artifacts');
   try {
     await wait(1500);
-    await evalJs(`document.querySelector('#btn-record').click()`);
-    if (withCamera) {
-      // Force the camera option on before the source grid check.
-      await evalJs(`document.querySelector('#opt-camera').checked = true`);
+    // Per-take baseline: the saved-project count BEFORE that take started.
+    let baseline = (await listProjects()).filter((p) => p.id !== 'sample').length;
+    for (let takeNo = 1; takeNo <= takeCount; takeNo += 1) {
+      const okTake = await runRecordingTake({ win, step, wait, evalJs, withCamera, takeNo, baseline, artifactDir });
+      if (!okTake) break;
+      baseline = (await listProjects()).filter((p) => p.id !== 'sample').length;
     }
-    await wait(1600);
-    const picked = await evalJs(`(async () => {
-      const card = document.querySelector('#source-grid .source-card[data-source^="screen"]');
-      if (!card) return null;
-      card.click();
-      await new Promise(r => setTimeout(r, 200));
-      return document.querySelector('#source-grid .source-card.active')?.dataset.source || null;
-    })()`);
-    step('pick-screen-source', !!picked, picked || 'no screen source card');
-    if (!picked) throw new Error('no screen source');
-    // Skip the countdown for determinism.
-    await evalJs(`document.querySelector('#opt-countdown').checked = false`);
-    await evalJs(`document.querySelector('#btn-start-record').click()`);
-    // Poll for the pill: first-time source init can take several seconds.
-    let pillState = null;
-    for (let i = 0; i < 40 && !pillState; i += 1) {
-      await wait(500);
-      if (controlWindow && !controlWindow.isDestroyed() && controlWindow.isVisible() && pillBridgeReady) {
-        const url = controlWindow.webContents.getURL();
-        if (/control\.html$/.test(url)) pillState = { pill: true, visible: true, url };
-      }
-      const toastText = await evalJs(`document.querySelector('#toast')?.classList.contains('hidden') ? null : document.querySelector('#toast')?.textContent`);
-      if (toastText && /失败|不可用/.test(toastText)) { step('record-error', false, toastText); break; }
-    }
-    if (!pillState) pillState = { pill: false };
-    const bridgeOk = pillState.pill ? pillBridgeReady : false;
-    step('control-pill-loaded', !!(pillState.pill && /control\.html$/.test(pillState.url || '') && bridgeOk), JSON.stringify({ ...pillState, bridgeOk }));
-    step('pill-bridge-alive', bridgeOk === true);
-    const mainHidden = mainWindow ? !mainWindow.isVisible() : true;
-    step('main-window-hidden-while-recording', mainHidden);
-    await wait(2500);
-    // Stop via the pill's own button path: signal it, its own handler runs
-    // the stop flow in its own context (never inject JS into the pill —
-    // that API natively crashed the app during teardown).
-    let bakeDebug = null;
-    try {
-      bakeDebug = await evalJs(`window.__bakeDebug || null`);
-    } catch {}
-    const stopped = await new Promise((resolve) => {
-      if (!controlWindow || controlWindow.isDestroyed()) return resolve('no-pill');
-      try {
-        controlWindow.webContents.send('control:stopSignal');
-        resolve('signalled');
-      } catch (e) {
-        resolve('send:' + e.message);
-      }
-    });
-    step('pill-stop-clicked', stopped === 'signalled', stopped);
-    if (bakeDebug) step('bake-debug', true, JSON.stringify(bakeDebug));
-    // The save runs in the background after the editor is unblocked — poll.
-    let rec = null;
-    let saveState = null;
-    for (let i = 0; i < 25 && !rec; i += 1) {
-      await wait(1000);
-      const projects = await listProjects();
-      rec = projects.find((p) => p.id !== 'sample') || null;
-      try {
-        saveState = await evalJs(`window.__saveState || null`);
-        const phase = await evalJs(`window.__stopPhase || null`);
-        if (phase) report.stopPhase = phase;
-        if (saveState && saveState.startsWith('failed')) break;
-      } catch {}
-    }
-    step('save-state', true, saveState || 'unknown');
-    step('project-saved', !!rec, rec ? `${rec.name} dur=${rec.duration?.toFixed?.(2)}` : 'none');
-    report.project = rec || null;
-    await wait(400);
-    const dir = path.join(dataRoot(), 'artifacts');
-    await fsp.mkdir(dir, { recursive: true });
-    await fsp.writeFile(path.join(dir, 'e2e-rec-report.json'), JSON.stringify(report, null, 2));
+    report.projects = (await listProjects()).filter((p) => p.id !== 'sample')
+      .map((p) => ({ name: p.name, duration: p.duration, hasCamera: !!p.id }));
+    await fsp.mkdir(artifactDir, { recursive: true });
+    await fsp.writeFile(path.join(artifactDir, 'e2e-rec-report.json'), JSON.stringify(report, null, 2));
     const allOk = report.steps.every((s) => s.ok);
     console.log('[e2e-rec] ALL_OK=' + allOk);
     if (isHold) {
@@ -897,12 +869,89 @@ async function runE2ERecording(win) {
     }
   } catch (err) {
     report.error = err.message;
-    const dir = path.join(dataRoot(), 'artifacts');
-    await fsp.mkdir(dir, { recursive: true });
-    await fsp.writeFile(path.join(dir, 'e2e-rec-report.json'), JSON.stringify(report, null, 2));
+    await fsp.mkdir(artifactDir, { recursive: true });
+    await fsp.writeFile(path.join(artifactDir, 'e2e-rec-report.json'), JSON.stringify(report, null, 2));
     console.error('[e2e-rec] error:', err.message);
     if (!isHold) app.exit(1);
   }
+}
+
+async function runRecordingTake({ win, step, wait, evalJs, withCamera, takeNo, baseline, artifactDir }) {
+  const tag = `take${takeNo}`;
+  // Fresh dialog state each take.
+  await evalJs(`document.querySelector('#btn-record').click()`);
+  await wait(1600);
+  if (withCamera) {
+    await evalJs(`document.querySelector('#opt-camera').checked = true`);
+  }
+  const picked = await evalJs(`(async () => {
+    const card = document.querySelector('#source-grid .source-card[data-source^="screen"]');
+    if (!card) return null;
+    card.click();
+    await new Promise(r => setTimeout(r, 200));
+    return document.querySelector('#source-grid .source-card.active')?.dataset.source || null;
+  })()`);
+  step(`${tag}:pick-screen-source`, !!picked, picked || 'no screen source card');
+  if (!picked) return false;
+  await evalJs(`document.querySelector('#opt-countdown').checked = false`);
+  await evalJs(`document.querySelector('#btn-start-record').click()`);
+  // Poll for the pill: first-time source init can take several seconds.
+  let pillUp = false;
+  for (let i = 0; i < 40 && !pillUp; i += 1) {
+    await wait(500);
+    pillUp = !!(controlWindow && !controlWindow.isDestroyed() && controlWindow.isVisible() && pillBridgeReady);
+    const toastText = await evalJs(`document.querySelector('#toast')?.classList.contains('hidden') ? null : document.querySelector('#toast')?.textContent`);
+    if (toastText && /失败|不可用/.test(toastText)) { step(`${tag}:record-error`, false, toastText); return false; }
+  }
+  step(`${tag}:control-pill-live`, pillUp, pillBridgeReady ? 'bridge-ack' : 'no-bridge-ack');
+  step(`${tag}:main-window-hidden`, win ? !win.isVisible() : true);
+  await evalJs(`window.focusee.e2e.shotControl('${tag}-pill')`);
+  // With camera: the round preview bubble must be its own live window.
+  if (withCamera) {
+    let previewUp = false;
+    for (let i = 0; i < 20 && !previewUp; i += 1) {
+      await wait(500);
+      previewUp = !!(previewWindow && !previewWindow.isDestroyed() && previewWindow.isVisible() && previewBridgeReady);
+    }
+    step(`${tag}:camera-preview-window-live`, previewUp, previewUp ? 'preview-ack' : 'no-preview-window');
+    if (previewUp) await evalJs(`window.focusee.e2e.shotPreview('${tag}-preview')`);
+    await evalJs(`window.focusee.e2e.shotControl('${tag}-pill')`);
+  }
+  await wait(2500);
+  // Stop via the pill's own button path: signal it, its own handler runs the
+  // stop flow in its own context (never inject JS into the pill — that API
+  // natively crashed the app during teardown).
+  let bakeDebug = null;
+  try { bakeDebug = await evalJs(`window.__bakeDebug || null`); } catch {}
+  let stopped = 'no-pill';
+  try {
+    controlWindow.webContents.send('control:stopSignal');
+    stopped = 'signalled';
+  } catch (e) { stopped = 'send:' + e.message; }
+  step(`${tag}:stop-signalled`, stopped === 'signalled', stopped);
+  if (bakeDebug) step(`${tag}:bake-debug`, true, JSON.stringify(bakeDebug));
+  // The save runs in the background after the editor is unblocked — poll for
+  // a NEW project beyond this take's baseline (a latched pill never sends the
+  // stop IPC, so the count would never move: the second-stop failure shows up
+  // right here).
+  let saveState = null;
+  let savedCount = 0;
+  for (let i = 0; i < 30; i += 1) {
+    await wait(1000);
+    savedCount = (await listProjects()).filter((p) => p.id !== 'sample').length;
+    try {
+      saveState = await evalJs(`window.__saveState || null`);
+      const phase = await evalJs(`window.__stopPhase || null`);
+      report[`${tag}StopPhase`] = phase;
+      if (saveState && saveState.startsWith('failed')) break;
+    } catch {}
+    if (savedCount > baseline) break;
+  }
+  step(`${tag}:stop-accepted`, savedCount > baseline || (saveState && saveState.startsWith('failed')) ? true : false,
+    `projects=${savedCount} baseline=${baseline} saveState=${saveState || 'unknown'} phase=${report[`${tag}StopPhase`] || 'none'}`);
+  const rec = (await listProjects()).find((p) => p.id !== 'sample') || null;
+  step(`${tag}:project-saved`, savedCount > baseline, rec ? `${rec.name} dur=${rec.duration?.toFixed?.(2)}` : 'none');
+  return savedCount > baseline;
 }
 
 // ---------------------------------------------------------------------------

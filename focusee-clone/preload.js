@@ -154,6 +154,8 @@ contextBridge.exposeInMainWorld('focusee', {
 
   e2e: {
     shot: (name) => ipcRenderer.invoke('e2e:shot', name),
+    shotControl: (name) => ipcRenderer.invoke('e2e:shotControl', name),
+    shotPreview: (name) => ipcRenderer.invoke('e2e:shotPreview', name),
     quit: () => ipcRenderer.invoke('e2e:quit'),
   },
 });
