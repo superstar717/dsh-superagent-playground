@@ -714,7 +714,7 @@ function bindRecordDialog() {
   $('#modal-record').addEventListener('click', (e) => {
     if (e.target.id === 'modal-record') closeModal('modal-record');
   });
-  window.focusee.capture.onStopRequested(() => finishRecording());
+  window.focusee.capture.onStopRequested((payload) => finishRecording(payload?.mode || 'save'));
 }
 
 async function openRecordDialog() {
@@ -821,7 +821,7 @@ async function startRecording() {
       startedAt: Date.now(),
       settings: videoStream.getVideoTracks()[0]?.getSettings?.() || {},
     };
-    recorder.onstop = () => saveRecording().catch((err) => {
+    recorder.onstop = () => saveRecordingFrom(recorder).catch((err) => {
       console.error(err);
       toast(`保存录制失败：${err.message}`);
     });
@@ -842,9 +842,11 @@ async function startRecording() {
   }
 }
 
-async function finishRecording() {
+async function finishRecording(mode = 'save') {
   if (!S.recording) return;
   const rec = S.recording;
+  const cancelled = mode === 'cancel';
+  S.recording = null;
   clearInterval(rec.timer);
   try {
     if (rec.recorder.state !== 'inactive') rec.recorder.stop();
@@ -855,12 +857,21 @@ async function finishRecording() {
   } catch (err) {
     console.error(err);
   }
+  if (cancelled) {
+    // Discard: drop the chunks without going through saveRecording.
+    rec.chunks.length = 0;
+    rec.recorder.onstop = null;
+    toast('录制已取消，未保存');
+    return;
+  }
+  // saveRecording reads S.recording; hand the recorder's chunks over directly.
+  await saveRecordingFrom(rec);
 }
 
-async function saveRecording() {
-  const rec = S.recording;
-  S.recording = null;
-  if (!rec) return;
+async function saveRecordingFrom(rec) {
+  if (!rec || rec.saved) return;
+  rec.saved = true;
+  rec.recorder.onstop = null;
   const blob = new Blob(rec.chunks, { type: rec.recorder.mimeType || 'video/webm' });
   const data = new Uint8Array(await blob.arrayBuffer());
   const rawCursor = await window.focusee.capture.end();

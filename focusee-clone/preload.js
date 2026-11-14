@@ -25,8 +25,9 @@ contextBridge.exposeInMainWorld('focusee', {
     updateControl: (info) => ipcRenderer.invoke('capture:updateControl', info),
     hideControl: () => ipcRenderer.invoke('capture:hideControl'),
     stop: () => ipcRenderer.send('capture:stopRequested'),
+    cancel: () => ipcRenderer.send('capture:cancelRequested'),
     onStopRequested: (cb) => {
-      const handler = () => cb();
+      const handler = (_e, payload) => cb(payload);
       ipcRenderer.on('record:stopRequested', handler);
       return () => ipcRenderer.removeListener('record:stopRequested', handler);
     },
@@ -39,6 +40,7 @@ contextBridge.exposeInMainWorld('focusee', {
       return () => ipcRenderer.removeListener('control:state', handler);
     },
     stop: () => ipcRenderer.send('capture:stopRequested'),
+    cancel: () => ipcRenderer.send('capture:cancelRequested'),
   },
 
   exporter: {

@@ -13,6 +13,7 @@ const { pathToFileURL } = require('node:url');
 // ---------------------------------------------------------------------------
 
 const isE2E = process.argv.includes('--e2e');
+const isE2E_REC = process.argv.includes('--e2e-rec');
 const isSmoke = process.argv.includes('--smoke');
 
 function dataRoot() {
@@ -225,6 +226,10 @@ function createMainWindow() {
       console.error('[e2e] failed:', err);
       app.exit(1);
     });
+    if (isE2E_REC) runE2ERecording(win).catch((err) => {
+      console.error('[e2e-rec] failed:', err);
+      app.exit(1);
+    });
   });
   win.on('closed', () => {
     mainWindow = null;
@@ -254,7 +259,14 @@ function createControlWindow() {
       nodeIntegration: false,
     },
   });
-  win.loadFile(path.join(__dirname, 'renderer', 'control.html'));
+  win.loadFile(path.join(__dirname, 'renderer', 'control.html')).catch((err) => {
+    // If the pill fails to load, the recorder would be stranded with no stop
+    // control. Never leave the person without their editor: keep it visible
+    // and surface the failure.
+    console.error('[control] failed to load:', err.message);
+    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) mainWindow.show();
+    if (mainWindow) mainWindow.webContents.send('record:stopRequested', { mode: 'save', reason: 'control-window-failed' });
+  });
   win.setAlwaysOnTop(true, 'screen-saver');
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   // The recording pill must not end up inside the recording itself.
@@ -385,7 +397,12 @@ function registerIpc() {
   });
 
   ipcMain.on('capture:stopRequested', () => {
-    if (mainWindow) mainWindow.webContents.send('record:stopRequested');
+    if (mainWindow) mainWindow.webContents.send('record:stopRequested', { mode: 'save' });
+  });
+
+  ipcMain.on('capture:cancelRequested', () => {
+    if (controlWindow) controlWindow.hide();
+    if (mainWindow) mainWindow.webContents.send('record:stopRequested', { mode: 'cancel' });
   });
 
   ipcMain.handle('capture:hideControl', async () => {
@@ -506,12 +523,98 @@ async function runE2E(win) {
 }
 
 // ---------------------------------------------------------------------------
+// E2E recording scenario: drive the real record flow end to end without a
+// person (open dialog -> pick first screen -> skip countdown -> record 3s ->
+// stop from the pill path -> verify the project persists).
+// ---------------------------------------------------------------------------
+
+async function runE2ERecording(win) {
+  const wc = win.webContents;
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const evalJs = (code) => wc.executeJavaScript(code, true);
+  const report = { steps: [] };
+  const step = (name, ok, extra) => { report.steps.push({ name, ok, ...(extra ? { extra } : {}) }); console.log('[e2e-rec]', name, ok ? 'ok' : 'FAIL', extra || ''); };
+  try {
+    await wait(1500);
+    await evalJs(`document.querySelector('#btn-record').click()`);
+    await wait(1600);
+    const picked = await evalJs(`(async () => {
+      const card = document.querySelector('#source-grid .source-card[data-source^="screen"]');
+      if (!card) return null;
+      card.click();
+      await new Promise(r => setTimeout(r, 200));
+      return document.querySelector('#source-grid .source-card.active')?.dataset.source || null;
+    })()`);
+    step('pick-screen-source', !!picked, picked || 'no screen source card');
+    if (!picked) throw new Error('no screen source');
+    // Skip the countdown for determinism.
+    await evalJs(`document.querySelector('#opt-countdown').checked = false`);
+    await evalJs(`document.querySelector('#btn-start-record').click()`);
+    // Poll for the pill: first-time source init can take several seconds.
+    let pillState = null;
+    for (let i = 0; i < 40 && !pillState; i += 1) {
+      await wait(500);
+      if (controlWindow && !controlWindow.isDestroyed() && controlWindow.isVisible()) {
+        pillState = { pill: true, visible: true, url: controlWindow.webContents.getURL() };
+      }
+      const toastText = await evalJs(`document.querySelector('#toast')?.classList.contains('hidden') ? null : document.querySelector('#toast')?.textContent`);
+      if (toastText && /失败|不可用/.test(toastText)) { step('record-error', false, toastText); break; }
+    }
+    if (!pillState) pillState = { pill: false };
+    step('control-pill-loaded', !!(pillState.pill && /control\.html$/.test(pillState.url || '')), JSON.stringify(pillState));
+    const mainHidden = mainWindow ? !mainWindow.isVisible() : true;
+    step('main-window-hidden-while-recording', mainHidden);
+    await wait(2500);
+    // Stop via the pill's own button (the path a person uses).
+    const stopped = await new Promise((resolve) => {
+      if (!controlWindow || controlWindow.isDestroyed()) return resolve('no-pill');
+      controlWindow.webContents.executeJavaScript(`document.querySelector('#btn-stop').click(); 'clicked'`, true).then(resolve).catch((e) => resolve('exec:' + e.message));
+    });
+    step('pill-stop-clicked', stopped === 'clicked', stopped);
+    await wait(3500);
+    const projects = await listProjects();
+    const rec = projects.find((p) => p.id !== 'sample');
+    step('project-saved', !!rec, rec ? `${rec.name} dur=${rec.duration?.toFixed?.(2)}` : 'none');
+    report.project = rec || null;
+    await wait(400);
+    const dir = path.join(__dirname, 'artifacts');
+    await fsp.mkdir(dir, { recursive: true });
+    await fsp.writeFile(path.join(dir, 'e2e-rec-report.json'), JSON.stringify(report, null, 2));
+    const allOk = report.steps.every((s) => s.ok);
+    console.log('[e2e-rec] ALL_OK=' + allOk);
+    app.exit(allOk ? 0 : 1);
+  } catch (err) {
+    report.error = err.message;
+    const dir = path.join(__dirname, 'artifacts');
+    await fsp.mkdir(dir, { recursive: true });
+    await fsp.writeFile(path.join(dir, 'e2e-rec-report.json'), JSON.stringify(report, null, 2));
+    console.error('[e2e-rec] error:', err.message);
+    app.exit(1);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Boot
 // ---------------------------------------------------------------------------
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app-media', privileges: { standard: false, secure: true, supportFetchAPI: true, stream: true } },
 ]);
+
+// One instance at a time: a second `npm start` must focus the existing window
+// instead of spawning a competing recorder.
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+if (!gotSingleInstanceLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+}
 
 app.whenReady().then(async () => {
   await ensureDirs();

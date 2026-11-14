@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'self';" />
+  <title>录制控制</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { background: transparent; overflow: hidden; }
+    body {
+      margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+      -webkit-app-region: drag; user-select: none;
+    }
+    .pill {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(17, 19, 24, 0.94);
+      border-radius: 14px; padding: 10px 14px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+      color: #fff;
+      -webkit-app-region: no-drag;
+    }
+    .dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: #ff5b5b;
+      animation: blink 1.2s ease infinite;
+    }
+    .dot.paused { background: #ffb020; animation: none; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+    .time { font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 700; min-width: 48px; text-align: center; }
+    .mic-badge { font-size: 12px; }
+    .pill button {
+      border: 0; border-radius: 8px; cursor: pointer;
+      height: 30px; padding: 0 12px; font-size: 12px; font-weight: 600;
+    }
+    #btn-stop { background: #ff5b5b; color: #fff; }
+    #btn-stop:hover { background: #ff7070; }
+    #btn-cancel { background: rgba(255, 255, 255, 0.12); color: #cfd3dd; }
+    #btn-cancel:hover { background: rgba(255, 255, 255, 0.2); }
+    .drag-handle { width: 26px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.22); -webkit-app-region: drag; }
+  </style>
+</head>
+<body>
+  <div class="pill">
+    <span class="dot" id="dot"></span>
+    <span class="time" id="time">00:00</span>
+    <span class="mic-badge" id="mic-badge" title="麦克风">🎙️</span>
+    <button id="btn-stop">停止</button>
+    <button id="btn-cancel">取消</button>
+    <span class="drag-handle" title="拖动"></span>
+  </div>
+  <script src="./control.js"></script>
+</body>
+</html>
