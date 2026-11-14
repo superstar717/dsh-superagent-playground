@@ -1,0 +1,45 @@
+{
+  "steps": [
+    {
+      "name": "pick-screen-source",
+      "ok": true,
+      "extra": "screen:2077750265:0"
+    },
+    {
+      "name": "control-pill-loaded",
+      "ok": true,
+      "extra": "{\"pill\":true,\"visible\":true,\"url\":\"file:///Applications/FocuSee%20Clone.app/Contents/Resources/app/renderer/control.html\",\"bridgeOk\":true}"
+    },
+    {
+      "name": "pill-bridge-alive",
+      "ok": true
+    },
+    {
+      "name": "main-window-hidden-while-recording",
+      "ok": true
+    },
+    {
+      "name": "pill-stop-clicked",
+      "ok": true,
+      "extra": "clicked"
+    },
+    {
+      "name": "bake-debug",
+      "ok": true,
+      "extra": "{\"draws\":99,\"camReady\":4,\"camW\":640,\"screenReady\":4,\"pipDrawn\":99}"
+    },
+    {
+      "name": "save-state",
+      "ok": true,
+      "extra": "unknown"
+    },
+    {
+      "name": "project-saved",
+      "ok": false,
+      "extra": "none"
+    }
+  ],
+  "withCamera": true,
+  "stopPhase": "teardown-start",
+  "project": null
+}
