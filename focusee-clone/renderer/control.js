@@ -31,6 +31,22 @@ function stopPreviewTracks() {
   }
 }
 
+// Camera preview attach — ALWAYS in this page's own context. The main process
+// merely signals; cross-window executeJavaScript into this page is forbidden
+// (it natively crashed the app when used during recording teardown).
+async function attachCameraPreview() {
+  const v = document.getElementById('cam-video');
+  if (!v || v.srcObject) return;
+  try {
+    v.srcObject = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 } }, audio: false });
+  } catch (err) {
+    // No camera / busy camera: recording itself is unaffected (its capture is
+    // separate); just leave the preview off.
+    console.warn('[control] camera preview unavailable:', err.message);
+  }
+}
+window.focusee.control.onAttachCamera(attachCameraPreview);
+
 window.focusee.control.onState((info) => {
   if (info.startedAt && !state.startedAt) {
     state.startedAt = info.startedAt;
@@ -41,6 +57,9 @@ window.focusee.control.onState((info) => {
   if (info.withCamera) {
     document.getElementById('cam-panel').classList.remove('hidden');
     document.getElementById('cam-size-label').textContent = `${info.pipSize}%`;
+    // The attach signal can arrive before this page finishes loading and
+    // registers its listener — re-drive the attach from the state itself.
+    attachCameraPreview();
   }
 });
 
@@ -57,14 +76,19 @@ document.getElementById('cam-smaller').addEventListener('click', () => {
 window.addEventListener('resize', reportPip);
 setInterval(reportPip, 400); // drag moves the window; report position periodically
 
-$('#btn-stop').addEventListener('click', () => {
+// The stop flow, shared by the real button and the e2e stop signal.
+function requestStop() {
   if (state.stopped) return;
   state.stopped = true;
   $('#dot').classList.add('paused');
   $('#btn-stop').textContent = '保存中…';
   stopPreviewTracks(); // own-context, safe
   window.focusee.control.stop();
-});
+}
+
+$('#btn-stop').addEventListener('click', requestStop);
+
+window.focusee.control.onStopSignal(requestStop);
 
 $('#btn-cancel').addEventListener('click', () => {
   if (state.stopped) return;
@@ -72,3 +96,8 @@ $('#btn-cancel').addEventListener('click', () => {
   stopPreviewTracks();
   window.focusee.control.cancel();
 });
+
+// Tell the main process this page (and with it the focusee bridge) is alive.
+// Both the recorder flow and the e2e harness key off this instead of probing
+// the pill with injected JS.
+try { window.focusee.control.pillReady(); } catch {}

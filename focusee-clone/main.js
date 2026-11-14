@@ -16,6 +16,9 @@ const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const isE2E = process.argv.includes('--e2e');
 const isE2E_REC = process.argv.includes('--e2e-rec');
 const isSmoke = process.argv.includes('--smoke');
+// --e2e-rec-hold: run the recording e2e but keep the app alive afterwards, so
+// a real machine can be observed after the stop flow (no app.exit evidence burn).
+const isHold = process.argv.includes('--e2e-rec-hold');
 
 function dataRoot() {
   if (process.env.FOCUSEE_DATA_DIR) return process.env.FOCUSEE_DATA_DIR;
@@ -202,6 +205,9 @@ async function ensureSampleProject() {
 
 let mainWindow = null;
 let controlWindow = null;
+// Set when the pill's own script ACKs after loading (its bridge is alive);
+// probed by the e2e recorder instead of injecting JS into the pill page.
+let pillBridgeReady = false;
 
 function createMainWindow() {
   const win = new BrowserWindow({
@@ -252,33 +258,14 @@ function createMainWindow() {
   return win;
 }
 
-/** Stop the pill's own camera preview capture — otherwise the camera stays
- *  hot after recording ends (the pill window merely hides). */
-async function stopPillCameraPreview() {
-  if (!controlWindow || controlWindow.isDestroyed()) return;
-  try {
-    // Bounded: a busy pill page must never block the recorder's teardown
-    // (an unbounded await here hung the whole save once).
-    await Promise.race([
-      controlWindow.webContents.executeJavaScript(`
-        (() => {
-          const v = document.getElementById('cam-video');
-          if (v && v.srcObject) {
-            v.srcObject.getTracks().forEach((t) => t.stop());
-            v.srcObject = null;
-          }
-          return true;
-        })()
-      `,
-      3000,
-    ),
-    ]);
-  } catch (err) {
-    console.warn('[control] preview stop failed:', err.message);
-  }
-}
+/** The pill stops its own preview capture when hidden (control.js listens for
+ *  visibilitychange/pagehide) and when its stop/cancel buttons run. The main
+ *  process must NOT poke the pill page with cross-window executeJavaScript:
+ *  during teardown that API is the one that natively crashed the app
+ *  (Electron-2026-11-15-040339.ips, SIGSEGV under the inspector bridge). */
 
 function createControlWindow() {
+  pillBridgeReady = false; // until the fresh pill page ACKs
   const win = new BrowserWindow({
     width: 320,
     height: 76,
@@ -590,7 +577,8 @@ function registerIpc() {
   });
 
   ipcMain.handle('capture:hideControl', async () => {
-    await stopPillCameraPreview();
+    // No pill-page JS from here: the pill stops its own preview tracks on
+    // hide (visibilitychange) — see the note above createControlWindow.
     if (controlWindow) {
       controlWindow.hide();
     }
@@ -668,6 +656,11 @@ function registerIpc() {
     return { data, mime: 'video/webm', file: p.cameraFile };
   });
 
+  ipcMain.on('control:pillReady', () => {
+    // ACK from the pill page: its script (and therefore the focusee bridge)
+    // is alive. Event-based probe — no script injection into the pill.
+    pillBridgeReady = true;
+  });
   ipcMain.on('control:pipResize', (_e, delta) => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('record:pipResize', { delta: Number(delta) || 0 });
@@ -687,20 +680,13 @@ function registerIpc() {
   ipcMain.handle('control:attachCameraPreview', async () => {
     // The control window opens its own camera capture for the live preview;
     // the recorder's camera take is independent (two captures of one camera
-    // are allowed by macOS).
+    // are allowed by macOS). The pill attaches in ITS OWN context via an
+    // event — never via cross-window executeJavaScript (native-crash class,
+    // see the note above createControlWindow).
     try {
       const win = controlWindow && !controlWindow.isDestroyed() ? controlWindow : null;
       if (!win) return { ok: false };
-      await win.webContents.executeJavaScript(
-        `(async () => {
-          const v = document.getElementById('cam-video');
-          if (!v) return 'no-video-el';
-          if (v.srcObject) return 'already';
-          const s = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 } }, audio: false });
-          v.srcObject = s;
-          return 'attached';
-        })()`,
-      );
+      win.webContents.send('control:attachCamera');
       // Grow the pill window so the preview fits.
       const [w, h] = win.getSize();
       win.setMinimumSize(320, 76);
@@ -849,7 +835,7 @@ async function runE2ERecording(win) {
     let pillState = null;
     for (let i = 0; i < 40 && !pillState; i += 1) {
       await wait(500);
-      if (controlWindow && !controlWindow.isDestroyed() && controlWindow.isVisible()) {
+      if (controlWindow && !controlWindow.isDestroyed() && controlWindow.isVisible() && pillBridgeReady) {
         const url = controlWindow.webContents.getURL();
         if (/control\.html$/.test(url)) pillState = { pill: true, visible: true, url };
       }
@@ -857,28 +843,29 @@ async function runE2ERecording(win) {
       if (toastText && /失败|不可用/.test(toastText)) { step('record-error', false, toastText); break; }
     }
     if (!pillState) pillState = { pill: false };
-    const bridgeOk = pillState.pill
-      ? await (async () => {
-          try {
-            return await controlWindow.webContents.executeJavaScript(`!!window.focusee && !!window.focusee.control`, true);
-          } catch { return false; }
-        })()
-      : false;
+    const bridgeOk = pillState.pill ? pillBridgeReady : false;
     step('control-pill-loaded', !!(pillState.pill && /control\.html$/.test(pillState.url || '') && bridgeOk), JSON.stringify({ ...pillState, bridgeOk }));
     step('pill-bridge-alive', bridgeOk === true);
     const mainHidden = mainWindow ? !mainWindow.isVisible() : true;
     step('main-window-hidden-while-recording', mainHidden);
     await wait(2500);
-    // Stop via the pill's own button (the path a person uses).
+    // Stop via the pill's own button path: signal it, its own handler runs
+    // the stop flow in its own context (never inject JS into the pill —
+    // that API natively crashed the app during teardown).
     let bakeDebug = null;
     try {
       bakeDebug = await evalJs(`window.__bakeDebug || null`);
     } catch {}
     const stopped = await new Promise((resolve) => {
       if (!controlWindow || controlWindow.isDestroyed()) return resolve('no-pill');
-      controlWindow.webContents.executeJavaScript(`document.querySelector('#btn-stop').click(); 'clicked'`, true).then(resolve).catch((e) => resolve('exec:' + e.message));
+      try {
+        controlWindow.webContents.send('control:stopSignal');
+        resolve('signalled');
+      } catch (e) {
+        resolve('send:' + e.message);
+      }
     });
-    step('pill-stop-clicked', stopped === 'clicked', stopped);
+    step('pill-stop-clicked', stopped === 'signalled', stopped);
     if (bakeDebug) step('bake-debug', true, JSON.stringify(bakeDebug));
     // The save runs in the background after the editor is unblocked — poll.
     let rec = null;
@@ -903,14 +890,18 @@ async function runE2ERecording(win) {
     await fsp.writeFile(path.join(dir, 'e2e-rec-report.json'), JSON.stringify(report, null, 2));
     const allOk = report.steps.every((s) => s.ok);
     console.log('[e2e-rec] ALL_OK=' + allOk);
-    app.exit(allOk ? 0 : 1);
+    if (isHold) {
+      console.error('[e2e-rec] HOLD: leaving the app running for observation');
+    } else {
+      app.exit(allOk ? 0 : 1);
+    }
   } catch (err) {
     report.error = err.message;
     const dir = path.join(dataRoot(), 'artifacts');
     await fsp.mkdir(dir, { recursive: true });
     await fsp.writeFile(path.join(dir, 'e2e-rec-report.json'), JSON.stringify(report, null, 2));
     console.error('[e2e-rec] error:', err.message);
-    app.exit(1);
+    if (!isHold) app.exit(1);
   }
 }
 

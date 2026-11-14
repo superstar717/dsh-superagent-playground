@@ -80,6 +80,22 @@ contextBridge.exposeInMainWorld('focusee', {
       ipcRenderer.on('control:state', handler);
       return () => ipcRenderer.removeListener('control:state', handler);
     },
+    // ACK: this page's script runs, so the focusee bridge is alive. The main
+    // process and the e2e harness use it instead of injecting JS probe calls.
+    pillReady: () => ipcRenderer.send('control:pillReady'),
+    // Camera preview attach + recorder stop arrive as events so the pill does
+    // everything in its own context (cross-window executeJavaScript is the
+    // API that natively crashed the app during recording teardown).
+    onAttachCamera: (cb) => {
+      const handler = () => cb();
+      ipcRenderer.on('control:attachCamera', handler);
+      return () => ipcRenderer.removeListener('control:attachCamera', handler);
+    },
+    onStopSignal: (cb) => {
+      const handler = () => cb();
+      ipcRenderer.on('control:stopSignal', handler);
+      return () => ipcRenderer.removeListener('control:stopSignal', handler);
+    },
     stop: () => ipcRenderer.send('capture:stopRequested'),
     cancel: () => ipcRenderer.send('capture:cancelRequested'),
     reportPip: () => ipcRenderer.send('control:pipReport'),

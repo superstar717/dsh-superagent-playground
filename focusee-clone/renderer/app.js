@@ -1146,18 +1146,26 @@ async function startRecording() {
       startedAt: Date.now(),
       settings: videoStream.getVideoTracks()[0]?.getSettings?.() || {},
     };
+    // Resolved by the recorder's stop event once the final chunks have landed;
+    // finishRecording awaits it (bounded) so the save never races the flush.
+    S.recording.flushed = new Promise((resolve) => { S.recording.flushDone = resolve; });
+    // Handlers below must capture this LOCAL reference: finishRecording nulls
+    // S.recording before the recorders flush, so anything that reads back
+    // through S.recording at flush time hits null and the take is lost.
+    const rec = S.recording;
     if (camStream) {
       // Record the camera to its own file so the PiP can be re-laid-out in the
       // editor (FocuSee bakes the camera in at record time; we keep it editable).
       const camRec = new MediaRecorder(camStream, { mimeType: 'video/webm;codecs=vp8' });
       S.recording.camRecorder = camRec;
-      camRec.ondataavailable = (e) => { if (e.data.size) S.recording.camChunks.push(e.data); };
+      camRec.ondataavailable = (e) => { if (e.data.size) rec.camChunks.push(e.data); };
       camRec.start(1000);
     }
-    recorder.onstop = () => saveRecordingFrom(recorder).catch((err) => {
-      console.error(err);
-      toast(`保存录制失败：${err.message}`);
-    });
+    // The save is driven by finishRecording after teardown; onstop only
+    // signals that the final chunks have landed. (An onstop handler that
+    // called saveRecordingFrom(recorder) saved the wrong object and crashed
+    // before writing anything.)
+    recorder.onstop = () => { try { rec.flushDone(); } catch {} };
     recorder.start(1000);
     await window.focusee.capture.showControl({
       startedAt: S.recording.startedAt,
@@ -1190,9 +1198,12 @@ async function finishRecording(mode = 'save') {
   S.recording = null;
   clearInterval(rec.timer);
   window.__stopPhase = 'teardown-start';
-  // Unblock the person FIRST: hide the pill (bounded — a hung pill page must
-  // never keep the editor hostage) and bring the editor back. Saving then
-  // continues in the background and reports via toast.
+  // Unblock the person FIRST: hide the pill and bring the editor back — the
+  // main process does both inside capture:hideControl. The renderer has NO
+  // window handle of its own: referencing a main-process window variable
+  // here (an earlier regression did exactly that) threw ReferenceError
+  // twice — in the try AND the catch — so the editor was never re-shown and
+  // the save never ran: stopping a recording made the whole app vanish.
   try {
     // Always attempt stop: if the source stalled, the recorder may already be
     // 'inactive' (its error event kills it) — stop() on that throws, which is
@@ -1209,14 +1220,15 @@ async function finishRecording(mode = 'save') {
         rec.camStream?.getTracks().forEach((t) => t.stop());
       } catch {}
     }, 900);
+    // Bounded wait for the final chunks (recorder stop event); a wedged
+    // recorder must never stall the teardown, hence the 1.5s escape.
+    await Promise.race([rec.flushed, new Promise((r) => setTimeout(r, 1500))]);
     await Promise.race([
       window.focusee.capture.hideControl(),
       new Promise((r) => setTimeout(r, 3000)),
     ]);
-    if (mainWindow && !mainWindow.isVisible()) mainWindow.show();
   } catch (err) {
     console.error('[record] teardown error', err);
-    if (mainWindow && !mainWindow.isVisible()) mainWindow.show();
   }
   if (cancelled) {
     // Discard: drop the chunks without going through saveRecording.
