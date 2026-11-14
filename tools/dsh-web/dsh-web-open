@@ -1,0 +1,107 @@
+#!/bin/bash
+# dsh-web-open —— 打开/打印当前 DSH Web 实例的登录链接（重启后免手贴 token）
+#
+# 背景：每个 dsh 进程的启动 token 都会变，但浏览器会话 cookie（签名密钥在
+#       $DSH_HOME/.credentials.yaml）会跨重启保留 30 天，且 cookie 绑定 host:port。
+#       因此：同一端口重启时，旧标签刷新后无需 token；只有在浏览器没有该
+#       host:port 的有效 cookie 时（新浏览器/清过 cookie/换端口/换主机名），
+#       才需要从启动日志里取一次带 token 的链接。本脚本把这一步自动化。
+#
+# 用法：
+#   dsh-web-open            # 用默认浏览器打开（优先当前进程的 token 链接）
+#   dsh-web-open --print    # 只打印 URL
+#   dsh-web-open --copy     # 复制 URL 到剪贴板（macOS pbcopy）
+#   dsh-web-open --clean    # 打开不带 token 的干净地址（依赖已存在的会话 cookie）
+#   dsh-web-open --help
+#
+# 环境变量：
+#   DSH_WEB_PORT   监听端口，默认 3082
+#   DSH_WEB_HOST   监听地址，默认 127.0.0.1
+#   DSH_WEB_STATE  当前登录链接文件，默认 ~/.dsh/state/web-url
+#   DSH_WEB_LOG    启动日志，默认 ~/.dsh/state/dsh-superagent-restart.log
+#   DSH_WEB_OPEN_CMD 打开命令，默认 open（macOS）
+set -uo pipefail
+
+PORT="${DSH_WEB_PORT:-3082}"
+HOST="${DSH_WEB_HOST:-127.0.0.1}"
+STATE="${DSH_WEB_STATE:-$HOME/.dsh/state/web-url}"
+LOG="${DSH_WEB_LOG:-$HOME/.dsh/state/dsh-superagent-restart.log}"
+OPEN_CMD="${DSH_WEB_OPEN_CMD:-open}"
+BASE="http://$HOST:$PORT"
+
+MODE=open
+for arg in "$@"; do
+    case "$arg" in
+        --print|--token) MODE=print ;;
+        --copy) MODE=copy ;;
+        --clean) MODE=clean ;;
+        -h|--help)
+            sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'
+            exit 0
+            ;;
+        *)
+            echo "未知参数：$arg（可用：--print --copy --clean --help）" >&2
+            exit 2
+            ;;
+    esac
+done
+
+# 返回 URL 的 HTTP 状态码；服务不可达返回 000。
+http_code() {
+    local code
+    code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 "$1" 2>/dev/null)" || code=000
+    printf '%s' "${code:-000}"
+}
+
+url_from_state() {
+    [ -s "$STATE" ] || return 0
+    head -n 1 "$STATE" | tr -d '\r'
+}
+
+url_from_log() {
+    [ -f "$LOG" ] || return 0
+    grep -o 'dsh web: http[^ ]*' "$LOG" 2>/dev/null | tail -n 1 | sed 's/^dsh web: //'
+}
+
+if [ "$MODE" = clean ]; then
+    URL="$BASE/"
+else
+    URL="$(url_from_state)"
+    CODE="$(http_code "$URL")"
+    if [ "$CODE" != 303 ] && [ "$CODE" != 200 ]; then
+        URL="$(url_from_log)"
+        CODE="$(http_code "$URL")"
+    fi
+    if [ "$CODE" != 303 ] && [ "$CODE" != 200 ]; then
+        # 没有当前进程的 token 了；若服务在，就退回干净地址（浏览器可能仍有 30 天 cookie）。
+        BASE_CODE="$(http_code "$BASE/")"
+        if [ "$BASE_CODE" = 200 ] || [ "$BASE_CODE" = 401 ]; then
+            echo "提示：未找到当前实例的 token 链接（服务在运行但链接已失效），改用干净地址 $BASE/。" >&2
+            echo "      如果浏览器显示 401，说明该 host:port 没有有效会话 cookie；重启 dsh 后会自动打开新链接。" >&2
+            URL="$BASE/"
+        else
+            echo "DSH Web 未在 $BASE 运行，也没有可用的登录链接。" >&2
+            echo "请先启动/重启：super-restart.sh（随后本脚本会自动使用新链接）。" >&2
+            exit 1
+        fi
+    fi
+fi
+
+case "$MODE" in
+    print) printf '%s\n' "$URL" ;;
+    copy)
+        printf '%s' "$URL" | pbcopy 2>/dev/null && echo "已复制到剪贴板：$URL" || { printf '%s\n' "$URL"; echo "（pbcopy 不可用，已直接打印）" >&2; }
+        ;;
+    *)
+        if ! command -v "$OPEN_CMD" >/dev/null 2>&1; then
+            echo "$URL"
+            echo "未找到打开命令 $OPEN_CMD，请手动打开上面的地址。" >&2
+            exit 1
+        fi
+        "$OPEN_CMD" "$URL" && printf '%s\n' "$URL" || {
+            echo "$URL"
+            echo "自动打开失败，请手动打开上面的地址。" >&2
+            exit 1
+        }
+        ;;
+esac
