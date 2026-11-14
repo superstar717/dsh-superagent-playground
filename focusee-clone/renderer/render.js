@@ -46,9 +46,26 @@ export function loadVideoElement(src) {
     video.crossOrigin = 'anonymous';
     video.muted = false;
     video.src = src;
-    const done = () => {
+    const done = async () => {
       video.removeEventListener('loadedmetadata', done);
       video.removeEventListener('error', fail);
+      // MediaRecorder WebM files carry no duration header: the element reports
+      // Infinity (or 0). Force a seek to the end so the demuxer finds the real
+      // duration, then rewind — the standard workaround for live-recorded WebM.
+      if (!Number.isFinite(video.duration) || video.duration === 0) {
+        try {
+          await new Promise((r) => {
+            const onSeeked = () => {
+              video.removeEventListener('seeked', onSeeked);
+              r();
+            };
+            video.addEventListener('seeked', onSeeked);
+            video.currentTime = 1e101;
+            setTimeout(r, 1500); // some builds never fire seeked; don't hang
+          });
+          video.currentTime = 0;
+        } catch {}
+      }
       resolve(video);
     };
     const fail = () => {

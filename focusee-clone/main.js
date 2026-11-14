@@ -465,7 +465,9 @@ function registerIpc() {
   ipcMain.handle('e2e:shot', async (_e, name) => {
     if (!mainWindow) return null;
     const img = await mainWindow.webContents.capturePage();
-    const dir = path.join(__dirname, 'artifacts');
+    // Never write inside the app bundle: anything added under Contents/
+    // breaks the code seal and macOS then silently refuses screen capture.
+    const dir = path.join(dataRoot(), 'artifacts');
     await fsp.mkdir(dir, { recursive: true });
     const file = path.join(dir, `${name}.png`);
     await fsp.writeFile(file, img.toPNG());
@@ -484,11 +486,11 @@ function registerIpc() {
 async function runE2E(win) {
   const wc = win.webContents;
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const artifactDir = path.join(dataRoot(), 'artifacts');
   const shot = async (name) => {
     const img = await wc.capturePage();
-    const dir = path.join(__dirname, 'artifacts');
-    await fsp.mkdir(dir, { recursive: true });
-    await fsp.writeFile(path.join(dir, `${name}.png`), img.toPNG());
+    await fsp.mkdir(artifactDir, { recursive: true });
+    await fsp.writeFile(path.join(artifactDir, `${name}.png`), img.toPNG());
     console.log('[e2e] shot', name);
   };
   const evalJs = (code) => wc.executeJavaScript(code, true);
@@ -510,12 +512,12 @@ async function runE2E(win) {
   await shot('05-zoomed-canvas');
   const report = await evalJs(`window.__focuseeTest.summary()`);
   console.log('[e2e] summary', JSON.stringify(report));
-  await fsp.writeFile(path.join(__dirname, 'artifacts', 'e2e-summary.json'), JSON.stringify(report, null, 2));
+  await fsp.writeFile(path.join(artifactDir, 'e2e-summary.json'), JSON.stringify(report, null, 2));
   // Export one short clip to prove the render pipeline works end to end.
   if (!process.argv.includes('--e2e-no-export')) {
     const result = await evalJs(`window.__focuseeTest.exportPreview()`);
     console.log('[e2e] export', JSON.stringify(result));
-    await fsp.writeFile(path.join(__dirname, 'artifacts', 'export-summary.json'), JSON.stringify(result, null, 2));
+    await fsp.writeFile(path.join(artifactDir, 'export-summary.json'), JSON.stringify(result, null, 2));
     await shot('06-export-done');
   }
   await wait(300);
@@ -555,7 +557,8 @@ async function runE2ERecording(win) {
     for (let i = 0; i < 40 && !pillState; i += 1) {
       await wait(500);
       if (controlWindow && !controlWindow.isDestroyed() && controlWindow.isVisible()) {
-        pillState = { pill: true, visible: true, url: controlWindow.webContents.getURL() };
+        const url = controlWindow.webContents.getURL();
+        if (/control\.html$/.test(url)) pillState = { pill: true, visible: true, url };
       }
       const toastText = await evalJs(`document.querySelector('#toast')?.classList.contains('hidden') ? null : document.querySelector('#toast')?.textContent`);
       if (toastText && /失败|不可用/.test(toastText)) { step('record-error', false, toastText); break; }
@@ -577,7 +580,7 @@ async function runE2ERecording(win) {
     step('project-saved', !!rec, rec ? `${rec.name} dur=${rec.duration?.toFixed?.(2)}` : 'none');
     report.project = rec || null;
     await wait(400);
-    const dir = path.join(__dirname, 'artifacts');
+    const dir = path.join(dataRoot(), 'artifacts');
     await fsp.mkdir(dir, { recursive: true });
     await fsp.writeFile(path.join(dir, 'e2e-rec-report.json'), JSON.stringify(report, null, 2));
     const allOk = report.steps.every((s) => s.ok);
@@ -585,7 +588,7 @@ async function runE2ERecording(win) {
     app.exit(allOk ? 0 : 1);
   } catch (err) {
     report.error = err.message;
-    const dir = path.join(__dirname, 'artifacts');
+    const dir = path.join(dataRoot(), 'artifacts');
     await fsp.mkdir(dir, { recursive: true });
     await fsp.writeFile(path.join(dir, 'e2e-rec-report.json'), JSON.stringify(report, null, 2));
     console.error('[e2e-rec] error:', err.message);
