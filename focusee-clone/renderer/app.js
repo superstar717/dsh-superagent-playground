@@ -150,6 +150,61 @@ function onKey(e) {
 }
 
 // ---------------------------------------------------------------------------
+// Background removal (人像分割, MediaPipe selfie segmenter, vendored model)
+// ---------------------------------------------------------------------------
+
+const SEG = { ready: false, failed: false, segmenter: null, lastRun: 0, maskCtx: null };
+
+async function ensureSegmenter() {
+  if (SEG.ready || SEG.failed) return SEG.ready;
+  try {
+    const vision = await import('./vendor/vision_bundle.mjs');
+    const fileset = await vision.FilesetResolver.forVisionTasks('vendor://wasm');
+    SEG.segmenter = await vision.ImageSegmenter.createFromOptions(fileset, {
+      baseOptions: { modelAssetPath: 'vendor://selfie_segmenter.tflite', delegate: 'CPU' },
+      runningMode: 'VIDEO',
+      outputCategoryMask: false,
+      outputConfidenceMask: true,
+    });
+    SEG.maskCtx = document.createElement('canvas').getContext('2d');
+    SEG.ready = true;
+    console.log('[seg] ready');
+  } catch (err) {
+    console.warn('[seg] init failed', err);
+    SEG.failed = true;
+  }
+  return SEG.ready;
+}
+
+function updateBackgroundMask(camVideo, timeMs) {
+  if (!SEG.ready || !camVideo?.videoWidth) return;
+  // Run at ~15fps; reuse the last mask between runs.
+  if (timeMs - SEG.lastRun < 66) return;
+  SEG.lastRun = timeMs;
+  try {
+    const res = SEG.segmenter.segmentForVideo(camVideo, timeMs);
+    const mask = res?.confidenceMasks?.[0];
+    if (!mask) return;
+    const w = mask.width;
+    const h = mask.height;
+    const data = mask.getAsUint8Array();
+    const mc = SEG.maskCtx.canvas;
+    if (mc.width !== w || mc.height !== h) { mc.width = w; mc.height = h; }
+    const img = SEG.maskCtx.createImageData(w, h);
+    // White RGB with the confidence as alpha → destination-in keeps the person.
+    for (let i = 0; i < data.length; i += 1) {
+      const o = i * 4;
+      img.data[o] = 255; img.data[o + 1] = 255; img.data[o + 2] = 255;
+      img.data[o + 3] = data[i];
+    }
+    SEG.maskCtx.putImageData(img, 0, 0);
+    if (S.project) S.project.cameraMaskCanvas = mc;
+  } catch (err) {
+    console.warn('[seg] frame failed', err);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Home
 // ---------------------------------------------------------------------------
 
@@ -215,7 +270,7 @@ async function openProject(id, opts = {}) {
     S.video = await loadVideoElement(S.videoUrl);
     S.project = project;
     project.style = { ...DEFAULT_STYLE, ...(project.style || {}) };
-    project.camera = { enabled: !!project.cameraFile, layout: 'bottom-right', size: 18, ...(project.camera || {}) };
+    project.camera = { enabled: !!project.cameraFile, layout: 'bottom-right', size: 18, removeBg: false, segments: [], ...(project.camera || {}) };
     if (project.cameraFile) {
       try {
         const camMedia = await window.focusee.camera.load(id);
@@ -445,7 +500,7 @@ function inspectorAudio(p) {
 }
 
 function inspectorLayout(p) {
-  const cam = p.camera || { enabled: false, layout: 'bottom-right', size: 18 };
+  const cam = { segments: [], ...(p.camera || { enabled: false, layout: 'bottom-right', size: 18 }) };
   const layouts = ['bottom-right', 'bottom-left', 'top-right', 'top-left', 'bottom-center'];
   const names = { 'bottom-right': '右下', 'bottom-left': '左下', 'top-right': '右上', 'top-left': '左上', 'bottom-center': '底部居中' };
   const hasTake = !!p.cameraFile;
@@ -462,6 +517,26 @@ function inspectorLayout(p) {
       ${sliderRow('camSize', '摄像头大小', 8, 40, cam.size || 18)}
     </div>
     <div class="insp-section">
+      <h4>布局片段</h4>
+      <div style="display:flex;gap:8px">
+        <button class="btn xs" data-action="add-cam-segment" ${cam.enabled && hasTake ? '' : 'disabled'}>在播放头加一段（当前布局）</button>
+      </div>
+      <p class="hint">片段期间摄像头切换到该片段的布局/大小；未覆盖的时间用上方默认布局。</p>
+      <div class="seg-list">
+        ${(p.camera.segments || []).length ? (p.camera.segments || []).map((sg) => `<div class="seg-item">
+          <span class="dot" style="background:#8b7af5"></span>
+          <span>${formatTime(sg.start)} → ${formatTime(sg.end)}</span>
+          <span class="t">${names[sg.layout] || sg.layout} ×${sg.size || ''}</span>
+          <button data-del-cam-seg="${sg.id}" title="删除">✕</button>
+        </div>`).join('') : '<p class="placeholder">还没有片段。</p>'}
+      </div>
+    </div>
+    <div class="insp-section">
+      <h4>背景移除</h4>
+      <div class="switch-row"><span>人像分割去背景</span><button class="switch ${cam.removeBg ? 'on' : ''}" data-toggle="camera.removeBg" ${cam.enabled && hasTake ? '' : 'disabled'}></button></div>
+      <p class="hint">${SEG.failed ? `分割模型加载失败：${SEG.error || '未知错误'}。此功能不可用。` : SEG.ready ? '分割模型已就绪：摄像头将只保留人像（约 15fps 更新掩膜）。' : '本地人像分割模型（MediaPipe，随应用内置）。开启后首次会加载模型，约 15fps 更新掩膜。'}</p>
+    </div>
+    <div class="insp-section">
       <h4>3D 动效</h4>
       <div class="switch-row"><span>跟随光标的透视倾斜</span><button class="switch ${p.style.tiltFollow ? 'on' : ''}" data-toggle="style.tiltFollow"></button></div>
       ${sliderRow('tilt3d', '基础倾斜', -100, 100, tilt)}
@@ -475,7 +550,7 @@ function inspectorLayout(p) {
       <p class="hint">悬浮窗不录进画面；录屏开始前勾选「提词器」也会自动打开。</p>
     </div>
     <div class="insp-section">
-      <p class="placeholder"><b>仍未实现：</b>背景移除（需要人脸分割模型）、布局片段（分段切换镜头）、AI 字幕、音频增强。</p>
+      <p class="placeholder"><b>仍未实现：</b>AI 字幕、音频增强/降噪、点击音效、云分享。背景移除与布局片段已实现（见上方开关与片段列表）。</p>
     </div>`;
 }
 
@@ -551,6 +626,24 @@ function bindInspector(host) {
   }));
   host.querySelectorAll('[data-cam-layout]').forEach((el) => el.addEventListener('click', () => {
     p.camera.layout = el.dataset.camLayout;
+    renderInspector();
+    S.dirty = true;
+  }));
+  host.querySelector('[data-action="add-cam-segment"]')?.addEventListener('click', () => {
+    const start = clamp(S.time, 0, Math.max(0, S.duration - 0.2));
+    const end = clamp(start + 2, 0, S.duration);
+    p.camera.segments = [...(p.camera.segments || []), {
+      id: `cs-${Date.now().toString(36)}`,
+      start: Number(start.toFixed(2)),
+      end: Number(end.toFixed(2)),
+      layout: p.camera.layout || 'bottom-right',
+      size: p.camera.size || 18,
+    }];
+    renderInspector();
+    S.dirty = true;
+  });
+  host.querySelectorAll('[data-del-cam-seg]').forEach((el) => el.addEventListener('click', () => {
+    p.camera.segments = (p.camera.segments || []).filter((sg) => sg.id !== el.dataset.delCamSeg);
     renderInspector();
     S.dirty = true;
   }));
@@ -741,6 +834,11 @@ function tick(ts) {
     S.dirty = true;
   }
   if (S.project && S.video) {
+    if (S.project.camera?.enabled && S.project.camera?.removeBg && S.project.cameraVideoEl) {
+      if (SEG.ready) updateBackgroundMask(S.project.cameraVideoEl, performance.now());
+      else if (!SEG.failed) ensureSegmenter();
+      S.dirty = true;
+    }
     if (S.dirty) {
       try {
         drawCurrent(S.time);

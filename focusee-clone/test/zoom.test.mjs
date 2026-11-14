@@ -202,3 +202,33 @@ test('tiltSlices: negative tilt mirrors the direction', () => {
   assert.ok(neg[0].dyTop > pos[0].dyTop + 10, `neg first top ${neg[0].dyTop}`);
   assert.ok(neg[neg.length - 1].dyTop < 1, 'neg right edge keeps full height');
 });
+
+import { activeCameraSettings } from '../renderer/zoom.cjs';
+
+test('activeCameraSettings: defaults when no segment covers the time', () => {
+  const cam = { layout: 'top-left', size: 22, segments: [{ id: 'a', start: 3, end: 5, layout: 'bottom-right', size: 30 }] };
+  assert.deepEqual(activeCameraSettings(cam, 1), { layout: 'top-left', size: 22, segmentId: null });
+});
+
+test('activeCameraSettings: the last overlapping segment wins', () => {
+  const cam = {
+    layout: 'top-left', size: 22,
+    segments: [
+      { id: 'a', start: 1, end: 4, layout: 'bottom-right', size: 30 },
+      { id: 'b', start: 2, end: 5, layout: 'bottom-center', size: 25 },
+    ],
+  };
+  assert.equal(activeCameraSettings(cam, 1.5).segmentId, 'a');
+  assert.equal(activeCameraSettings(cam, 3).segmentId, 'b');
+  assert.equal(activeCameraSettings(cam, 3).layout, 'bottom-center');
+  assert.equal(activeCameraSettings(cam, 6).segmentId, null);
+});
+
+test('activeCameraSettings: clamps sizes and tolerates malformed segments', () => {
+  const cam = { layout: 'bottom-right', size: 18, segments: [null, { start: 0, end: 2, size: 999 }, { end: 3 }] };
+  const r = activeCameraSettings(cam, 1);
+  assert.equal(r.size, 40); // clamped
+  const empty = activeCameraSettings({}, 5);
+  assert.equal(empty.layout, 'bottom-right');
+  assert.equal(empty.segmentId, null);
+});

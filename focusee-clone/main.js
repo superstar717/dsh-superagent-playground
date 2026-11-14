@@ -216,6 +216,7 @@ function createMainWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: false, // preload needs require() for the vendored segmentation model
       spellcheck: false,
     },
   });
@@ -735,6 +736,9 @@ async function runE2ERecording(win) {
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app-media', privileges: { standard: false, secure: true, supportFetchAPI: true, stream: true } },
+  // vendored MediaPipe wasm/model: file:// fetch is CORS-blocked, so the
+  // segmenter loads through this http-like privileged scheme instead.
+  { scheme: 'vendor', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } },
 ]);
 
 // One instance at a time: a second `npm start` must focus the existing window
@@ -782,6 +786,17 @@ app.whenReady().then(async () => {
       return net.fetch(pathToFileURL(path.join(projectDir(id), file)).toString());
     } catch (err) {
       return new Response(`bad media url: ${err.message}`, { status: 400 });
+    }
+  });
+  protocol.handle('vendor', (request) => {
+    try {
+      const rel = decodeURIComponent(new URL(request.url).pathname.replace(/^\//, ''));
+      const base = path.join(__dirname, 'renderer', 'vendor');
+      const file = path.resolve(base, rel);
+      if (!file.startsWith(base)) return new Response('forbidden', { status: 403 });
+      return net.fetch(pathToFileURL(file).toString());
+    } catch (err) {
+      return new Response(`bad vendor url: ${err.message}`, { status: 400 });
     }
   });
   registerIpc();

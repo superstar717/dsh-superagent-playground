@@ -1,0 +1,9 @@
+<!DOCTYPE html><html><body><div id="out">importing…</div>
+<script type="module">
+  const out = document.getElementById('out');
+  try {
+    const t0 = performance.now();
+    const vision = await import('./vendor/vision_bundle.mjs');
+    out.textContent = 'IMPORT_OK ' + Math.round(performance.now() - t0) + 'ms keys=' + Object.keys(vision).slice(0, 5).join(',');
+  } catch (e) { out.textContent = 'IMPORT_FAIL ' + e.message.slice(0, 100); }
+</script></body></html>

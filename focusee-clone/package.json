@@ -14,5 +14,8 @@
   "license": "MIT",
   "devDependencies": {
     "electron": "45.2.2"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^1.2.3"
   }
 }

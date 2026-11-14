@@ -10,7 +10,7 @@ const exportNames = [
   'clamp', 'lerp', 'smoothstep', 'ASPECTS', 'detectActions', 'buildZooms',
   'zoomAt', 'sourceRectAt', 'fitRect', 'contentRect', 'mapPointToCanvas',
   'formatTime', 'normaliseCursor', 'cursorAt',
-  'CAMERA_LAYOUTS', 'computeCameraRect', 'tiltSlices',
+  'CAMERA_LAYOUTS', 'computeCameraRect', 'tiltSlices', 'activeCameraSettings',
 ];
 const tail = `\nmodule.exports = {\n${exportNames.map((n) => `  ${n}`).join(',\n')},\n};\n`;
 fs.writeFileSync(path.join(__dirname, '..', 'renderer', 'zoom.cjs'), stripped + tail);

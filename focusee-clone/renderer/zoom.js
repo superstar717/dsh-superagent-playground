@@ -332,3 +332,31 @@ export function tiltSlices(rect, tilt, columns = 32) {
   }
   return { columns: n, slices };
 }
+
+/**
+ * Active camera settings at a time: the last segment covering `time` wins,
+ * falling back to the project defaults.
+ *
+ * @param {{layout?:string,size?:number,segments?:{start:number,end:number,layout?:string,size?:number}[]}} camera
+ * @param {number} time
+ * @returns {{layout:string,size:number,segmentId:string|null}}
+ */
+export function activeCameraSettings(camera, time) {
+  const base = {
+    layout: camera?.layout || 'bottom-right',
+    size: clamp(Number(camera?.size) || 18, 4, 40),
+    segmentId: null,
+  };
+  const segs = Array.isArray(camera?.segments) ? camera.segments : [];
+  let best = null;
+  for (const seg of segs) {
+    if (!seg || !Number.isFinite(seg.start) || !Number.isFinite(seg.end)) continue;
+    if (time >= seg.start && time <= seg.end && (!best || seg.start >= best.start)) best = seg;
+  }
+  if (!best) return base;
+  return {
+    layout: best.layout || base.layout,
+    size: clamp(Number(best.size) || base.size, 4, 40),
+    segmentId: best.id || null,
+  };
+}

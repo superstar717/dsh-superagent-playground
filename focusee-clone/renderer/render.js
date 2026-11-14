@@ -3,7 +3,7 @@
 
 import {
   contentRect, fitRect, sourceRectAt, zoomAt, cursorAt, clamp, mapPointToCanvas,
-  computeCameraRect, tiltSlices,
+  computeCameraRect, tiltSlices, activeCameraSettings,
 } from './zoom.js';
 
 export const BACKGROUNDS = [
@@ -276,12 +276,13 @@ export function drawFrame(ctx, { width, height, project, video, time, preview = 
     }
   }
 
-  // Camera picture-in-picture (FocuSee's 摄像头画中画 / 镜头布局).
-  const cam = project.camera || {};
+  // Camera picture-in-picture (FocuSee's 摄像头画中画 / 镜头布局 / 布局片段).
+  const camBase = project.camera || {};
   const camVideo = project.cameraVideoEl || null;
-  const camReady = cam.enabled && camVideo && camVideo.videoWidth > 0;
+  const camActive = activeCameraSettings(camBase, time);
+  const camReady = camBase.enabled && camVideo && camVideo.videoWidth > 0;
   if (camReady) {
-    const camRect = computeCameraRect(cam.layout || 'bottom-right', W, H, cam.size || 18, camVideo.videoWidth / camVideo.videoHeight);
+    const camRect = computeCameraRect(camActive.layout, W, H, camActive.size, camVideo.videoWidth / camVideo.videoHeight);
     const shadow2 = 0.35;
     ctx.save();
     ctx.shadowColor = `rgba(8, 10, 20, ${shadow2})`;
@@ -312,6 +313,17 @@ export function drawFrame(ctx, { width, height, project, video, time, preview = 
       roundRectPath(ctx, camRect.x, camRect.y, camRect.w, camRect.h, camRect.radius);
       ctx.clip();
       ctx.drawImage(camVideo, 0, 0, camVideo.videoWidth, camVideo.videoHeight, camRect.x, camRect.y, camRect.w, camRect.h);
+    }
+    // Background removal (人像分割): a mask canvas (white = person) composited
+    // with destination-in keeps only the person; the PiP then floats without
+    // its rectangular/circular background.
+    const maskCanvas = project.cameraMaskCanvas || null;
+    if (cam.removeBg && maskCanvas && maskCanvas.width) {
+      try {
+        ctx.globalCompositeOperation = 'destination-in';
+        ctx.drawImage(maskCanvas, camRect.x, camRect.y, camRect.w, camRect.h);
+        ctx.globalCompositeOperation = 'source-over';
+      } catch {}
     }
     // Thin light ring, like FocuSee's camera border.
     ctx.strokeStyle = 'rgba(255,255,255,0.6)';
