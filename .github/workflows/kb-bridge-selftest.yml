@@ -1,0 +1,33 @@
+name: kb-bridge dataset-switch selftest
+
+# 数据集切换回归门禁（2026-11-15，工单 f277f89af4d0）：
+# 面板「梳理」的 /api/synth 与 /api/summary 此前不接收 ds，固定搜姜胡说 kb_para + asr，
+# 选「李公子」时左边梳理仍是姜胡说内容。任何改动 work/kb-panel/ 的 PR / 分支推送都跑同一份自测。
+# 自测无网络、无 LLM；本机语料目录缺失时语料相关项自动 SKIP（CI 只跑纯逻辑项）。
+
+on:
+  pull_request:
+    paths:
+      - 'work/kb-panel/**'
+      - '.github/workflows/kb-bridge-selftest.yml'
+  push:
+    branches:
+      - 'agent/**'
+      - 'main'
+    paths:
+      - 'work/kb-panel/**'
+      - '.github/workflows/kb-bridge-selftest.yml'
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run kb-bridge dataset-switch selftest
+        working-directory: work/kb-panel
+        run: |
+          python3 -m py_compile kb-bridge
+          python3 kb-bridge-selftest.py
