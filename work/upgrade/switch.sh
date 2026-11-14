@@ -76,7 +76,7 @@ save_web_url() {
   [ -n "$url" ] && printf '%s\n' "$url" >"$STATE/web-url"
 }
 
-echo "current: $(dsh --version 2>&1 | head -1)"
+echo "cli on disk: $(dsh --version 2>&1 | head -1)"
 write_status "switching" "" "stopping host"
 
 # Let the caller's status report reach the orchestrator before the host dies.
@@ -84,15 +84,19 @@ sleep 20
 
 stop_host
 
-echo "installing $TARGET"
-if ! npm i -g "@deepseek-ai/dsh@$TARGET"; then
-  echo "install failed; rolling back"
-  write_status "rolled_back" "" "install failed"
-  start_host
-  wait_ready && save_web_url || true
-  exit 1
+if [ "$(dsh --version 2>/dev/null | head -1)" = "$TARGET" ]; then
+  echo "target $TARGET already installed; skipping npm install"
+else
+  echo "installing $TARGET"
+  if ! npm i -g "@deepseek-ai/dsh@$TARGET"; then
+    echo "install failed; restarting previous version"
+    write_status "rolled_back" "" "install failed"
+    start_host
+    wait_ready && save_web_url || true
+    exit 1
+  fi
+  echo "installed: $(dsh --version 2>&1 | head -1)"
 fi
-echo "installed: $(dsh --version 2>&1 | head -1)"
 
 start_host
 if wait_ready; then
