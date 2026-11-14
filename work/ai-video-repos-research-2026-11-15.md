@@ -99,7 +99,16 @@
 - 归属说明：**与现有口播/口型视频管线无交集**，属逆向/agent 提效域；对本机 ida-reverse / ghidra-reverse / reverse-skill-router 栈是「轻量路由层」思路的参考。用户「深度加壳混淆仍需 IDA/Ghidra」的判断与 SKILL.md 自身定位一致（它是路由层，不替代反编译器）。
 - 安装：`npx skills add aicodeking/leanrea`（skills CLI，支持 Claude Code / Codex / Cursor / Gemini CLI 等）。
 
-## 六、核实方法与局限
+## 六、补充核对：bojieli/ai-agent-book（用户追加）
+
+- [bojieli/ai-agent-book](https://github.com/bojieli/ai-agent-book) **真实存在**（URL 大小写不敏感，规范名为全小写）：《深入理解 AI Agent：设计原理与工程实践》（李博杰 著），**Apache-2.0**，**58,020⭐ / 6,749 forks**、61 open issues，2025-09-09 创建、最后推送 2026-10-08。作者 GitHub 账号 bojieli（Bojie Li，Independent Researcher，3,352 followers）与书署名一致；「前华为天才少年」为其公开报道身份，本次未另行核实。
+- 内容体系核对（README 2.0 版十章表，逐项命中）：上下文工程 ✓(ch2)、用户记忆/知识库 ✓(ch3)、工具调用与 MCP ✓(ch4)、Coding Agent ✓(ch5)、交互/语音/Computer Use ✓(ch6)、评估 ✓(ch7)、模型后训练 ✓(ch8)、持续进化 ✓(ch9)、多 Agent 协作 ✓(ch10)；**提示注入攻防 ✓**（ch2 专节「提示注入：上下文安全的核心威胁」，ch4 展开工具描述投毒/MCP 安全/Sidecar，ch5 展开三层护栏/网络出口控制——已抽查 ch2/ch4/ch5 原文命中）。
+- 「90 多个可运行案例」核对：README 官方口径为 **109 个配套实验**（分章实验数 4+10+12+5+16+14+14+19+9+6 = 109，与总口径一致），分三档标注：✅ 可运行 / 📖 复现 / 🚧 设计，另含附录 22 个外部复现仓库（版本固定到 2026-07-30 checkout，9 个缺失 checkout 固定到不可变 SHA）。所以「90 多个」成立（实际 109）；但「每个都能在本地复现」要打折：部分实验依赖 API 密钥、浏览器/CUDA/FFmpeg/Ollama 等系统依赖或外部仓库，README 自己声明「源码存在或安装成功都不是实验完成声明」。环境要求 Python 3.11–3.13 + uv（推荐 uv.lock）。
+- 其他事实：全书正文 `book/chapter1~10.md` + 配图 + 编译版 PDF/EPUB（releases）+ 15 种语言在线阅读站（bojieli.github.io/ai-agent-book）；姊妹篇 bojieli/ai-infra-book 已开源；GitHub Trending Project of the Day 徽章。
+- 未证实项：「中文圈体系最完整」为宣传口径，无法客观验证（未做同类书对比），按未证实采信。
+- 归属：与现有口播/口型管线无直接交集，属 **AI Agent 工程学习域**；对本机 agent 开发（含 DSH/superagent、jiangerhuo 记忆/图谱体系）的上下文工程、评估、提示注入防御章节有直接参考价值。
+
+## 七、核实方法与局限
 
 - 数据来源：GitHub REST API via `gh api`（repo 元数据、contents、git tree、README/LICENSE 原文），检索用 `gh search repos`；所有 star/日期/许可证数字为 2026-11-15 实测值，会随时间变化。
 - 许可证判定以仓库内 LICENSE/REUSE.toml 原文为准，未依赖 GitHub 的归类字段（lemo-opuscar 在 API 中显示为 "Other"/NOASSERTION）。
