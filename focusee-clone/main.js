@@ -19,6 +19,14 @@ const isSmoke = process.argv.includes('--smoke');
 // --e2e-rec-hold: run the recording e2e but keep the app alive afterwards, so
 // a real machine can be observed after the stop flow (no app.exit evidence burn).
 const isHold = process.argv.includes('--e2e-rec-hold');
+// --focusee-user-data <dir>: redirect the whole userData. The packaged app and
+// a dev/e2e run resolve userData from the same package.json name, so without
+// this they share one userData — and the installed app then holds the
+// single-instance lock, which makes every e2e launch quit silently before
+// ready. Must be applied before the lock is requested.
+const userDataArgIndex = process.argv.indexOf('--focusee-user-data');
+const userDataOverride = userDataArgIndex > -1 && process.argv[userDataArgIndex + 1];
+if (userDataOverride) app.setPath('userData', path.resolve(userDataOverride));
 
 function dataRoot() {
   if (process.env.FOCUSEE_DATA_DIR) return process.env.FOCUSEE_DATA_DIR;
@@ -262,23 +270,38 @@ function createMainWindow() {
   return win;
 }
 
-/** The pill stops its own preview capture when hidden (control.js listens for
- *  visibilitychange/pagehide) and when its stop/cancel buttons run. The main
- *  process must NOT poke the pill page with cross-window executeJavaScript:
- *  during teardown that API is the one that natively crashed the app
+/** Pill pages own their own media and their own buttons: the main process must
+ *  NOT poke them with cross-window executeJavaScript — during teardown that
+ *  API is the one that natively crashed the app
  *  (Electron-2026-11-15-040339.ips, SIGSEGV under the inspector bridge). */
+
+// Latest per-take info shown to the pill/preview pages. Replayed on
+// did-finish-load so a page that finishes loading AFTER the showControl
+// signals still gets its state deterministically (first-take flakiness class).
+let lastControlInfo = null;
+
+function replayControlInfo(win) {
+  try {
+    if (lastControlInfo) win.webContents.send('control:state', lastControlInfo);
+    if (win === previewWindow && lastControlInfo && lastControlInfo.withCamera) {
+      win.webContents.send('control:attachCamera');
+    }
+  } catch (err) {
+    console.warn('[control] replay failed:', err.message);
+  }
+}
 
 function createControlWindow() {
   pillBridgeReady = false; // until the fresh pill page ACKs
   const win = new BrowserWindow({
     width: 320,
     height: 76,
-    resizable: true,
+    resizable: false,
     frame: false,
     alwaysOnTop: true,
     skipTaskbar: true,
     hasShadow: true,
-    backgroundColor: '#111318',
+    transparent: true,
     show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -295,16 +318,72 @@ function createControlWindow() {
     if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) mainWindow.show();
     if (mainWindow) mainWindow.webContents.send('record:stopRequested', { mode: 'save', reason: 'control-window-failed' });
   });
+  win.webContents.on('did-finish-load', () => replayControlInfo(win));
   win.setAlwaysOnTop(true, 'screen-saver');
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   // The recording pill must not end up inside the recording itself.
   win.setContentProtection(true);
-  // Window position = where the baked-in camera PiP sits in the recording.
+  const place = () => {
+    const display = screen.getPrimaryDisplay().workArea;
+    const [w] = win.getSize();
+    win.setPosition(Math.round(display.x + display.width / 2 - w / 2), display.y + 24, false);
+  };
+  place();
+  win.on('closed', () => { controlWindow = null; });
+  return win;
+}
+
+// Round camera-preview bubble: its own always-on-top transparent window. The
+// bubble is the ONLY surface for the live camera while recording — it used to
+// be embedded as a rectangle inside the square control pill, while the baked
+// PiP in the video is a circle. Owning its own window also means its on-screen
+// position is exactly the PiP position in the recording (moved/resized events
+// report it; the baked circle follows).
+function createCameraPreviewWindow() {
+  previewBridgeReady = false; // until the bubble page ACKs
+  const win = new BrowserWindow({
+    width: 280,
+    height: 280,
+    resizable: false,
+    frame: false,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    hasShadow: false,
+    transparent: true,
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false, // same bridge as the pill
+    },
+  });
+  win.loadFile(path.join(__dirname, 'renderer', 'cam-preview.html')).catch((err) => {
+    console.error('[preview] failed to load:', err.message);
+    win.hide();
+  });
+  win.webContents.on('did-finish-load', () => replayControlInfo(win));
+  win.setAlwaysOnTop(true, 'screen-saver');
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  // The preview bubble must not appear inside the recording either.
+  win.setContentProtection(true);
+  // Default spot = the default baked PiP spot (nx 0.82, ny 0.82): the first
+  // pipMoved report then confirms roughly where the recording puts the circle.
+  const place = () => {
+    const display = screen.getPrimaryDisplay().bounds;
+    const [w, h] = win.getSize();
+    win.setPosition(
+      Math.round(display.x + display.width * 0.82 - w / 2),
+      Math.round(display.y + display.height * 0.82 - h / 2),
+      false,
+    );
+  };
+  place();
   const reportMove = () => {
     if (win.isDestroyed() || !win.isVisible()) return;
     const [x, y] = win.getPosition();
     const [w, h] = win.getSize();
-    const display = screen.getPrimaryDisplay();
+    const display = screen.getPrimaryDisplay().bounds;
     const nx = clamp((x + w / 2 - display.bounds.x) / display.bounds.width, 0, 1);
     const ny = clamp((y + h / 2 - display.bounds.y) / display.bounds.height, 0, 1);
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -313,12 +392,7 @@ function createControlWindow() {
   };
   win.on('moved', reportMove);
   win.on('resized', reportMove);
-  const place = () => {
-    const display = screen.getPrimaryDisplay().workArea;
-    const [w] = win.getSize();
-    win.setPosition(Math.round(display.x + display.width / 2 - w / 2), display.y + 24, false);
-  };
-  place();
+  win.on('closed', () => { previewWindow = null; });
   return win;
 }
 
@@ -559,15 +633,25 @@ function registerIpc() {
   ipcMain.handle('capture:end', async () => stopCursorSampling());
 
   ipcMain.handle('capture:showControl', async (_e, info) => {
+    lastControlInfo = { ...(info || {}) };
     if (!controlWindow) controlWindow = createControlWindow();
     controlWindow.webContents.send('control:state', info);
     controlWindow.showInactive();
+    if (info && info.withCamera) {
+      // The camera bubble is its own window (see createCameraPreviewWindow).
+      if (!previewWindow) previewWindow = createCameraPreviewWindow();
+      previewWindow.webContents.send('control:state', info);
+      previewWindow.showInactive();
+    } else if (previewWindow && !previewWindow.isDestroyed()) {
+      previewWindow.hide();
+    }
     if (mainWindow) mainWindow.hide();
     return true;
   });
 
   ipcMain.handle('capture:updateControl', async (_e, info) => {
-    if (controlWindow) controlWindow.webContents.send('control:state', info);
+    if (controlWindow && !controlWindow.isDestroyed()) controlWindow.webContents.send('control:state', info);
+    if (previewWindow && !previewWindow.isDestroyed()) previewWindow.webContents.send('control:state', info);
     return true;
   });
 
@@ -576,16 +660,16 @@ function registerIpc() {
   });
 
   ipcMain.on('capture:cancelRequested', () => {
-    if (controlWindow) controlWindow.hide();
+    if (controlWindow && !controlWindow.isDestroyed()) controlWindow.hide();
+    if (previewWindow && !previewWindow.isDestroyed()) previewWindow.hide();
     if (mainWindow) mainWindow.webContents.send('record:stopRequested', { mode: 'cancel' });
   });
 
   ipcMain.handle('capture:hideControl', async () => {
-    // No pill-page JS from here: the pill stops its own preview tracks on
-    // hide (visibilitychange) — see the note above createControlWindow.
-    if (controlWindow) {
-      controlWindow.hide();
-    }
+    // No pill/bubble-page JS from here: those pages stop their own preview
+    // tracks on hide (visibilitychange) — see the note above createControlWindow.
+    if (controlWindow && !controlWindow.isDestroyed()) controlWindow.hide();
+    if (previewWindow && !previewWindow.isDestroyed()) previewWindow.hide();
     if (mainWindow) mainWindow.show();
     return true;
   });
@@ -675,30 +759,28 @@ function registerIpc() {
     }
   });
   ipcMain.on('control:pipReport', () => {
-    if (!controlWindow || controlWindow.isDestroyed() || !controlWindow.isVisible()) return;
-    const [x, y] = controlWindow.getPosition();
-    const [w, h] = controlWindow.getSize();
-    const display = screen.getPrimaryDisplay();
-    const nx = clamp((x + w / 2 - display.bounds.x) / display.bounds.width, 0, 1);
-    const ny = clamp((y + h / 2 - display.bounds.y) / display.bounds.height, 0, 1);
+    // The camera bubble's position IS the PiP position in the recording;
+    // the bubble page reports periodically while it is visible.
+    if (!previewWindow || previewWindow.isDestroyed() || !previewWindow.isVisible()) return;
+    const [x, y] = previewWindow.getPosition();
+    const [w, h] = previewWindow.getSize();
+    const display = screen.getPrimaryDisplay().bounds;
+    const nx = clamp((x + w / 2 - display.x) / display.width, 0, 1);
+    const ny = clamp((y + h / 2 - display.y) / display.height, 0, 1);
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('record:pipMoved', { nx: Number(nx.toFixed(3)), ny: Number(ny.toFixed(3)) });
     }
   });
   ipcMain.handle('control:attachCameraPreview', async () => {
-    // The control window opens its own camera capture for the live preview;
+    // The camera bubble opens its own camera capture for the live preview;
     // the recorder's camera take is independent (two captures of one camera
-    // are allowed by macOS). The pill attaches in ITS OWN context via an
+    // are allowed by macOS). The bubble attaches in ITS OWN context via an
     // event — never via cross-window executeJavaScript (native-crash class,
     // see the note above createControlWindow).
     try {
-      const win = controlWindow && !controlWindow.isDestroyed() ? controlWindow : null;
+      const win = previewWindow && !previewWindow.isDestroyed() ? previewWindow : null;
       if (!win) return { ok: false };
       win.webContents.send('control:attachCamera');
-      // Grow the pill window so the preview fits.
-      const [w, h] = win.getSize();
-      win.setMinimumSize(320, 76);
-      win.setSize(w, Math.max(h, 380), false);
       return { ok: true };
     } catch (err) {
       return { ok: false, error: err.message };
@@ -852,7 +934,7 @@ async function runE2ERecording(win) {
     // Per-take baseline: the saved-project count BEFORE that take started.
     let baseline = (await listProjects()).filter((p) => p.id !== 'sample').length;
     for (let takeNo = 1; takeNo <= takeCount; takeNo += 1) {
-      const okTake = await runRecordingTake({ win, step, wait, evalJs, withCamera, takeNo, baseline, artifactDir });
+      const okTake = await runRecordingTake({ win, report, step, wait, evalJs, withCamera, takeNo, baseline, artifactDir });
       if (!okTake) break;
       baseline = (await listProjects()).filter((p) => p.id !== 'sample').length;
     }
@@ -876,23 +958,31 @@ async function runE2ERecording(win) {
   }
 }
 
-async function runRecordingTake({ win, step, wait, evalJs, withCamera, takeNo, baseline, artifactDir }) {
+async function runRecordingTake({ win, report, step, wait, evalJs, withCamera, takeNo, baseline, artifactDir }) {
   const tag = `take${takeNo}`;
   // Fresh dialog state each take.
   await evalJs(`document.querySelector('#btn-record').click()`);
-  await wait(1600);
+  // First-time source enumeration (ScreenCaptureKit warm-up) can take seconds;
+  // poll for the screen cards instead of a fixed wait.
+  let picked = null;
+  for (let i = 0; i < 60 && !picked; i += 1) {
+    await wait(500);
+    picked = await evalJs(`(async () => {
+      const card = document.querySelector('#source-grid .source-card[data-source^="screen"]');
+      if (!card) return null;
+      card.click();
+      await new Promise(r => setTimeout(r, 200));
+      return document.querySelector('#source-grid .source-card.active')?.dataset.source || null;
+    })()`);
+  }
+  const gridText = await evalJs(`document.querySelector('#source-grid')?.textContent?.slice(0, 120) || ''`);
+  step(`${tag}:pick-screen-source`, !!picked, picked || `grid=${gridText}`);
+  if (!picked) return false;
   if (withCamera) {
+    // Force the camera option on before this take starts (idempotent: it
+    // persists in the dialog DOM between takes).
     await evalJs(`document.querySelector('#opt-camera').checked = true`);
   }
-  const picked = await evalJs(`(async () => {
-    const card = document.querySelector('#source-grid .source-card[data-source^="screen"]');
-    if (!card) return null;
-    card.click();
-    await new Promise(r => setTimeout(r, 200));
-    return document.querySelector('#source-grid .source-card.active')?.dataset.source || null;
-  })()`);
-  step(`${tag}:pick-screen-source`, !!picked, picked || 'no screen source card');
-  if (!picked) return false;
   await evalJs(`document.querySelector('#opt-countdown').checked = false`);
   await evalJs(`document.querySelector('#btn-start-record').click()`);
   // Poll for the pill: first-time source init can take several seconds.

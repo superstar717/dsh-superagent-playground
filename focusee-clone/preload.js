@@ -83,6 +83,7 @@ contextBridge.exposeInMainWorld('focusee', {
     // ACK: this page's script runs, so the focusee bridge is alive. The main
     // process and the e2e harness use it instead of injecting JS probe calls.
     pillReady: () => ipcRenderer.send('control:pillReady'),
+    previewReady: () => ipcRenderer.send('control:previewReady'),
     // Camera preview attach + recorder stop arrive as events so the pill does
     // everything in its own context (cross-window executeJavaScript is the
     // API that natively crashed the app during recording teardown).

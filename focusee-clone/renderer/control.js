@@ -1,7 +1,9 @@
 'use strict';
 
-// Floating recording control pill. The pill itself is excluded from the
-// capture via the window's content protection (set in the main process).
+// Floating recording control pill (timer + stop/cancel only: the camera
+// preview lives in its own round bubble window — cam-preview.*). The pill
+// itself is excluded from the capture via the window's content protection
+// (set in the main process).
 
 const $ = (sel) => document.querySelector(sel);
 const state = { startedAt: 0, timer: null, stopped: false };
@@ -16,65 +18,29 @@ function tick() {
   $('#time').textContent = fmt((Date.now() - state.startedAt) / 1000);
 }
 
-// Stop the preview capture when the window hides — the tracks belong to THIS
-// page, so stopping them here is safe (never do it via cross-window JS).
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') stopPreviewTracks();
-});
-window.addEventListener('pagehide', stopPreviewTracks);
-
-function stopPreviewTracks() {
-  const v = document.getElementById('cam-video');
-  if (v && v.srcObject) {
-    v.srcObject.getTracks().forEach((t) => t.stop());
-    v.srcObject = null;
-  }
+// The main process REUSES this pill window across recordings: it is created
+// once and re-shown for every take. A take's stop/cancel latches `stopped`
+// and relabels the button ("保存中…"); when the window is reused for the next
+// take, that latch must be reset or every later stop/cancel click is silently
+// swallowed — the 2026-11-15 "第二次录制没有办法停止" report is exactly this.
+// The pill recognises a new take by its new startedAt (per-take unique).
+function rearmForNewTake(startedAt) {
+  state.stopped = false;
+  state.startedAt = startedAt;
+  if (state.timer) clearInterval(state.timer);
+  state.timer = setInterval(tick, 250);
+  tick();
+  $('#dot').classList.remove('paused');
+  $('#btn-stop').textContent = '停止';
+  $('#btn-cancel').disabled = false;
 }
-
-// Camera preview attach — ALWAYS in this page's own context. The main process
-// merely signals; cross-window executeJavaScript into this page is forbidden
-// (it natively crashed the app when used during recording teardown).
-async function attachCameraPreview() {
-  const v = document.getElementById('cam-video');
-  if (!v || v.srcObject) return;
-  try {
-    v.srcObject = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 } }, audio: false });
-  } catch (err) {
-    // No camera / busy camera: recording itself is unaffected (its capture is
-    // separate); just leave the preview off.
-    console.warn('[control] camera preview unavailable:', err.message);
-  }
-}
-window.focusee.control.onAttachCamera(attachCameraPreview);
 
 window.focusee.control.onState((info) => {
-  if (info.startedAt && !state.startedAt) {
-    state.startedAt = info.startedAt;
-    state.timer = setInterval(tick, 250);
-    tick();
+  if (info.startedAt && info.startedAt !== state.startedAt) {
+    rearmForNewTake(info.startedAt);
   }
   $('#mic-badge').style.visibility = info.mic ? 'visible' : 'hidden';
-  if (info.withCamera) {
-    document.getElementById('cam-panel').classList.remove('hidden');
-    document.getElementById('cam-size-label').textContent = `${info.pipSize}%`;
-    // The attach signal can arrive before this page finishes loading and
-    // registers its listener — re-drive the attach from the state itself.
-    attachCameraPreview();
-  }
 });
-
-// PiP live adjust: window position = position in the baked video, +/− = size.
-function reportPip() {
-  try { window.focusee.control.reportPip(); } catch {}
-}
-document.getElementById('cam-bigger').addEventListener('click', () => {
-  try { window.focusee.control.pipResize(3); } catch {}
-});
-document.getElementById('cam-smaller').addEventListener('click', () => {
-  try { window.focusee.control.pipResize(-3); } catch {}
-});
-window.addEventListener('resize', reportPip);
-setInterval(reportPip, 400); // drag moves the window; report position periodically
 
 // The stop flow, shared by the real button and the e2e stop signal.
 function requestStop() {
@@ -82,7 +48,6 @@ function requestStop() {
   state.stopped = true;
   $('#dot').classList.add('paused');
   $('#btn-stop').textContent = '保存中…';
-  stopPreviewTracks(); // own-context, safe
   window.focusee.control.stop();
 }
 
@@ -93,7 +58,6 @@ window.focusee.control.onStopSignal(requestStop);
 $('#btn-cancel').addEventListener('click', () => {
   if (state.stopped) return;
   state.stopped = true;
-  stopPreviewTracks();
   window.focusee.control.cancel();
 });
 

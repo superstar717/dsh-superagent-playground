@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'self'; media-src 'self' blob:;" />
+  <title>摄像头画中画</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { background: transparent; overflow: hidden; }
+    body {
+      margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+      user-select: none;
+    }
+    /* Round, free-floating camera bubble: the OS window itself is transparent,
+       so ONLY the circle is on screen — matching the circle that is baked into
+       the recording (arc-clipped PiP in the renderer's bake loop). This used to
+       be embedded as a rectangle inside the square control pill. */
+    .bubble {
+      position: relative; width: 240px; height: 240px;
+      border-radius: 50%; overflow: hidden;
+      border: 3px solid rgba(255, 255, 255, 0.75);
+      box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
+      background: rgba(17, 19, 24, 0.35);
+      -webkit-app-region: drag;
+    }
+    .bubble video {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      transform: scaleX(-1); /* mirror like FocuSee/self-view */
+    }
+    .bubble.no-video video { display: none; }
+    .bubble .hint {
+      position: absolute; inset: 0; display: none;
+      align-items: center; justify-content: center; text-align: center;
+      color: rgba(255,255,255,.65); font-size: 12px; padding: 0 36px; line-height: 1.5;
+    }
+    .bubble.no-video .hint { display: flex; }
+    .cam-tools {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: rgba(17, 19, 24, 0.72); color: #fff; padding: 5px 0; font-size: 11px;
+      opacity: 0; transition: opacity .15s ease;
+      -webkit-app-region: no-drag;
+    }
+    .bubble:hover .cam-tools, .cam-tools:hover { opacity: 1; }
+    .cam-tools button {
+      border: 0; border-radius: 6px; width: 24px; height: 20px;
+      background: rgba(255, 255, 255, 0.18); color: #fff; cursor: pointer;
+      -webkit-app-region: no-drag;
+    }
+    .cam-tools span { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <div id="bubble" class="bubble no-video" title="拖动调整画中画在成片中的位置；悬停显示 ＋/− 调大小">
+    <video id="cam-video" autoplay muted playsinline></video>
+    <div class="hint">摄像头未就绪<br>录制不受影响</div>
+    <div class="cam-tools">
+      <button id="cam-smaller" title="缩小">−</button>
+      <span id="cam-size-label">18%</span>
+      <button id="cam-bigger" title="放大">＋</button>
+    </div>
+  </div>
+  <script src="./cam-preview.js"></script>
+</body>
+</html>
