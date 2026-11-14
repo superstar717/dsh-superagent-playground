@@ -1,0 +1,14 @@
+<!DOCTYPE html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' vendor:; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; img-src 'self' vendor: data: blob:; connect-src 'self' vendor:;" /></head>
+<body><div id="out">loading…</div>
+<script type="module">
+  const out = document.getElementById('out');
+  try {
+    const vision = await import('./vendor/vision_bundle.mjs');
+    const fileset = await vision.FilesetResolver.forVisionTasks('./vendor/wasm');
+    const segmenter = await vision.ImageSegmenter.createFromOptions(fileset, {
+      baseOptions: { modelAssetPath: './vendor/selfie_segmenter.tflite', delegate: 'CPU' },
+      runningMode: 'VIDEO', outputConfidenceMask: true,
+    });
+    out.textContent = 'SEG_OK mask=' + segmenter;
+  } catch (e) { out.textContent = 'SEG_FAIL ' + e.message; }
+</script></body></html>

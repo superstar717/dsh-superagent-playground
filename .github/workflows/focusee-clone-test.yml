@@ -1,0 +1,32 @@
+name: focusee-clone tests
+
+# 工单 29ad3631d2a6：FocuSee 复刻原型的几何/自动缩放单元测试门禁。
+# 任何改动 focusee-clone/ 的 PR / 分支推送都跑同一份测试。
+
+on:
+  pull_request:
+    paths:
+      - 'focusee-clone/**'
+      - '.github/workflows/focusee-clone-test.yml'
+  push:
+    branches:
+      - 'agent/**'
+      - 'main'
+    paths:
+      - 'focusee-clone/**'
+      - '.github/workflows/focusee-clone-test.yml'
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run zoom/geometry unit tests
+        working-directory: focusee-clone
+        run: |
+          npm install --no-audit --no-fund --ignore-scripts
+          node scripts/build-zoom-cjs.js
+          node --test "test/*.test.mjs"
