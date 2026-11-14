@@ -253,3 +253,82 @@ export function cursorAt(track, t) {
   const k = (t - a.t) / span;
   return { t, nx: lerp(a.nx, b.nx, k), ny: lerp(a.ny, b.ny, k) };
 }
+
+// ---------------------------------------------------------------------------
+// Camera picture-in-picture layouts + 3D tilt (pure geometry, unit-tested)
+// ---------------------------------------------------------------------------
+
+/** Camera PiP layout presets. margin is a fraction of the shorter canvas side. */
+export const CAMERA_LAYOUTS = {
+  'bottom-right': { anchor: ['right', 'bottom'], margin: 0.06 },
+  'bottom-left': { anchor: ['left', 'bottom'], margin: 0.06 },
+  'top-right': { anchor: ['right', 'top'], margin: 0.06 },
+  'top-left': { anchor: ['left', 'top'], margin: 0.06 },
+  'bottom-center': { anchor: ['center', 'bottom'], margin: 0.05 },
+};
+
+/**
+ * Rectangle for the camera PiP inside the output canvas.
+ *
+ * @param {string} layout one of CAMERA_LAYOUTS keys
+ * @param {number} canvasW output width
+ * @param {number} canvasH output height
+ * @param {number} sizePct 4..40 — camera width as a percentage of canvas width
+ * @param {number} camAspect camera video aspect (width/height), default 4/3
+ * @returns {{x:number,y:number,w:number,h:number,radius:number,shape:'circle'|'rounded'}}
+ */
+export function computeCameraRect(layout, canvasW, canvasH, sizePct, camAspect = 4 / 3) {
+  const preset = CAMERA_LAYOUTS[layout] || CAMERA_LAYOUTS['bottom-right'];
+  const W = Math.max(1, canvasW);
+  const H = Math.max(1, canvasH);
+  let w = clamp((W * clamp(Number(sizePct) || 18, 4, 40)) / 100, 8, W * 0.45);
+  const ratio = clamp(Number(camAspect) || 4 / 3, 0.5, 3);
+  let h = w / ratio;
+  const maxH = H * 0.6;
+  if (h > maxH) { h = maxH; w = h * ratio; }
+  const [ax, ay] = preset.anchor;
+  const margin = (Math.min(W, H) * preset.margin);
+  const x = ax === 'left' ? margin : ax === 'center' ? (W - w) / 2 : W - w - margin;
+  const y = ay === 'top' ? margin : H - h - margin;
+  // Corner layouts use a circle; bottom-center uses a wide rounded card.
+  const isCorner = ax !== 'center';
+  return {
+    x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h),
+    radius: Math.round(Math.min(w, h) / (isCorner ? 2 : 6)),
+    shape: isCorner ? 'circle' : 'rounded',
+  };
+}
+
+/**
+ * Perspective-tilt mapping: given the source rectangle and a tilt amount
+ * (-1..1), returns per-column destination heights for a slice-based trapezoid
+ * render (fake 3D rotation around the vertical axis). Positive tilt shrinks
+ * the right edge (rotate right).
+ *
+ * @returns {{columns:number, slices:[{sx:number,sw:number, dx:number, dyTop:number, dyBot:number, dw:number}]}}
+ */
+export function tiltSlices(rect, tilt, columns = 32) {
+  const t = clamp(Number(tilt) || 0, -1, 1);
+  const n = Math.max(4, Math.round(columns));
+  const slices = [];
+  const shrink = Math.abs(t) * 0.14; // max 14% height change on the far edge
+  const cy = rect.y + rect.h / 2;
+  for (let i = 0; i < n; i += 1) {
+    const f0 = i / n;
+    const f1 = (i + 1) / n;
+    // Height factor at each column EDGE: 1 near the pivot edge, 1-shrink far.
+    // Top/bottom use the edge factors directly so the outermost edges keep
+    // their exact geometry (h=1 at the pivot edge).
+    const h0 = 1 - shrink * (t > 0 ? f0 : 1 - f0);
+    const h1 = 1 - shrink * (t > 0 ? f1 : 1 - f1);
+    slices.push({
+      sx: rect.w * f0,
+      sw: rect.w / n + 0.6,
+      dx: rect.x + rect.w * f0,
+      dyTop: cy - (rect.h * h0) / 2,
+      dyBot: cy + (rect.h * h1) / 2,
+      dw: rect.w / n + 0.6,
+    });
+  }
+  return { columns: n, slices };
+}

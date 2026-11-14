@@ -3,6 +3,7 @@
 
 import {
   contentRect, fitRect, sourceRectAt, zoomAt, cursorAt, clamp, mapPointToCanvas,
+  computeCameraRect, tiltSlices,
 } from './zoom.js';
 
 export const BACKGROUNDS = [
@@ -175,6 +176,14 @@ export function drawFrame(ctx, { width, height, project, video, time, preview = 
   const zoom = zoomAt(project.zooms || [], time);
   const src = sourceRectAt(zoom, vw, vh);
 
+  const tilt = clamp((Number(style.tilt3d) || 0), -100, 100) / 100;
+  // Cursor-driven tilt: the far edge follows the pointer's horizontal position.
+  let tiltAmount = tilt;
+  if (style.tiltFollow && project.cursor?.length) {
+    const pos = cursorAt(project.cursor, time);
+    if (pos) tiltAmount = clamp(tiltAmount + (pos.nx - 0.5) * 0.9, -1, 1);
+  }
+
   ctx.save();
   roundRectPath(ctx, rect.x, rect.y, rect.w, rect.h, radius);
   ctx.clip();
@@ -182,7 +191,23 @@ export function drawFrame(ctx, { width, height, project, video, time, preview = 
   ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
   if (ready) {
     try {
-      ctx.drawImage(video, src.sx, src.sy, src.sw, src.sh, rect.x, rect.y, rect.w, rect.h);
+      if (Math.abs(tiltAmount) > 0.02) {
+        // Slice-based perspective: draw the cropped frame column by column,
+        // interpolating each column's height — a real trapezoid, not a skew.
+        const srcH = src.sh;
+        for (const sl of tiltSlices(rect, tiltAmount).slices) {
+          const syTop = src.sy;
+          const syH = srcH * ((sl.dyBot - sl.dyTop) / rect.h);
+          const syOff = srcH * ((sl.dyTop - rect.y) / rect.h);
+          ctx.drawImage(
+            video,
+            src.sx + sl.sx, src.sy + syOff, sl.sw, syH,
+            sl.dx, sl.dyTop, sl.dw, sl.dyBot - sl.dyTop,
+          );
+        }
+      } else {
+        ctx.drawImage(video, src.sx, src.sy, src.sw, src.sh, rect.x, rect.y, rect.w, rect.h);
+      }
     } catch {
       // Video can be mid-seek; the next frame will paint it.
     }
@@ -249,6 +274,57 @@ export function drawFrame(ctx, { width, height, project, video, time, preview = 
         }
       }
     }
+  }
+
+  // Camera picture-in-picture (FocuSee's 摄像头画中画 / 镜头布局).
+  const cam = project.camera || {};
+  const camVideo = project.cameraVideoEl || null;
+  const camReady = cam.enabled && camVideo && camVideo.videoWidth > 0;
+  if (camReady) {
+    const camRect = computeCameraRect(cam.layout || 'bottom-right', W, H, cam.size || 18, camVideo.videoWidth / camVideo.videoHeight);
+    const shadow2 = 0.35;
+    ctx.save();
+    ctx.shadowColor = `rgba(8, 10, 20, ${shadow2})`;
+    ctx.shadowBlur = 18;
+    ctx.shadowOffsetY = 6;
+    ctx.fillStyle = '#101218';
+    if (camRect.shape === 'circle') {
+      ctx.beginPath();
+      ctx.arc(camRect.x + camRect.w / 2, camRect.y + camRect.h / 2, camRect.w / 2, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      roundRectPath(ctx, camRect.x, camRect.y, camRect.w, camRect.h, camRect.radius);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    ctx.save();
+    if (camRect.shape === 'circle') {
+      ctx.beginPath();
+      ctx.arc(camRect.x + camRect.w / 2, camRect.y + camRect.h / 2, camRect.w / 2, 0, Math.PI * 2);
+      ctx.clip();
+      // Square source crop centred, so the circle doesn't stretch the face.
+      const cw = Math.min(camVideo.videoWidth, camVideo.videoHeight);
+      const cx0 = (camVideo.videoWidth - cw) / 2;
+      const cy0 = (camVideo.videoHeight - cw) / 2;
+      ctx.drawImage(camVideo, cx0, cy0, cw, cw, camRect.x, camRect.y, camRect.w, camRect.h);
+    } else {
+      roundRectPath(ctx, camRect.x, camRect.y, camRect.w, camRect.h, camRect.radius);
+      ctx.clip();
+      ctx.drawImage(camVideo, 0, 0, camVideo.videoWidth, camVideo.videoHeight, camRect.x, camRect.y, camRect.w, camRect.h);
+    }
+    // Thin light ring, like FocuSee's camera border.
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineWidth = Math.max(1.5, camRect.w * 0.014);
+    if (camRect.shape === 'circle') {
+      ctx.beginPath();
+      ctx.arc(camRect.x + camRect.w / 2, camRect.y + camRect.h / 2, camRect.w / 2 - ctx.lineWidth / 2, 0, Math.PI * 2);
+      ctx.stroke();
+    } else {
+      roundRectPath(ctx, camRect.x + ctx.lineWidth / 2, camRect.y + ctx.lineWidth / 2, camRect.w - ctx.lineWidth, camRect.h - ctx.lineWidth, camRect.radius);
+      ctx.stroke();
+    }
+    ctx.restore();
   }
 
   // Captions (manual / imported). AI captioning itself is out of scope.

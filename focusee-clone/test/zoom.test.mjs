@@ -145,3 +145,60 @@ test('formatTime renders MM:SS.cc', () => {
   assert.equal(formatTime(7.44), '00:07.44');
   assert.equal(formatTime(61.5), '01:01.50');
 });
+
+import { CAMERA_LAYOUTS, computeCameraRect, tiltSlices } from '../renderer/zoom.cjs';
+
+test('computeCameraRect: corner layouts produce a circle-sized box anchored inside', () => {
+  const r = computeCameraRect('bottom-right', 1280, 800, 18, 4 / 3);
+  assert.equal(r.shape, 'circle');
+  assert.ok(r.w > 0 && r.h > 0);
+  // right edge inset by the margin (6% of the shorter side = 48)
+  assert.ok(Math.abs(r.x + r.w - (1280 - 48)) <= 2, `x+w=${r.x + r.w}`);
+  assert.ok(Math.abs(r.y + r.h - (800 - 48)) <= 2, `y+h=${r.y + r.h}`);
+  assert.ok(r.w / r.h > 1.3 && r.w / r.h < 1.37, `aspect ${r.w / r.h}`);
+});
+
+test('computeCameraRect: bottom-center is a rounded card, horizontally centred', () => {
+  const r = computeCameraRect('bottom-center', 1280, 800, 20, 4 / 3);
+  assert.equal(r.shape, 'rounded');
+  assert.equal(Math.abs(r.x + r.w / 2 - 640) <= 2, true);
+  assert.ok(r.radius < Math.min(r.w, r.h) / 2);
+});
+
+test('computeCameraRect: size and aspect clamps hold for extreme input', () => {
+  const tiny = computeCameraRect('top-left', 1280, 800, 4, 4 / 3);
+  assert.ok(tiny.w >= 8);
+  const tall = computeCameraRect('top-left', 1280, 800, 40, 0.5); // very tall camera
+  assert.ok(tall.h <= 800 * 0.6 + 2, `h=${tall.h}`);
+});
+
+test('tiltSlices: zero tilt keeps full height, edges untouched', () => {
+  const { slices } = tiltSlices({ x: 100, y: 50, w: 800, h: 400 }, 0);
+  for (const sl of slices) {
+    assert.ok(Math.abs(sl.dyTop - 50) < 0.01);
+    assert.ok(Math.abs(sl.dyBot - 450) < 0.01);
+  }
+  assert.equal(slices[0].sx, 0);
+});
+
+test('tiltSlices: positive tilt shrinks the right edge like a rotate-right', () => {
+  const { slices } = tiltSlices({ x: 100, y: 50, w: 800, h: 400 }, 1);
+  const left = slices[0];
+  const right = slices[slices.length - 1];
+  assert.ok(Math.abs(left.dyTop - 50) < 0.01);
+  assert.ok(right.dyTop > left.dyTop + 10, `far edge should shrink: ${right.dyTop}`);
+  assert.ok(right.dyBot < left.dyBot - 10);
+  // Columns tile the full width without gaps.
+  assert.ok(Math.abs(slices[0].dx - 100) < 0.01);
+  const last = slices[slices.length - 1];
+  assert.ok(Math.abs(last.dx + last.dw - 900) < 1.5);
+});
+
+test('tiltSlices: negative tilt mirrors the direction', () => {
+  const pos = tiltSlices({ x: 0, y: 0, w: 800, h: 400 }, 1).slices;
+  const neg = tiltSlices({ x: 0, y: 0, w: 800, h: 400 }, -1).slices;
+  // Positive tilt pivots on the left edge (right shrinks); negative mirrors:
+  // the shrinking edge moves to the left.
+  assert.ok(neg[0].dyTop > pos[0].dyTop + 10, `neg first top ${neg[0].dyTop}`);
+  assert.ok(neg[neg.length - 1].dyTop < 1, 'neg right edge keeps full height');
+});

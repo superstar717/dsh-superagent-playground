@@ -56,6 +56,15 @@ contextBridge.exposeInMainWorld('focusee', {
     set: (patch) => ipcRenderer.invoke('settings:set', patch),
   },
 
+  teleprompter: {
+    toggle: () => ipcRenderer.invoke('teleprompter:toggle'),
+  },
+
+  camera: {
+    save: (id, data) => ipcRenderer.invoke('projects:saveCamera', { id, data }),
+    load: (id) => ipcRenderer.invoke('projects:camera', id),
+  },
+
   e2e: {
     shot: (name) => ipcRenderer.invoke('e2e:shot', name),
     quit: () => ipcRenderer.invoke('e2e:quit'),

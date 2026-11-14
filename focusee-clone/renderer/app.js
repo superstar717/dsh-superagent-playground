@@ -215,6 +215,17 @@ async function openProject(id, opts = {}) {
     S.video = await loadVideoElement(S.videoUrl);
     S.project = project;
     project.style = { ...DEFAULT_STYLE, ...(project.style || {}) };
+    project.camera = { enabled: !!project.cameraFile, layout: 'bottom-right', size: 18, ...(project.camera || {}) };
+    if (project.cameraFile) {
+      try {
+        const camMedia = await window.focusee.camera.load(id);
+        const camBlob = new Blob([camMedia.data], { type: camMedia.mime });
+        project.cameraVideoEl = await loadVideoElement(URL.createObjectURL(camBlob));
+      } catch (err) {
+        console.warn('[camera] load failed', err);
+        project.camera.enabled = false;
+      }
+    }
     project.zooms = project.zooms || [];
     project.clicks = project.clicks || [];
     project.cursor = project.cursor || [];
@@ -434,9 +445,38 @@ function inspectorAudio(p) {
 }
 
 function inspectorLayout(p) {
-  return `<div class="insp-section">
-    <p class="placeholder"><b>未实现：</b>摄像头画中画、镜头布局、布局片段、背景移除、提词器、3D 动效。FocuSee 的这些功能依赖人脸/语音/视频分析，不在本次原型范围。</p>
-  </div>`;
+  const cam = p.camera || { enabled: false, layout: 'bottom-right', size: 18 };
+  const layouts = ['bottom-right', 'bottom-left', 'top-right', 'top-left', 'bottom-center'];
+  const names = { 'bottom-right': '右下', 'bottom-left': '左下', 'top-right': '右上', 'top-left': '左上', 'bottom-center': '底部居中' };
+  const hasTake = !!p.cameraFile;
+  const chips = layouts.map((l) => `<button class="chip ${cam.layout === l ? 'active' : ''}" data-cam-layout="${l}" ${cam.enabled ? '' : 'disabled'}>${names[l]}</button>`).join('');
+  const tilt = p.style.tilt3d || 0;
+  return `
+    <div class="insp-section">
+      <div class="switch-row"><span>摄像头画中画</span><button class="switch ${cam.enabled ? 'on' : ''}" data-toggle="camera.enabled" ${hasTake ? '' : 'disabled'}></button></div>
+      ${hasTake
+        ? `<p class="hint">使用录制时勾选「录制摄像头」保存的摄像头画面（camera.webm）。</p>`
+        : `<p class="hint">这个项目没有摄像头画面。录制时勾选「录制摄像头（画中画）」即可生成。</p>`}
+      <h4>镜头布局</h4>
+      <div class="chip-row">${chips}</div>
+      ${sliderRow('camSize', '摄像头大小', 8, 40, cam.size || 18)}
+    </div>
+    <div class="insp-section">
+      <h4>3D 动效</h4>
+      <div class="switch-row"><span>跟随光标的透视倾斜</span><button class="switch ${p.style.tiltFollow ? 'on' : ''}" data-toggle="style.tiltFollow"></button></div>
+      ${sliderRow('tilt3d', '基础倾斜', -100, 100, tilt)}
+      <p class="hint">倾斜为逐列透视（梯形映射），正负切换朝向；开启跟随时光标在左画面朝左转、在右朝右转。</p>
+    </div>
+    <div class="insp-section">
+      <h4>提词器</h4>
+      <div style="display:flex;gap:8px">
+        <button class="btn xs" data-action="teleprompter">打开 / 收起提词器</button>
+      </div>
+      <p class="hint">悬浮窗不录进画面；录屏开始前勾选「提词器」也会自动打开。</p>
+    </div>
+    <div class="insp-section">
+      <p class="placeholder"><b>仍未实现：</b>背景移除（需要人脸分割模型）、布局片段（分段切换镜头）、AI 字幕、音频增强。</p>
+    </div>`;
 }
 
 function inspectorMore(p) {
@@ -476,10 +516,11 @@ function bindInspector(host) {
       const val = Number(el.value);
       if (key === 'autoScale') p.auto = { ...(p.auto || AUTO_DEFAULTS), scale: val / 10 };
       else if (key === 'autoHold') p.auto = { ...(p.auto || AUTO_DEFAULTS), hold: val / 10 };
+      else if (key === 'camSize') p.camera.size = val;
       else p.style[key] = val;
       const readout = host.querySelector(`[data-readout="${key}"]`);
       if (readout) readout.textContent = `${val}${key === 'padding' ? '%' : ''}`;
-      if (['padding', 'radius', 'shadow', 'blur', 'border'].includes(key)) S.dirty = true;
+      if (['padding', 'radius', 'shadow', 'blur', 'border', 'tilt3d', 'camSize'].includes(key)) S.dirty = true;
       if (key === 'autoScale' || key === 'autoHold') applyAutoZooms({ silent: true });
     });
   });
@@ -487,6 +528,8 @@ function bindInspector(host) {
     if (el.dataset.toggle === 'cursorFx.enabled') p.cursorFx.enabled = !p.cursorFx.enabled;
     else if (el.dataset.toggle === 'cursorFx.highlight') p.cursorFx.highlight = !p.cursorFx.highlight;
     else if (el.dataset.toggle === 'fixedZoom') p.fixedZoom = !p.fixedZoom;
+    else if (el.dataset.toggle === 'camera.enabled') p.camera.enabled = !p.camera.enabled;
+    else if (el.dataset.toggle === 'style.tiltFollow') p.style.tiltFollow = !p.style.tiltFollow;
     renderInspector();
     S.dirty = true;
   }));
@@ -506,6 +549,14 @@ function bindInspector(host) {
     renderInspector();
     S.dirty = true;
   }));
+  host.querySelectorAll('[data-cam-layout]').forEach((el) => el.addEventListener('click', () => {
+    p.camera.layout = el.dataset.camLayout;
+    renderInspector();
+    S.dirty = true;
+  }));
+  host.querySelector('[data-action="teleprompter"]')?.addEventListener('click', async () => {
+    await window.focusee.teleprompter.toggle();
+  });
   const color = host.querySelector('input[type="color"][data-key="bgColor"]');
   color?.addEventListener('input', () => {
     p.style.bgColor = color.value;
@@ -798,7 +849,26 @@ async function startRecording() {
         toast('麦克风不可用，将只录制画面');
       }
     }
-    const tracks = [...videoStream.getVideoTracks(), ...(micStream ? micStream.getAudioTracks() : [])];
+    let camStream = null;
+    const withCamera = $('#opt-camera')?.checked;
+    if (withCamera) {
+      try {
+        camStream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
+          audio: false,
+        });
+      } catch (err) {
+        toast('摄像头不可用，将不录制画中画');
+      }
+    }
+    if ($('#opt-teleprompter')?.checked) {
+      window.focusee.teleprompter.toggle();
+    }
+    const tracks = [
+      ...videoStream.getVideoTracks(),
+      ...(micStream ? micStream.getAudioTracks() : []),
+      ...(camStream ? camStream.getVideoTracks() : []),
+    ];
     const stream = new MediaStream(tracks);
     const mimeType = pickMime();
     const recorder = new MediaRecorder(stream, {
@@ -813,14 +883,24 @@ async function startRecording() {
       stream,
       videoStream,
       micStream,
+      camStream,
       recorder,
       chunks,
+      camChunks: camStream ? [] : null,
       mic,
       source,
       display,
       startedAt: Date.now(),
       settings: videoStream.getVideoTracks()[0]?.getSettings?.() || {},
     };
+    if (camStream) {
+      // Record the camera to its own file so the PiP can be re-laid-out in the
+      // editor (FocuSee bakes the camera in at record time; we keep it editable).
+      const camRec = new MediaRecorder(camStream, { mimeType: 'video/webm;codecs=vp8' });
+      S.recording.camRecorder = camRec;
+      camRec.ondataavailable = (e) => { if (e.data.size) S.recording.camChunks.push(e.data); };
+      camRec.start(1000);
+    }
     recorder.onstop = () => saveRecordingFrom(recorder).catch((err) => {
       console.error(err);
       toast(`保存录制失败：${err.message}`);
@@ -850,9 +930,11 @@ async function finishRecording(mode = 'save') {
   clearInterval(rec.timer);
   try {
     if (rec.recorder.state !== 'inactive') rec.recorder.stop();
+    if (rec.camRecorder && rec.camRecorder.state !== 'inactive') rec.camRecorder.stop();
     rec.stream.getTracks().forEach((t) => t.stop());
     rec.videoStream?.getTracks().forEach((t) => t.stop());
     rec.micStream?.getTracks().forEach((t) => t.stop());
+    rec.camStream?.getTracks().forEach((t) => t.stop());
     await window.focusee.capture.hideControl();
   } catch (err) {
     console.error(err);
@@ -896,9 +978,27 @@ async function saveRecordingFrom(rec) {
     data,
   };
   const saved = await window.focusee.projects.importVideo({ id: uid('rec'), video: project, cursor });
+  // Persist the camera take beside the screen recording (id known only now).
+  let camSaved = false;
+  if (rec.camRecorder && rec.camChunks?.length) {
+    try {
+      const camBlob = new Blob(rec.camChunks, { type: 'video/webm' });
+      await window.focusee.camera.save(saved.id, new Uint8Array(await camBlob.arrayBuffer()));
+      saved.cameraFile = 'camera.webm';
+      saved.camera = { enabled: true, layout: 'bottom-right', size: 18 };
+      camSaved = true;
+    } catch (err) {
+      console.warn('[camera] save failed', err);
+    }
+  }
   await refreshProjects();
   renderHome();
   await openProject(saved.id);
+  if (camSaved && S.project) {
+    S.project.cameraFile = 'camera.webm';
+    S.project.camera = { enabled: true, layout: 'bottom-right', size: 18 };
+    await window.focusee.projects.save(stripRuntime(S.project));
+  }
   // Duration comes from the decoded video; persist it for the project list.
   if (S.video?.duration) {
     S.project.duration = S.video.duration;
@@ -919,7 +1019,7 @@ function defaultProjectName() {
 }
 
 function stripRuntime(project) {
-  const { data, _bgOverride, _resolvedBg, ...rest } = project;
+  const { data, cameraVideoEl, ...rest } = project;
   return rest;
 }
 

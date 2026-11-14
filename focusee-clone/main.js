@@ -281,6 +281,92 @@ function createControlWindow() {
 }
 
 // ---------------------------------------------------------------------------
+// Teleprompter (提词器): always-on-top, semi-transparent, content-protected —
+// visible to the person, never captured.
+// ---------------------------------------------------------------------------
+
+let teleprompterWindow = null;
+
+const TELEPROMPTER_HTML = `<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8" />
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html, body { background: transparent; overflow: hidden; }
+  body {
+    font-family: -apple-system, "PingFang SC", sans-serif;
+    -webkit-app-region: drag; user-select: none;
+    display: flex; flex-direction: column; height: 100vh;
+  }
+  .bar {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    background: rgba(17,19,24,.92); color: #fff; border-radius: 12px;
+    margin: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.4);
+    -webkit-app-region: no-drag; font-size: 12px;
+  }
+  .bar .title { font-weight: 700; margin-right: 4px; }
+  .bar input[type=range] { width: 90px; accent-color: #6c5ce7; }
+  .bar button { border: 0; border-radius: 6px; height: 24px; padding: 0 8px; background: rgba(255,255,255,.14); color: #fff; cursor: pointer; font-size: 11px; }
+  .bar button.on { background: #6c5ce7; }
+  #text {
+    flex: 1; margin: 0 10px 10px; padding: 14px 18px;
+    background: rgba(17,19,24,.82); color: #fff; border: 0; border-radius: 12px;
+    outline: none; resize: none;
+    font-size: 26px; line-height: 1.6; font-weight: 600;
+    -webkit-app-region: no-drag; user-select: text;
+    overflow-y: auto;
+  }
+</style></head><body>
+  <div class="bar">
+    <span class="title">提词器</span>
+    <label>字号 <input type="range" id="fs" min="14" max="64" value="26" /></label>
+    <label>速度 <input type="range" id="sp" min="0" max="8" value="0" /></label>
+    <button id="clear">清空</button>
+    <button id="close">收起</button>
+  </div>
+  <textarea id="text" placeholder="把讲稿粘到这里，拖动顶部条移动窗口；录制时这段画面不会被录进去。滚动速度拉到 0 以上自动滚。"></textarea>
+<script>
+  const fs = document.getElementById('fs');
+  const text = document.getElementById('text');
+  const sp = document.getElementById('sp');
+  let raf = null;
+  fs.addEventListener('input', () => { text.style.fontSize = fs.value + 'px'; });
+  function loop() {
+    const v = Number(sp.value);
+    if (v > 0 && document.activeElement !== text) text.scrollTop += v * 0.25;
+    raf = requestAnimationFrame(loop);
+  }
+  loop();
+  document.getElementById('clear').addEventListener('click', () => { text.value = ''; });
+  document.getElementById('close').addEventListener('click', () => window.close());
+</script></body></html>`;
+
+function createTeleprompterWindow() {
+  if (teleprompterWindow && !teleprompterWindow.isDestroyed()) {
+    teleprompterWindow.show();
+    return teleprompterWindow;
+  }
+  const win = new BrowserWindow({
+    width: 640,
+    height: 320,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    resizable: true,
+    skipTaskbar: true,
+    hasShadow: false,
+    webPreferences: { contextIsolation: true, nodeIntegration: false },
+  });
+  win.setAlwaysOnTop(true, 'screen-saver');
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  // The teleprompter is for the presenter only — exclude it from any capture.
+  win.setContentProtection(true);
+  win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(TELEPROMPTER_HTML)}`);
+  win.on('closed', () => { teleprompterWindow = null; });
+  teleprompterWindow = win;
+  return win;
+}
+
+// ---------------------------------------------------------------------------
 // IPC
 // ---------------------------------------------------------------------------
 
@@ -478,6 +564,31 @@ function registerIpc() {
     if (res.canceled || !res.filePath) return null;
     await fsp.writeFile(res.filePath, Buffer.from(data));
     return res.filePath;
+  });
+
+  ipcMain.handle('teleprompter:toggle', async () => {
+    if (teleprompterWindow && !teleprompterWindow.isDestroyed() && teleprompterWindow.isVisible()) {
+      teleprompterWindow.hide();
+      return { visible: false };
+    }
+    createTeleprompterWindow();
+    return { visible: true };
+  });
+
+  ipcMain.handle('projects:saveCamera', async (_e, { id, data }) => {
+    const dir = projectDir(id);
+    await fsp.mkdir(dir, { recursive: true });
+    const file = 'camera.webm';
+    await fsp.writeFile(path.join(dir, file), Buffer.from(data));
+    return { cameraFile: file };
+  });
+
+  ipcMain.handle('projects:camera', async (_e, id) => {
+    const p = await loadProject(id);
+    if (!p.cameraFile) return null;
+    const file = path.join(projectDir(id), p.cameraFile);
+    const data = await fsp.readFile(file);
+    return { data, mime: 'video/webm', file: p.cameraFile };
   });
 
   ipcMain.handle('settings:get', async () => readSettings());
