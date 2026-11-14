@@ -16,6 +16,21 @@ function tick() {
   $('#time').textContent = fmt((Date.now() - state.startedAt) / 1000);
 }
 
+// Stop the preview capture when the window hides — the tracks belong to THIS
+// page, so stopping them here is safe (never do it via cross-window JS).
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') stopPreviewTracks();
+});
+window.addEventListener('pagehide', stopPreviewTracks);
+
+function stopPreviewTracks() {
+  const v = document.getElementById('cam-video');
+  if (v && v.srcObject) {
+    v.srcObject.getTracks().forEach((t) => t.stop());
+    v.srcObject = null;
+  }
+}
+
 window.focusee.control.onState((info) => {
   if (info.startedAt && !state.startedAt) {
     state.startedAt = info.startedAt;
@@ -47,11 +62,13 @@ $('#btn-stop').addEventListener('click', () => {
   state.stopped = true;
   $('#dot').classList.add('paused');
   $('#btn-stop').textContent = '保存中…';
+  stopPreviewTracks(); // own-context, safe
   window.focusee.control.stop();
 });
 
 $('#btn-cancel').addEventListener('click', () => {
   if (state.stopped) return;
   state.stopped = true;
+  stopPreviewTracks();
   window.focusee.control.cancel();
 });
