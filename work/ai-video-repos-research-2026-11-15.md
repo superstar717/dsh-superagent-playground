@@ -20,6 +20,8 @@
 - 「pdcom」实为 **P(doom)**——来自歌曲名 *I'm Upping My P(doom)*；
 - 第 4、5 项是**同一首歌的两个独立 MV 工程**：#4 是用户 `mexicat` 的 `pdoom-video`，#5 是 `JohnHeibel` 的 `PDoomVideo`（"PDcom-Video-作者名" 是转写拼接，不是仓库命名规则）。
 
+另有用户追加的第 6 个项目 **aicodeking/leanrea**（非视频项目，逆向提效 skill），核对见 §五。
+
 ## 二、逐项核对
 
 ### 2.1 yihui-dev/awesome-opus5-5-videos（对应视频第 1 项）
@@ -84,7 +86,20 @@
 3. **版权红线**：zhuyansen 与 JohnHeibel/PDoomVideo 无许可证 → 只看不搬；lemo 的 6 条 TTS 音轨、Clawd 形象（两个仓库都涉及）不提取、不商用。
 4. 这 5 个项目都**不涉及真人换声/口型**，对 Wav2Lip 管线没有直接输入；它们与现有管线的交集在「代码渲染视频」与「字幕对齐」两处。
 
-## 四、核实方法与局限
+## 五、补充核对：aicodeking/leanrea（用户 2026-11-14 追加）
+
+- [aicodeking/leanrea](https://github.com/aicodeking/leanrea) **真实存在**：MIT，4,277⭐ / 645 forks，2026-10-17 创建、最后推送 2026-10-19（单个 SKILL.md 项目，无持续维护压力）。
+- 用户转述逐条核对：
+  - 「8KB 的 SKILL.md」✅：`leanrea/SKILL.md` 实测 8,374 字节；
+  - 「不装 MCP、不堆工具，直接跑本地命令行」✅：对照对象是 [morluto/rea](https://github.com/morluto/rea)（REA 6.5.0，207 个 MCP 工具；全量加载时上下文 400.7k tokens/$1.60，leanrea 仅 34.5k/$0.09）；
+  - 「快 38%、便宜 35%、准确率基本持平」✅ 有出处，是**仓库自带基准**（`bench/BENCHMARK.md` + 原始数据 `bench/results/final.jsonl` + 可复跑脚本）：Claude Code headless + Sonnet 5.5、macOS arm64，4 个逆向任务 × 3 次 × 3 臂共 36 跑、正则对照手工答案键评分。结果 leanrea 388s / $2.17 / 74-75 分 vs REA 627s / $3.36 / 75-75 分 → 时间 −38%、成本 −35%、turns −56%、tokens −60%，准确率 74 vs 75（一处部分命中：报了旧 IPC 通道）。
+  - 注意口径：38%/35% 是 **vs REA（MCP 路线）** 的数字；vs「完全不用 skill」的裸模型增益小得多（作者自述约 −19% 时间、−32% turns）。
+- 作者自述的基准局限（README 原文）：每格仅 3 次、单模型单机；REA 按其最优情形测（Claude Code 延迟加载 MCP 工具；全量加载工具的 agent 才吃 400k-token 行）；Ghidra/Hopper/jadx 未安装、native 任务两臂都用 Xcode 工具。**本报告未复跑该基准**，数字按仓库自测采信。
+- 定性：本质是一份「按 `file -b` 路由到每类目标最快命令 + 踩坑清单 + 证据纪律」的 cheat-sheet（SKILL.md 要求答案逐条标注 seen/inferred/unknown、`rg -uu` 搜解包树、批量探测单次调用、head 截断输出）——与本机工作约定第五节（报错先检索）和第十一节（缺失断言降级）的纪律同向。
+- 归属说明：**与现有口播/口型视频管线无交集**，属逆向/agent 提效域；对本机 ida-reverse / ghidra-reverse / reverse-skill-router 栈是「轻量路由层」思路的参考。用户「深度加壳混淆仍需 IDA/Ghidra」的判断与 SKILL.md 自身定位一致（它是路由层，不替代反编译器）。
+- 安装：`npx skills add aicodeking/leanrea`（skills CLI，支持 Claude Code / Codex / Cursor / Gemini CLI 等）。
+
+## 六、核实方法与局限
 
 - 数据来源：GitHub REST API via `gh api`（repo 元数据、contents、git tree、README/LICENSE 原文），检索用 `gh search repos`；所有 star/日期/许可证数字为 2026-11-15 实测值，会随时间变化。
 - 许可证判定以仓库内 LICENSE/REUSE.toml 原文为准，未依赖 GitHub 的归类字段（lemo-opuscar 在 API 中显示为 "Other"/NOASSERTION）。
