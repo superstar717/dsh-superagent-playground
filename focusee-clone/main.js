@@ -915,15 +915,25 @@ async function runE2EOpenFirst(win) {
 // exact path behind the 2026-11-15 user report: the first take stops fine,
 // the second take's stop button does nothing. The pill window is REUSED
 // across takes, so only this harness can catch state that latches in it.
+// --e2e-rec-takes=N generalises this to N takes; --e2e-rec-cancel-take=N
+// makes take N take the CANCEL path instead (no project saved, editor back,
+// later takes keep working).
 // ---------------------------------------------------------------------------
 
 async function runE2ERecording(win) {
   const withCamera = process.argv.includes('--e2e-rec-cam');
-  const takeCount = process.argv.includes('--e2e-rec-two') ? 2 : 1;
+  const takesArg = process.argv.find((a) => a.startsWith('--e2e-rec-takes='));
+  const takeCount = takesArg
+    ? Math.max(1, parseInt(takesArg.split('=')[1], 10) || 1)
+    : (process.argv.includes('--e2e-rec-two') ? 2 : 1);
+  const cancelTake = (() => {
+    const a = process.argv.find((x) => x.startsWith('--e2e-rec-cancel-take='));
+    return a ? parseInt(a.split('=')[1], 10) || 0 : 0;
+  })();
   const wc = win.webContents;
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const evalJs = (code) => wc.executeJavaScript(code, true);
-  const report = { steps: [], withCamera, takes: takeCount };
+  const report = { steps: [], withCamera, takes: takeCount, cancelTake };
   const step = (name, ok, extra) => {
     report.steps.push({ name, ok, ...(extra !== undefined ? { extra } : {}) });
     console.log('[e2e-rec]', name, ok ? 'ok' : 'FAIL', extra === undefined ? '' : String(extra));
@@ -934,7 +944,7 @@ async function runE2ERecording(win) {
     // Per-take baseline: the saved-project count BEFORE that take started.
     let baseline = (await listProjects()).filter((p) => p.id !== 'sample').length;
     for (let takeNo = 1; takeNo <= takeCount; takeNo += 1) {
-      const okTake = await runRecordingTake({ win, report, step, wait, evalJs, withCamera, takeNo, baseline, artifactDir });
+      const okTake = await runRecordingTake({ win, report, step, wait, evalJs, withCamera, takeNo, baseline, artifactDir, cancel: takeNo === cancelTake });
       if (!okTake) break;
       baseline = (await listProjects()).filter((p) => p.id !== 'sample').length;
     }
@@ -958,7 +968,7 @@ async function runE2ERecording(win) {
   }
 }
 
-async function runRecordingTake({ win, report, step, wait, evalJs, withCamera, takeNo, baseline, artifactDir }) {
+async function runRecordingTake({ win, report, step, wait, evalJs, withCamera, takeNo, baseline, artifactDir, cancel = false }) {
   const tag = `take${takeNo}`;
   // Fresh dialog state each take.
   await evalJs(`document.querySelector('#btn-record').click()`);
@@ -1008,18 +1018,44 @@ async function runRecordingTake({ win, report, step, wait, evalJs, withCamera, t
     await evalJs(`window.focusee.e2e.shotControl('${tag}-pill')`);
   }
   await wait(2500);
-  // Stop via the pill's own button path: signal it, its own handler runs the
-  // stop flow in its own context (never inject JS into the pill — that API
-  // natively crashed the app during teardown).
+  // Stop/cancel via the pill's own button path: signal it, its own handler
+  // runs the flow in its own context (never inject JS into the pill — that
+  // API natively crashed the app during teardown).
   let bakeDebug = null;
   try { bakeDebug = await evalJs(`window.__bakeDebug || null`); } catch {}
+  if (bakeDebug) step(`${tag}:bake-debug`, true, JSON.stringify(bakeDebug));
+  if (cancel) {
+    let cancelled = 'no-pill';
+    try {
+      controlWindow.webContents.send('control:cancelSignal');
+      cancelled = 'signalled';
+    } catch (e) { cancelled = 'send:' + e.message; }
+    step(`${tag}:cancel-signalled`, cancelled === 'signalled', cancelled);
+    // Cancel must: save NOTHING (count unchanged), put the editor back in
+    // front, and show the cancel toast — then later takes keep working.
+    let toastText = null;
+    let editorBack = false;
+    let grew = false;
+    for (let i = 0; i < 25 && !(toastText && editorBack); i += 1) {
+      await wait(1000);
+      if ((await listProjects()).filter((p) => p.id !== 'sample').length > baseline) grew = true;
+      try {
+        const t = await evalJs(`document.querySelector('#toast')?.classList.contains('hidden') ? null : document.querySelector('#toast')?.textContent`);
+        if (t && /取消/.test(t)) toastText = t;
+        editorBack = win.isVisible();
+      } catch {}
+    }
+    const savedNow = (await listProjects()).filter((p) => p.id !== 'sample').length;
+    step(`${tag}:cancel-accepted`, !grew && !!toastText && editorBack,
+      `projects=${savedNow} baseline=${baseline} toast=${toastText || 'none'} editor=${editorBack}`);
+    return !grew;
+  }
   let stopped = 'no-pill';
   try {
     controlWindow.webContents.send('control:stopSignal');
     stopped = 'signalled';
   } catch (e) { stopped = 'send:' + e.message; }
   step(`${tag}:stop-signalled`, stopped === 'signalled', stopped);
-  if (bakeDebug) step(`${tag}:bake-debug`, true, JSON.stringify(bakeDebug));
   // The save runs in the background after the editor is unblocked — poll for
   // a NEW project beyond this take's baseline (a latched pill never sends the
   // stop IPC, so the count would never move: the second-stop failure shows up

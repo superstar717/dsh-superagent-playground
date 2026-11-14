@@ -55,11 +55,16 @@ $('#btn-stop').addEventListener('click', requestStop);
 
 window.focusee.control.onStopSignal(requestStop);
 
-$('#btn-cancel').addEventListener('click', () => {
+function requestCancel() {
   if (state.stopped) return;
   state.stopped = true;
   window.focusee.control.cancel();
-});
+}
+
+$('#btn-cancel').addEventListener('click', requestCancel);
+// Same event contract as the stop signal: the e2e harness drives THIS page's
+// own cancel handler (cross-window JS injection stays forbidden).
+window.focusee.control.onCancelSignal(requestCancel);
 
 // Tell the main process this page (and with it the focusee bridge) is alive.
 // Both the recorder flow and the e2e harness key off this instead of probing

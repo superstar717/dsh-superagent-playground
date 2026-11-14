@@ -103,10 +103,21 @@ test('bubble and pill are excluded from the recording capture', () => {
 
 test('e2e harness can reproduce the two-take path and leave the app running', () => {
   assert.match(mainJs, /--e2e-rec-two/);
+  assert.match(mainJs, /--e2e-rec-takes=/);
+  assert.match(mainJs, /--e2e-rec-cancel-take=/);
   assert.match(mainJs, /--e2e-rec-hold/);
   assert.match(mainJs, /runRecordingTake/);
   // e2e launches must not fight the installed app for the same userData lock.
   assert.match(mainJs, /--focusee-user-data/);
+});
+
+test('cancel path is event-driven and resets with the same latch', () => {
+  // The cancel button shares the stopped latch with stop; the harness drives
+  // it through the page's own handler (no JS injection into pill pages).
+  assert.match(controlJs, /function requestCancel\(/);
+  assert.match(controlJs, /onCancelSignal\(requestCancel\)/);
+  assert.match(preloadJs, /onCancelSignal/);
+  assert.match(mainJs, /control:cancelSignal/);
 });
 
 test('stop-signal replay reaches pages that loaded after showControl', () => {

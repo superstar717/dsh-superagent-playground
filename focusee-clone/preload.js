@@ -97,6 +97,11 @@ contextBridge.exposeInMainWorld('focusee', {
       ipcRenderer.on('control:stopSignal', handler);
       return () => ipcRenderer.removeListener('control:stopSignal', handler);
     },
+    onCancelSignal: (cb) => {
+      const handler = () => cb();
+      ipcRenderer.on('control:cancelSignal', handler);
+      return () => ipcRenderer.removeListener('control:cancelSignal', handler);
+    },
     stop: () => ipcRenderer.send('capture:stopRequested'),
     cancel: () => ipcRenderer.send('capture:cancelRequested'),
     reportPip: () => ipcRenderer.send('control:pipReport'),
