@@ -1,0 +1,18 @@
+{
+  "name": "focusee-clone",
+  "version": "0.1.0",
+  "description": "Learning prototype: a FocuSee-style auto-zoom screen recorder and editor, studied with Craft Anything (clean room).",
+  "main": "main.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node scripts/build-zoom-cjs.js && node --test \"test/*.test.mjs\"",
+    "sample": "node scripts/make-sample.js",
+    "e2e": "electron . --e2e",
+    "build:cjs": "node scripts/build-zoom-cjs.js"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "45.2.2"
+  }
+}

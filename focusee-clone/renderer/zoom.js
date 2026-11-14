@@ -1,0 +1,255 @@
+// Pure geometry + auto-zoom maths.
+// Kept free of DOM and Electron APIs so the same code powers the renderer,
+// the export pipeline and the Node unit tests.
+
+export const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+export const lerp = (a, b, t) => a + (b - a) * t;
+
+export const smoothstep = (x) => {
+  const t = clamp(x, 0, 1);
+  return t * t * (3 - 2 * t);
+};
+
+export const ASPECTS = {
+  original: null,
+  '16:9': 16 / 9,
+  '1:1': 1,
+  '4:3': 4 / 3,
+  '9:16': 9 / 16,
+};
+
+function dist(a, b) {
+  const dx = a.nx - b.nx;
+  const dy = a.ny - b.ny;
+  return Math.hypot(dx, dy);
+}
+
+/**
+ * Find "actions" in a cursor track: moments where the pointer stayed inside a
+ * small radius long enough to be a meaningful pause (a click, typing pause, or
+ * the human aiming at a control). FocuSee zooms on real clicks; without an OS
+ * event tap this prototype uses dwell clusters, which is documented as a
+ * behavioural difference.
+ *
+ * @param {{t:number,nx:number,ny:number}[]} samples normalised cursor track
+ * @param {{radius?:number,minDwell?:number,minGap?:number}} [opts]
+ * @returns {{t:number,nx:number,ny:number,dwell:number}[]}
+ */
+export function detectActions(samples, opts = {}) {
+  const radius = opts.radius ?? 0.012;
+  const minDwell = opts.minDwell ?? 0.45;
+  const minGap = opts.minGap ?? 0.6;
+  if (!Array.isArray(samples) || samples.length < 3) return [];
+
+  const actions = [];
+  let i = 0;
+  while (i < samples.length) {
+    const anchor = samples[i];
+    let j = i;
+    while (j + 1 < samples.length && dist(samples[j + 1], anchor) <= radius) j += 1;
+    const span = samples[j].t - samples[i].t;
+    if (span >= minDwell) {
+      const mid = samples[Math.floor((i + j) / 2)];
+      const t = (samples[i].t + samples[j].t) / 2;
+      const last = actions[actions.length - 1];
+      if (!last || t - last.t > minGap) {
+        actions.push({
+          t: Number(t.toFixed(3)),
+          nx: Number(mid.nx.toFixed(5)),
+          ny: Number(mid.ny.toFixed(5)),
+          dwell: Number(span.toFixed(3)),
+        });
+      }
+    }
+    i = j + 1;
+  }
+  return actions;
+}
+
+/**
+ * Turn actions into zoom keyframe segments.
+ *
+ * @param {{t:number,nx:number,ny:number,dwell?:number}[]} actions
+ * @param {number} duration seconds
+ * @param {{scale?:number,hold?:number,lead?:number,minGap?:number,maxZooms?:number}} [opts]
+ * @returns {{id:string,start:number,end:number,nx:number,ny:number,scale:number,auto:boolean}[]}
+ */
+export function buildZooms(actions, duration, opts = {}) {
+  const scale = opts.scale ?? 1.8;
+  const hold = opts.hold ?? 1.35;
+  const lead = opts.lead ?? 0.55;
+  const ease = opts.ease ?? 0.35;
+  const minGap = opts.minGap ?? 0.4;
+  const maxZooms = opts.maxZooms ?? 16;
+  const dur = Number.isFinite(duration) ? duration : 0;
+
+  const raw = (actions || [])
+    .filter((a) => a && Number.isFinite(a.t))
+    .map((a) => {
+      const start = clamp(a.t - lead, 0, Math.max(0, dur));
+      const end = clamp(a.t + hold + ease, 0, Math.max(0, dur));
+      return {
+        start: Number(start.toFixed(3)),
+        end: Number(end.toFixed(3)),
+        nx: clamp(a.nx ?? 0.5, 0, 1),
+        ny: clamp(a.ny ?? 0.5, 0, 1),
+        scale,
+        auto: true,
+        dwell: a.dwell ?? 0,
+      };
+    })
+    .filter((z) => z.end - z.start >= easyMin(ease));
+
+  const merged = [];
+  for (const z of raw) {
+    const prev = merged[merged.length - 1];
+    // Merge only when the two envelopes truly overlap. A gap (even a small
+    // one) means the viewer gets a moment back at scale 1 between zooms.
+    if (prev && prev.end >= z.start) {
+      if ((z.dwell || 0) > (prev.dwell || 0)) {
+        prev.nx = z.nx;
+        prev.ny = z.ny;
+        prev.dwell = z.dwell;
+      }
+      prev.end = Math.max(prev.end, z.end);
+      prev.scale = Math.max(prev.scale, z.scale);
+    } else {
+      merged.push({ ...z });
+    }
+  }
+
+  return merged.slice(0, maxZooms).map((z, idx) => {
+    const { dwell, ...rest } = z;
+    return { id: `az-${idx + 1}`, ...rest };
+  });
+}
+
+function easyMin(ease) {
+  return Math.min(0.35, Math.max(0.12, ease)) + 0.12;
+}
+
+/**
+ * Current zoom state at time t. Returns scale 1 and centre .5/.5 when no zoom
+ * is active. Uses smoothstep envelopes so transitions never snap.
+ */
+export function zoomAt(zooms, t) {
+  const base = { scale: 1, nx: 0.5, ny: 0.5, active: null };
+  if (!Array.isArray(zooms) || !zooms.length) return base;
+  let best = null;
+  let bestW = 0;
+  for (const z of zooms) {
+    if (!Number.isFinite(z.start) || !Number.isFinite(z.end)) continue;
+    if (t < z.start || t > z.end) continue;
+    const span = z.end - z.start;
+    const ease = Math.min(0.35, span / 2);
+    const inW = smoothstep((t - z.start) / Math.max(ease, 1e-6));
+    const outW = 1 - smoothstep((t - (z.end - ease)) / Math.max(ease, 1e-6));
+    const w = Math.min(inW, outW);
+    if (w > bestW) {
+      bestW = w;
+      best = { z, w };
+    }
+  }
+  if (!best || bestW <= 0.0001) return base;
+  return {
+    scale: 1 + (best.z.scale - 1) * bestW,
+    nx: lerp(0.5, best.z.nx, bestW),
+    ny: lerp(0.5, best.z.ny, bestW),
+    active: best.z.id ?? null,
+  };
+}
+
+/**
+ * Source rectangle (in video pixels) for a zoom state. Keeps the rectangle
+ * inside the video frame so panning never reveals the background.
+ */
+export function sourceRectAt(zoom, videoW, videoH) {
+  const scale = Math.max(1, zoom?.scale ?? 1);
+  const sw = videoW / scale;
+  const sh = videoH / scale;
+  const cx = clamp((zoom?.nx ?? 0.5) * videoW, sw / 2, videoW - sw / 2);
+  const cy = clamp((zoom?.ny ?? 0.5) * videoH, sh / 2, videoH - sh / 2);
+  return { sx: cx - sw / 2, sy: cy - sh / 2, sw, sh, scale };
+}
+
+/** Letterbox `src` inside `outer`, centring it. */
+export function fitRect(outerW, outerH, srcW, srcH) {
+  if (srcW <= 0 || srcH <= 0) return { x: 0, y: 0, w: outerW, h: outerH };
+  const scale = Math.min(outerW / srcW, outerH / srcH);
+  const w = srcW * scale;
+  const h = srcH * scale;
+  return { x: (outerW - w) / 2, y: (outerH - h) / 2, w, h };
+}
+
+/**
+ * The framed "screen" rectangle inside the output canvas: full bleed for
+ * "original", or a centred box of the chosen aspect for preset ratios.
+ */
+export function contentRect(canvasW, canvasH, paddingPct = 0, aspect = 'original') {
+  const pad = Math.round((Math.min(canvasW, canvasH) * clamp(paddingPct, 0, 40)) / 100);
+  const inner = { x: pad, y: pad, w: canvasW - pad * 2, h: canvasH - pad * 2 };
+  const ratio = ASPECTS[aspect];
+  if (!ratio) return inner;
+  const innerRatio = inner.w / inner.h;
+  if (innerRatio > ratio) {
+    const h = inner.h;
+    const w = h * ratio;
+    return { x: inner.x + (inner.w - w) / 2, y: inner.y, w, h };
+  }
+  const w = inner.w;
+  const h = w / ratio;
+  return { x: inner.x, y: inner.y + (inner.h - h) / 2, w, h };
+}
+
+/** Map a normalised video point into canvas space for a given zoom + rect. */
+export function mapPointToCanvas(nx, ny, zoom, destRect, videoW, videoH) {
+  const src = sourceRectAt(zoom, videoW, videoH);
+  const px = (clamp(nx, 0, 1) * videoW - src.sx) / src.sw;
+  const py = (clamp(ny, 0, 1) * videoH - src.sy) / src.sh;
+  return {
+    x: destRect.x + px * destRect.w,
+    y: destRect.y + py * destRect.h,
+    visible: px >= 0 && px <= 1 && py >= 0 && py <= 1,
+  };
+}
+
+/** Format seconds as MM:SS.cc for the transport bar. */
+export function formatTime(sec) {
+  const s = Math.max(0, Number(sec) || 0);
+  const m = Math.floor(s / 60);
+  const rest = s - m * 60;
+  return `${String(m).padStart(2, '0')}:${rest.toFixed(2).padStart(5, '0')}`;
+}
+
+/** Normalise a raw screen-space cursor track against the recorded display. */
+export function normaliseCursor(samples, display) {
+  const w = Math.max(1, display?.width || 1);
+  const h = Math.max(1, display?.height || 1);
+  return (samples || [])
+    .filter((s) => Number.isFinite(s.t) && Number.isFinite(s.x) && Number.isFinite(s.y))
+    .map((s) => ({
+      t: Number(s.t.toFixed(3)),
+      nx: Number(clamp(s.x / w, 0, 1).toFixed(5)),
+      ny: Number(clamp(s.y / h, 0, 1).toFixed(5)),
+    }));
+}
+
+/** Cursor point at a time (linear interpolation), or null. */
+export function cursorAt(track, t) {
+  if (!Array.isArray(track) || !track.length) return null;
+  if (t <= track[0].t) return track[0];
+  if (t >= track[track.length - 1].t) return track[track.length - 1];
+  let lo = 0;
+  let hi = track.length - 1;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (track[mid].t <= t) lo = mid;
+    else hi = mid;
+  }
+  const a = track[lo];
+  const b = track[hi];
+  const span = b.t - a.t || 1;
+  const k = (t - a.t) / span;
+  return { t, nx: lerp(a.nx, b.nx, k), ny: lerp(a.ny, b.ny, k) };
+}
