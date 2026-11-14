@@ -25,11 +25,12 @@ with sync_playwright() as p:
     pg.select_option("#ds", a.ds)
     pg.fill("#q", a.q)
     pg.click("#go")
-    # 等 AI 提炼落地（#srcnote 变为 AI 提炼）或超时
+    # 等 AI 提炼落地（fetchSummary 会把 #srcnote 覆盖为「AI 提炼 …」）或超时
     t0 = time.time()
-    while time.time() - t0 < min(60, a.max_wait):
+    while time.time() - t0 < min(90, a.max_wait):
         sn = pg.text_content("#srcnote") or ""
-        if "AI 提炼" in sn or "来源" in sn:
+        pts = pg.eval_on_selector_all(".point .src", "els=>els.map(e=>e.textContent.trim())")
+        if ("AI 提炼" in sn and pts) or any("图谱·" in p for p in pts):
             break
         time.sleep(1)
     # 再等图谱卡出结果（实体 pill 或 warnbox）或超时
