@@ -643,6 +643,26 @@ if (!gotSingleInstanceLock) {
 
 app.whenReady().then(async () => {
   await ensureDirs();
+  // Self-diagnostic: records what THIS process actually sees (permission status
+  // and a real source probe), so a user-side failure can be compared against
+  // what System Settings shows. Tiny file, rewritten on every launch.
+  try {
+    const mediaStatus = systemPreferences.getMediaAccessStatus('screen');
+    let probe = null;
+    try {
+      const srcs = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 8, height: 8 } });
+      probe = { ok: true, count: srcs.length };
+    } catch (err) {
+      probe = { ok: false, error: err.message.slice(0, 200) };
+    }
+    await fsp.mkdir(dataRoot(), { recursive: true });
+    await fsp.writeFile(
+      path.join(dataRoot(), 'diag.json'),
+      JSON.stringify({ at: new Date().toISOString(), pid: process.pid, execPath: process.execPath, mediaStatus, probe }, null, 2),
+    );
+  } catch (err) {
+    console.warn('[diag] failed:', err.message);
+  }
   protocol.handle('app-media', (request) => {
     try {
       const url = new URL(request.url);
