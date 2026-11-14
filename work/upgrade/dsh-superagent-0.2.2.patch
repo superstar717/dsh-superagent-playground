@@ -1,0 +1,57 @@
+From bbab471fa603400f8272854cdf5670a4a71d2809 Mon Sep 17 00:00:00 2001
+From: xingzhe-agent <xingzhe-agent@users.noreply.github.com>
+Date: Sat, 14 Nov 2026 09:31:54 +0800
+Subject: [PATCH] fix: keep DSH 0.2.2's frozen model route in agent/request
+
+---
+ src/app/role-models.ts    | 10 +++++++++-
+ tests/role-models.spec.ts |  8 ++++++++
+ 2 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/src/app/role-models.ts b/src/app/role-models.ts
+index 5b01e6b..065cd3d 100644
+--- a/src/app/role-models.ts
++++ b/src/app/role-models.ts
+@@ -11,6 +11,12 @@ export async function resolveRoleModel(ctx: Context, model: RoleModel): Promise<
+   return { provider: value.provider, model: value.model, ...(value.reasoningEffort ? { reasoningEffort: value.reasoningEffort } : {}) }
+ }
+ 
++/** Whether DSH fixes the step's route before `agent/request` (v0.2.2+), so a listener must keep that route. */
++function fixesRouteBeforeRequest(agent: Agent): boolean {
++  const model = (agent as Agent & { model?: { select?: unknown } }).model
++  return typeof model?.select === 'function'
++}
++
+ /** Seed a role's configured model onto a brand-new session before its first request, leaving later manual or durable selections intact. */
+ export async function initializeRoleModel(ctx: Context, agent: Agent, model: RoleModel | null): Promise<void> {
+   if (!model) return
+@@ -30,7 +36,9 @@ export async function initializeRoleModel(ctx: Context, agent: Agent, model: Rol
+       }, { prepend: true }),
+       agent.ctx.on('agent/request', async (_payload, next) => {
+         const result = await next()
+-        if (!assembled) return result
++        // v0.2.2 freezes the step's selection before this waterfall and rejects a
++        // different route; the appended `model/selection` above already chose it.
++        if (!assembled || fixesRouteBeforeRequest(agent)) return result
+         const { reasoningEffort: _inherited, ...rest } = result
+         return { ...rest, ...assembled }
+       }, { prepend: true }),
+diff --git a/tests/role-models.spec.ts b/tests/role-models.spec.ts
+index 1be1405..14b3482 100644
+--- a/tests/role-models.spec.ts
++++ b/tests/role-models.spec.ts
+@@ -63,3 +63,11 @@ it('inherits the host when unset and fails unavailable routes before recording a
+   await expect(initializeRoleModel(ctx, agent, { provider: 'unknown', model: 'x' })).rejects.toThrow('unknown provider')
+   expect(agent.session.snapshotEvents().some(event => event.type === 'model/selection')).toBe(false)
+ })
++it('keeps the route DSH fixed before agent/request when the agent owns a durable model (0.2.2+)', async () => {
++  const { ctx, agent, request } = await fixture()
++  Object.assign(agent, { model: { select() {} } })
++  await initializeRoleModel(ctx, agent, { provider: 'worker-provider', model: 'worker-model' })
++  await ctx.systemPrompt.assemble()
++  // The plugin must not overwrite the route DSH already fixed (the host route here).
++  expect(await request()).toMatchObject({ provider: 'host' })
++})
+-- 
+2.51.0
+
