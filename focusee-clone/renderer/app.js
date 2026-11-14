@@ -727,7 +727,7 @@ async function openRecordDialog() {
     S.sources = await window.focusee.capture.sources();
     renderSources();
   } catch (err) {
-    grid.innerHTML = `<div class="loading">获取失败：${escapeHtml(err.message)}<br />请到 系统设置 → 隐私与安全性 → 屏幕录制 中允许本应用。</div>`;
+    grid.innerHTML = `<div class="loading">获取失败：${escapeHtml(err.message)}</div>`;
   }
 }
 

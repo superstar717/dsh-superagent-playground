@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, ipcMain, desktopCapturer, screen, dialog, protocol, net, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, desktopCapturer, screen, dialog, protocol, net, shell, systemPreferences } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 const fsp = require('node:fs/promises');
@@ -350,11 +350,33 @@ function registerIpc() {
 
   // Recording -------------------------------------------------------------
   ipcMain.handle('capture:sources', async () => {
-    const sources = await desktopCapturer.getSources({
+    const fetch = () => desktopCapturer.getSources({
       types: ['screen', 'window'],
       thumbnailSize: { width: 320, height: 200 },
       fetchWindowIcons: true,
     });
+    let sources;
+    try {
+      sources = await fetch();
+    } catch (err) {
+      // "Failed to get sources." right after granting Screen Recording means
+      // the running process still holds its pre-grant capture session: the fix
+      // is a full app restart, not another grant. Retry once after a beat in
+      // case the system was mid-registration, then surface precise guidance.
+      const status = systemPreferences.getMediaAccessStatus('screen');
+      await new Promise((r) => setTimeout(r, 900));
+      try {
+        sources = await fetch();
+      } catch (err2) {
+        const hint = status === 'granted'
+          ? '权限已授予但应用还在用授权前的旧状态：请完全退出本应用（Cmd+Q）后重新打开，再点录制。'
+          : `屏幕录制权限未生效（当前状态：${status}）。请到 系统设置 → 隐私与安全性 → 屏幕录制 中允许本应用，然后完全退出并重新打开应用。`;
+        const e = new Error(`${err2.message}。${hint}`);
+        e.code = 'SOURCES_FAILED';
+        e.mediaStatus = status;
+        throw e;
+      }
+    }
     const displays = screen.getAllDisplays();
     return sources.map((s) => {
       const display = s.display_id
