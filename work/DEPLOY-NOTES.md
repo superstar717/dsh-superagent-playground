@@ -1,148 +1,119 @@
-# DEPLOY-NOTES — 图谱问答改由 superagent 主导（工单 c568a58a9d7e）
+# DEPLOY-NOTES — P1 设备授权安全锁 + P2 重复 PR 预检（工单 ae3297f806b9）
 
 日期：2026-11-13（Asia/Shanghai）
-结论：**已落地**。群里 @机器人 的消息统一由 superagent 工单先处理；旁挂的「图谱问答」改为
-superagent 优先窗口内的兜底，并修复了这次误答的两个直接缺陷。图谱能力通过工单内 skill
-`jianghushu-graph-qa` 继续可用。
+结论：**已在一台正在运行的 superagent 宿主上落地并完成「该拦时真拦」e2e**；未重启宿主、未改
+`~/.dsh/hooks.json`。P1 全部规则在已加载的 `gate_pretool.sh`（PreToolUse(Bash)，脚本每次调用现读）
+里生效；P2 因 hook 子进程拿不到登录钥匙串，改在 `gh` 入口 `~/.local/bin/gh-agent`（同一命令环境）
+实现，警告随命令 stderr 在 PR 创建前可见。三条自测共 37 项通过，CI 工作流已随 PR 提供。
 
 ---
 
-## 1. 用户问题与事实时间线
+## 1. 来源与范围
 
-2026-11-13 傍晚，飞书群同一条话题线程上，同一条消息出现了两条答复，用户随即质疑「为什么图谱问答」。
+2026-11-13 复盘把 4 条经验分为「值得机制化 / 不建议硬门禁」，其中：
 
-| 时间 | 事件 |
-| --- | --- |
-| 17:47 | 人 @机器人 发来一条带知乎链接的调研请求 |
-| 17:48:00 | superagent 建工单并回接单回执 |
-| 17:48:18 | 旁挂 kb-responder 把同一消息判为问句，调 GraphMind `/search`（日志 `Q&A 处理 …`） |
-| 17:48:32 | 群里出现「图谱问答」答复（GraphMind 无联网能力，答不了调研任务） |
-| 17:49 | 人质疑：这应该交给 superagent 处理 → 本工单 |
-| 18:00 | superagent 工单完成并回调研结果 + 飞书文档 |
+- **P1 = LESSONS E132**（设备授权并发 / 被 `pkill` 误杀）→ 值得机制化；
+- **P2 = LESSONS E133**（同一线程多工单重复提 PR）→ 部分机制化，**警告式、不硬拒**；
+- E85（ready 前复盘归位）不做硬门禁；E123（CDP pages/探测）维持规则。
 
-两个进程用的是**同一个飞书 app**（显示名相同），所以群里看不出答复归属。
+路由注记要求：**P1 免重启生效、P2 警告式不硬拒**。本工单按此执行；未把 11:55 新增但当前宿主
+（PID 44273，02:00:23 启动）未加载的 `orchestrator_report` 证据门禁算进本工单防线。
 
-## 2. 现状（核实）
+## 2. 关键发现：hook 子进程读不到登录钥匙串（决定 P2 放在哪里）
 
-| 组件 | 位置 | 职责 | 触发方式 |
-| --- | --- | --- | --- |
-| DSH superagent | `dsh --profile superagent`（web 3082，stateDir `~/.dsh/state/superagent-fresh`） | 消费 `im.message.receive_v1` → 工单 → worker → 线程回复 | 飞书事件（长连接） |
-| kb-responder | `~/姜胡说/scripts/kb-responder.py`，launchd `com.user.kb.responder` | ① 图谱问答 ② 洞见「采纳N/忽略N」闭环 | 每 20s 轮询 chat 消息 |
-| GraphMind | `~/graphmind-replica`（127.0.0.1:8777，launchd `com.huweixing.graphmind`） | LightRAG 图谱检索（无联网），数据集 `jianghushu-methodology_b0607c` / `ligongzi_9c54ca` 等 | REST `/api/datasets/<id>/search` |
-
-差异点：superagent 与 kb-responder 都自认为有资格回同一条消息，且没有「谁先接管」的约定。
-
-## 3. 根因（旧版代码实测复现）
-
-旧版脚本（PR #10 原样，备份 `~/姜胡说/scripts/kb-responder.py.bak-20261113-superagent-first`）：
+最初按「P1/P2 都并入 gate_pretool.sh」实现：PreToolUse 里查 open PR 同文件重叠，写待提醒记录，
+再由 PostToolUse（`lessons_intercept.sh`）注入模型可见警告。脚本级自测全过，但真实会话 e2e 暴露：
 
 ```
-[旧版] is_question(带查询串的链接 + 调研类请求) = True
-[旧版] thread_has_prior_bot_reply(真实消息) = False
-[旧版] WORK_RE 是否覆盖『调研』 = False
+hook 内 gh pr list → rc=1
+gh auth status --json hosts → {"state":"error","error":"HTTP 401: Bad credentials","tokenSource":"default"}
+security list-keychains → "A Module Directory Service error has occurred."（只剩 login.keychain-db）
 ```
 
-1. **URL 查询串被当成问号**：`is_question` 用 `"?" in text` 判定；知乎链接的 `?utm_psn=` 让
-   该调研类请求通过了问句判定（正文里根本没有问号）。
-2. **线程守卫对根消息失效**：`thread_has_prior_bot_reply` 只扫「当前消息之前」的回复，且遇到
-   根消息（thread_position=-1）第一条就 `break`。superagent 的回执在**根消息之后**，永远检测不到
-   ——这是重复答复的直接原因。
-3. **工单词表缺口**：`WORK_RE` 不含调研/研究/评估/核实/整理…，即使修好第 1 条，调研类请求
-   也没有「留给工单」的保护。
+对比：同一台机器上，Bash 工具命令里的 `gh` 正常（`(keyring)`，scopes 含 workflow），`security
+list-keychains` 列出 4 个钥匙串。结论：**hook 子进程的 Security 会话不可用**，gh 回落到无 token
+（401）。为避免把 token 落到明文（`--insecure-storage`）或引入更强的耦合，P2 改为在 `gh` 入口
+`~/.local/bin/gh-agent` 实现——它与真正的 `gh pr create` 同一进程环境，钥匙串可用；警告写到命令
+stderr，**在 PR 创建之前**就进入工具输出，比「创建后再提醒」更符合 E133 的意图。
 
-## 4. 方案比选（选 C）
+> 这一发现也解释了 E132 的现场：`gh auth status` 在这台机器上会间歇性报 keyring timeout/invalid
+> （21:22 实测出现过一次，重试即恢复）。`gh-auth-safe.sh` 的校验因此带 3 次重试 + API 兜底。
 
-| 方案 | 做法 | 评价 |
+## 3. 变更清单
+
+| 位置（本机） | 本仓副本 | 作用 |
 | --- | --- | --- |
-| A 彻底删除图谱问答 | kb-responder 只留洞见闭环 | 简单，但普通知识问题也要等分钟级工单，丢掉已建能力 |
-| B 只修 URL 判定 | 仍保持「图谱先答、工单再答」 | 重复答复不解决，归属仍不清 |
-| **C superagent 优先 + 图谱兜底（已落地）** | 60s 优先窗口；线程已有任何机器人消息就不插话；调研/工单动词永不接；兜底带专属标记 | 主路径唯一、可追溯；图谱能力保留为兜底，并在工单侧继续可用 |
+| `~/.dsh/bin/gh-auth-safe.sh` | `work/scripts/gh-auth-safe.sh` | **P1 单点入口**：mkdir 串行锁、等待在跑流程自然结束（不杀）、授权后验本机 scopes + GitHub 侧 `X-OAuth-Scopes`；`--dry-run` 用于自测 |
+| `~/.dsh/bin/gate_pretool.sh`（v3→v4） | `work/scripts/gate_pretool.sh` | **P1 强制层**（已加载 hook，现读生效）：拒绝直接 `gh auth login/refresh`（含 `sudo`/`bash -c` 包裹）、拒绝 `pkill/killall/kill` 针对 gh / gh auth（含 `pgrep … | xargs kill`）；原研究项目/工单 SCOPE 门禁语义不变 |
+| `~/.dsh/bin/gh-pr-overlap-precheck.sh` | `work/scripts/gh-pr-overlap-precheck.sh` | **P2 预检**：`git diff origin/main...HEAD` ∩ open PR 的 `files`，命中打印警告；失败/超时静默并记日志 |
+| `~/.local/bin/gh-agent`（2 行→带预检） | `work/scripts/gh-agent` | **P2 挂载点**：检测到 `gh pr create` 时先跑预检；`DSH_PR_OVERLAP_OK=1` 显式豁免 |
+| `~/.dsh/bin/gh-auth-safe_selftest.sh` | 同名 | P1 wrapper 自测（fake gh，9 项） |
+| `~/.dsh/bin/gate_pretool_selftest.sh` | 同名 | P1 门禁自测（18 项） |
+| `~/.dsh/bin/gh-pr-overlap-precheck_selftest.sh` | 同名 | P2 预检自测（6 项） |
+| — | `.github/workflows/gh-auth-pr-gate-selftest.yml` | CI 跑上述 3 个自测（`SELFTEST_BIN=work/scripts`，无需真实凭证） |
 
-配套（「交给 superagent」不只停掉旁挂，还要让工单答得出图谱内容）：
-- 新增 skill `jianghushu-graph-qa`：worker 查 GraphMind（`kg_*` 工具或 `bash`+curl）后带 `[图谱检索]` 依据作答；
-- `~/.dsh/AGENTS.md` §十三：全局常驻规则，说明归属、数据集与接口。
+备份：`~/.dsh/bin/gate_pretool.sh.bak-v3`、`~/.local/bin/gh-agent.bak-20261113`。
 
-## 5. 变更清单
+未改：DSH 宿主代码、`hooks.json`、图谱问答/其他门禁判定、`blocked_report_gate.sh`。
 
-| 文件 | 变更 |
-| --- | --- |
-| `~/姜胡说/scripts/kb-responder.py`（本仓 `work/scripts/kb-responder.py`） | 问句判定剥离 URL 后再判 `?`；`WORK_RE` 补入调研/研究/评估/核实/整理等；线程守卫扫整条线程；新增 60s superagent 优先窗口（`should_defer`/`deferred` 状态）；兜底回复标记 `**【图谱问答·兜底】**` 并注明「superagent 未接管」；GraphMind 返回字符串 `"None"`/空时按失败处理，不再把 `None` 发群里 |
-| `~/.dsh/skills/jianghushu-graph-qa/SKILL.md`（本仓 `work/skills/jianghushu-graph-qa/SKILL.md`） | 新增工单内图谱问答 skill（数据集、两条查询路径、超时/降级处理、标注规范） |
-| `~/.dsh/AGENTS.md` §十三 | 新增归属规则与图谱接口速查 |
-| launchd `com.user.kb.responder` | `launchctl kickstart -k` 重启，PID 91116 → 34572（新代码） |
+## 4. P1 设计要点
 
-未改动：superagent 宿主代码、飞书 app/事件订阅、GraphMind 服务与数据、洞见采纳闭环逻辑。
+- **串行锁**：`~/.dsh/state/gh-auth.lock`（`mkdir` 原子）。后来者等待（默认 900s，
+  `GH_AUTH_LOCK_TIMEOUT`），超时明确失败；只在持有 pid 已退出/元数据缺失超过 5s 时清理失效锁。
+- **不杀进程**：启动前 `pgrep -fl 'gh auth (login|refresh)'`，有在跑流程就等其自然结束
+  （默认 300s，`GH_AUTH_PROC_WAIT`），超时也**不杀**；门禁同时拒绝任何针对 gh auth 的 pkill/kill。
+- **授权后校验**：先 `gh auth status --json hosts`（3 次重试，避免 keyring 瞬时失败）核对本机
+  active 账号 scopes；再读 GitHub 侧 `X-OAuth-Scopes` 头核对，二者缺一即 rc=3，并明确提示
+  「不要杀进程，重新完整走一次授权」。`--json` 读不到时用 `gh api user` 兜底（API 可用 + GitHub
+  侧 scopes 满足即通过，避免误杀正常会话）。
+- **用法**：`gh-auth-safe.sh refresh -s workflow` / `login [gh auth login 参数]` / `verify` /
+  `status` / `doctor`；日志 `~/.dsh/state/gh-auth-safe.log`（1MB 轮转）。
 
-## 6. 验证记录（实际执行）
+## 5. P2 设计要点
 
-1. 语法：`python3 -m py_compile` OK（新旧两处：工单副本与线上文件）。
-2. 问句分类 9 例：知乎链接+调研 → 不接；`帮我写/评估/总结` → 不接；`…是怎么说的？`/`为什么…` → 问句。
-3. **原消息注入**（`--dry-run --inject-top`，用真实 message JSON 复放）：
-   ```
-   [18:09:23] 忽略（非问句/工单请求，留给 superagent）
-   ```
-4. **线程守卫**（真实问题 + 出事线程复放）：
-   ```
-   [18:09:28] 忽略（线程内已有机器人回复，superagent 已接管）
-   ```
-5. 优先窗口：fresh question `defer=True`；fresh work `False`；旧消息 `False`；机器人消息 `False`。
-6. 线上重启日志：
-   ```
-   [18:11:30] kb-responder 启动 poll=20s chat=<chat> dataset=jianghushu-methodology_b0607c mode=superagent-first grace=60s
-   ```
-7. 洞见闭环代码路径未改（`process_reply`/`adopt_insight`/`append_todo` 与旧版同段 diff 为空）。
-8. **兜底失败路径**（`--dry-run --inject-top`，GraphMind 当前降级）：
-   ```
-   [18:13:20] Q&A 兜底处理 <合成消息>
-   [18:13:24] Q&A 查询失败 <合成消息>: empty answer（GraphMind 可能正在建索引或后端降级）
-   [no-send] would reply <合成消息>: 【图谱问答·兜底】图谱查询失败（服务超时或暂不可用），请稍后再试。
-   ```
-9. **真实新消息**：18:11 群里一条工单型请求被本进程判为工单请求并忽略
-   （`忽略（非问句/工单请求，留给 superagent）`），superagent 同时已接单
-   （decision `explicitRouted`），未产生重复答复。
-10. **图谱检索链路**（skill 的 curl 路径，实跑）：`POST /api/datasets/ligongzi_9c54ca/search`
-    （`local` 模式，query 为主题问题）→ HTTP 200，24.2s，返回 899 字答案（列出 6+ 个框架/方法论）。
-    证明 worker 侧的图谱查询方式可用。
+- `gh-agent` 只在参数出现 `pr create`（子命令序列）且 `DSH_PR_OVERLAP_OK≠1` 时调用预检；
+  其余 gh 命令零开销。
+- 预检：本地仓库 → `origin/main|master|HEAD` 为 base → `git diff --name-only base...HEAD`；
+  每单必改的簿记文件（`work/SCOPE.md`、`work/项目复盘.md`、`work/DEPLOY-NOTES.md`、`work/验证记录-*.md`）
+  不作为重叠证据，避免每个工单 PR 都因这些共享路径互报（E133 同类误伤）；
+  `gh pr list --state open --limit 50 --json number,title,headRefName,files`；同名分支跳过；
+  交集非空即输出警告（最多 5 个 PR、每个 8 个文件），并写
+  `~/.dsh/state/gh-pr-overlap.log`。**任何失败/超时都静默 exit 0**，绝不阻断 PR 创建。
+- 警告文案含 E133 处置建议（若是重复提交，关闭自己那份并注明以哪份为准）与豁免方式。
+- 不改 gh 退出码、不改 PR 内容。
 
-## 6.5 机制化（2026-11-13，用户问「是否需要机制化」后落地）
+## 6. 验证（摘要；完整记录见 [work/验证记录-设备授权与重复PR.md](验证记录-设备授权与重复PR.md)）
 
-不靠人盯，三层同源门禁：
+1. **该拦时真拦（真实宿主会话）**：`gh auth refresh -s workflow`、`bash -c "gh auth refresh …"`、
+   `pkill -f "gh auth refresh"`、`pgrep -f "gh auth refresh" | xargs kill` 均被 PreToolUse 拒绝，
+   命令未执行。
+2. **放行与校验**：`~/.dsh/bin/gh-auth-safe.sh verify -s workflow` 真实跑通（本机 scopes 含
+   workflow，GitHub 侧头一致）；缺少 scope 时 rc=3 并给出正确指引。
+3. **P2 真实链路**：在含重叠文件的临时 clone（分支改动 `work/gate_pretool.v3.sh`，与 open PR #12
+   同文件）执行 `gh pr create --help`，命令输出**先**出现警告（#12 / 文件），`DSH_PR_OVERLAP_OK=1`
+   时不出现。
+4. **脚本级**：gate 21/21、precheck 7/7、wrapper 9/9（并发串行、失效锁、等待在跑流程、scope
+   通过/缺少、簿记文件过滤、`gh-auth-safe*` 不被误判为 gh auth、日志）；用 `SELFTEST_BIN=work/scripts`
+   跑仓库副本同样通过（CI 路径）。
 
-| 层 | 位置 | 作用 |
-| --- | --- | --- |
-| 回归自测 | `work/scripts/kb-responder-selftest.py`（线上 `~/姜胡说/scripts/` 同源） | 20 项无网络断言：URL 问号、工单动词、线程已有机器人回复（含回执在当前消息之后这一事故回归点）、优先窗口、时间解析 |
-| 重载门禁 | `~/姜胡说/scripts/kb-responder-reload.sh` | py_compile → 自测 → `launchctl kickstart -k`；**自测不过不重启** |
-| CI（待激活） | `work/ci/kb-responder-selftest.yml` | 改动 `work/scripts/kb-responder.py` / 自测文件的 PR 与 `agent/**` 推送跑同一份自测。当前 gh token 无 `workflow` scope，无法直接提交 `.github/workflows/`；有权限时复制该文件即生效 |
-
-实跑证据：`bash ~/姜胡说/scripts/kb-responder-reload.sh` → `ALL PASS` → 重启成功
-（启动日志 18:55:31，PID 76932）。规则已写入 `~/.dsh/AGENTS.md §十三`「机制」条：
-新增任何自动回答入口照此办理（判定有回归样例、声明主处理方+兜底+来源标记、接管检测扫整条线程）。
-
-## 7. 限制与风险（如实）
-
-- **GraphMind 的 jianghushu 数据集当前临时不可查**：18:10 实测
-  `POST /api/datasets/jianghushu-methodology_b0607c/search` 返回 `{"answer":"None","context":null}`，
-  后端日志 `ERROR: Query failed: <asyncio.locks.Lock …> is bound to a different event loop`；
-  此时后台正在增量建索引（progress 38%）。**同一时刻 `ligongzi_9c54ca` 的 `local` 检索
-  24.2s 返回 899 字真实答案**（见 §6.10），说明 REST 链路与 skill 的查询方式本身可用，
-  问题只在该数据集的 LightRAG 存储锁被索引任务绑到了另一个事件循环。
-  这是 GraphMind 侧既有缺陷，与本次改动无关；兜底已把 `"None"` 判为失败（回「图谱查询失败」
-  而不是把 None 发群），skill 也要求查不到就明说并退回 kb_para/网络。
-  建议：索引跑完后重启 `com.huweixing.graphmind`（`launchctl kickstart -k`）恢复该数据集查询；
-  根治需修 graphmind-replica 的事件循环/存储锁用法（另立工单）。
-- 兜底延迟：20s 轮询 + 60s 优先窗口 + `create_time` 分钟精度 → 兜底答复可能延迟 1–2 分钟；
-  若 superagent 在窗口之后才回，仍可能双答（概率低，窗口外不保证互斥）。
-- 图谱兜底只在本机 GraphMind 可用时有效；建索引期检索 60–90s，超时回「暂不可用」。
-- worker 目前没有 `kg_*` 原生工具（superagent `WORK_TOOLS` 白名单未含），skill 里走 `bash`+curl
-  的同一条 REST 接口；后续可把 `kg_*` 加进白名单（需宿主重启，另立工单）。
-- 本次是路由/行为变更，**无 UI 改动**；before/after 证据是飞书消息原文与进程日志（见 §1/§6），
-  不是界面截图。
-
-## 8. 回滚
+## 7. 回滚
 
 ```bash
-cp ~/姜胡说/scripts/kb-responder.py.bak-20261113-superagent-first ~/姜胡说/scripts/kb-responder.py
-launchctl kickstart -k gui/$(id -u)/com.user.kb.responder
-rm ~/.dsh/skills/jianghushu-graph-qa/SKILL.md   # 可选
-# ~/.dsh/AGENTS.md §十三 可整节删除
+cp ~/.dsh/bin/gate_pretool.sh.bak-v3 ~/.dsh/bin/gate_pretool.sh   # 只想退 P1 强制层
+cp ~/.local/bin/gh-agent.bak-20261113 ~/.local/bin/gh-agent        # 退 P2
+rm -f ~/.dsh/bin/gh-auth-safe.sh ~/.dsh/bin/gh-pr-overlap-precheck.sh   # 退 P1 入口
+# 自测/日志文件可留：~/.dsh/bin/*_selftest.sh、~/.dsh/state/{gh-auth-safe.log,gh-pr-overlap.log}
 ```
+回滚后 `gh auth refresh` 恢复直连（有并发/误杀风险）；P2 恢复为无预检。宿主无需重启
+（hook 脚本现读、gh-agent 每次调用现读）。
+
+## 8. 边界与未解决
+
+- `orchestrator_report` 证据门禁仍**未加载**（hooks.json 11:55 改、宿主 02:00 启动；E127 同类）；
+  需重启 + 「该拦时真拦」e2e 才算防线。本工单未重启，避免中断在跑的会话。
+- `gh-agent` 是 dsh-superagent 的 agent gh 入口；直接调用真实 gh 二进制（`/usr/local/bin/gh`）
+  或非 agent 环境不经过 P2 预检。P2 只覆盖 agent 的常规 `gh pr create`。
+- P2 预检对 `gh pr create --help`、`--dry-run` 也会跑（无副作用，最多多 ~2s）。
+- 本机 keychain 在并发 gh 进程下会间歇失败（E132 现场同源）。wrapper 已重试 + API 兜底；
+  P2 预检失败则静默跳过，不会阻断创建。
+- `.github/workflows/` 需要 `workflow` scope；当前 token 已含（2026-11-13 20:32 用户授权）。
