@@ -341,7 +341,7 @@ const TABS = {
   zoom: { title: '缩放', sub: '自动缩放由光标停留点生成，也可以手动补一段。' },
   captions: { title: '字幕', sub: 'AI 字幕未实现；可手动添加一条字幕验证渲染链路。' },
   audio: { title: '音频', sub: '音频增强/降噪未实现。' },
-  layout: { title: '布局', sub: '摄像头画中画/布局片段未实现。' },
+  layout: { title: '布局', sub: '摄像头画中画、镜头布局、布局片段、背景移除、3D 动效与提词器。' },
   more: { title: '更多', sub: '原型信息与已知差异。' },
 };
 
@@ -857,6 +857,15 @@ function tick(ts) {
 // Recording
 // ---------------------------------------------------------------------------
 
+/** Reject if the promise takes longer than ms — getUserMedia can hang forever
+ *  on an unanswered permission dialog, which would freeze the whole flow. */
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`${label}超时（${ms / 1000}s）`)), ms)),
+  ]);
+}
+
 function bindRecordDialog() {
   $('#opt-mic').addEventListener('change', () => {});
   $('#btn-start-record').addEventListener('click', startRecording);
@@ -925,38 +934,58 @@ async function startRecording() {
     // Screen video and microphone audio are captured as separate streams and
     // then joined: mixing a desktop video constraint with a microphone audio
     // constraint in one getUserMedia call is unreliable on macOS.
-    const videoStream = await navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
-        mandatory: {
-          chromeMediaSource: 'desktop',
-          chromeMediaSourceId: source.id,
-          maxWidth: 3840,
-          maxHeight: 2160,
-          maxFrameRate: 30,
-        },
-      },
-    });
+    // No maxWidth/maxHeight caps: Chromium turns them into a crop-and-scale
+    // request (16:9 on a 16:10 display) and the source start frequently times
+    // out on macOS. Native size keeps the frame intact and starts reliably.
+    let videoStream = null;
+    let lastErr = null;
+    for (let attempt = 1; attempt <= 3 && !videoStream; attempt += 1) {
+      try {
+        videoStream = await withTimeout(
+          navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: {
+              mandatory: { chromeMediaSource: 'desktop', chromeMediaSourceId: source.id },
+            },
+          }),
+          15000,
+          '屏幕捕获',
+        );
+      } catch (err) {
+        lastErr = err;
+        console.warn('[record] getUserMedia attempt', attempt, 'failed:', err.message);
+        await new Promise((r) => setTimeout(r, 400 * attempt));
+      }
+    }
+    if (!videoStream) throw lastErr || new Error('无法启动屏幕捕获');
     let micStream = null;
     if (mic) {
       try {
-        micStream = await navigator.mediaDevices.getUserMedia({
-          audio: { echoCancellation: true, noiseSuppression: true },
-        });
+        micStream = await withTimeout(
+          navigator.mediaDevices.getUserMedia({
+            audio: { echoCancellation: true, noiseSuppression: true },
+          }),
+          12000,
+          '麦克风',
+        );
       } catch (err) {
-        toast('麦克风不可用，将只录制画面');
+        toast('麦克风未授权或不可用，将只录制画面（系统设置 → 隐私与安全性 → 麦克风）');
       }
     }
     let camStream = null;
     const withCamera = $('#opt-camera')?.checked;
     if (withCamera) {
       try {
-        camStream = await navigator.mediaDevices.getUserMedia({
-          video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
-          audio: false,
-        });
+        camStream = await withTimeout(
+          navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
+            audio: false,
+          }),
+          12000,
+          '摄像头',
+        );
       } catch (err) {
-        toast('摄像头不可用，将不录制画中画');
+        toast('摄像头未授权或不可用，将不录制画中画（系统设置 → 隐私与安全性 → 摄像头）');
       }
     }
     if ($('#opt-teleprompter')?.checked) {
