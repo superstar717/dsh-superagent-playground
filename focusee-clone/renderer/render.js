@@ -303,6 +303,12 @@ export function drawFrame(ctx, { width, height, project, video, time, preview = 
     ctx.restore();
 
     ctx.save();
+    // Circle layouts draw the square camera crop into the circle's bounding
+    // SQUARE centred on the circle — not the reference rect (which is shorter
+    // than the circle for landscape cameras, leaving the caps empty).
+    const cd = camRect.w; // circle diameter
+    const csx = camRect.x;
+    const csy = camRect.y + camRect.h / 2 - cd / 2;
     if (camRect.shape === 'circle') {
       ctx.beginPath();
       ctx.arc(camRect.x + camRect.w / 2, camRect.y + camRect.h / 2, camRect.w / 2, 0, Math.PI * 2);
@@ -311,7 +317,7 @@ export function drawFrame(ctx, { width, height, project, video, time, preview = 
       const cw = Math.min(camVideo.videoWidth, camVideo.videoHeight);
       const cx0 = (camVideo.videoWidth - cw) / 2;
       const cy0 = (camVideo.videoHeight - cw) / 2;
-      ctx.drawImage(camVideo, cx0, cy0, cw, cw, camRect.x, camRect.y, camRect.w, camRect.h);
+      ctx.drawImage(camVideo, cx0, cy0, cw, cw, csx, csy, cd, cd);
     } else {
       roundRectPath(ctx, camRect.x, camRect.y, camRect.w, camRect.h, camRect.radius);
       ctx.clip();
@@ -324,7 +330,11 @@ export function drawFrame(ctx, { width, height, project, video, time, preview = 
     if (cam.removeBg && maskCanvas && maskCanvas.width) {
       try {
         ctx.globalCompositeOperation = 'destination-in';
-        ctx.drawImage(maskCanvas, camRect.x, camRect.y, camRect.w, camRect.h);
+        if (camRect.shape === 'circle') {
+          ctx.drawImage(maskCanvas, csx, csy, cd, cd);
+        } else {
+          ctx.drawImage(maskCanvas, camRect.x, camRect.y, camRect.w, camRect.h);
+        }
         ctx.globalCompositeOperation = 'source-over';
       } catch {}
     }

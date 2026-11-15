@@ -146,7 +146,21 @@ test('formatTime renders MM:SS.cc', () => {
   assert.equal(formatTime(61.5), '01:01.50');
 });
 
-import { CAMERA_LAYOUTS, computeCameraRect, tiltSlices } from '../renderer/zoom.cjs';
+import { CAMERA_LAYOUTS, computeCameraRect, pipRectAt, tiltSlices } from '../renderer/zoom.cjs';
+
+test('pipRectAt: the full circle stays inside and the centre is reported', () => {
+  // Landscape camera (16:9): the reference rect is shorter than the circle;
+  // the clamp must use the circle's bounding box, and the centre must be
+  // returned for the square draw (the 2026-11-15 "avatar not round" fix).
+  const r = pipRectAt(1680, 1050, 0.82, 0.82, 18, 16 / 9);
+  assert.ok(r.h < r.w, `rect must be shorter than the diameter: ${r.w}x${r.h}`);
+  assert.ok(r.cx - r.w / 2 >= 0 && r.cx + r.w / 2 <= 1680, `cx bbox ${r.cx}`);
+  assert.ok(r.cy - r.w / 2 >= 0 && r.cy + r.w / 2 <= 1050, `cy bbox ${r.cy}`);
+  assert.equal(r.y, Math.round(r.cy - r.h / 2));
+  // Extreme corner point: the circle is pulled fully inside, never clipped.
+  const corner = pipRectAt(1680, 1050, 1, 1, 40, 16 / 9);
+  assert.ok(corner.cx + corner.w / 2 <= 1680 && corner.cy + corner.w / 2 <= 1050);
+});
 
 test('computeCameraRect: corner layouts produce a circle-sized box anchored inside', () => {
   const r = computeCameraRect('bottom-right', 1280, 800, 18, 4 / 3);
