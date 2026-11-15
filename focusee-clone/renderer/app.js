@@ -884,6 +884,11 @@ function bindRecordDialog() {
     window.__stopPhase = 'finishRecording called (mode=' + (payload?.mode || 'save') + ')';
     finishRecording(payload?.mode || 'save');
   });
+  // The camera bubble ACKed its preview capture is stopped (relayed by the
+  // main process); the e2e camera-released assertion reads this timestamp.
+  window.focusee.capture.onPreviewReleased(() => {
+    window.__previewCameraReleasedAt = Date.now();
+  });
   ipcRendererOn('record:pipMoved', (p) => {
     if (S.pipLive) { S.pipLive.nx = p.nx; S.pipLive.ny = p.ny; }
   });
@@ -1026,6 +1031,7 @@ async function startRecording() {
       }
     }
     let camStream = null;
+    let camVideoEl = null;
     S.pipLive = { nx: 0.82, ny: 0.82, size: 18 };
     const withCamera = $('#opt-camera')?.checked || S.info?.forceBake;
     if (withCamera) {
@@ -1074,7 +1080,7 @@ async function startRecording() {
       screenVideoEl.muted = true;
       screenVideoEl.playsInline = true;
       await screenVideoEl.play().catch(() => {});
-      const camVideoEl = document.createElement('video');
+      camVideoEl = document.createElement('video');
       camVideoEl.srcObject = camStream;
       camVideoEl.muted = true;
       camVideoEl.playsInline = true;
@@ -1166,6 +1172,7 @@ async function startRecording() {
       videoStream,
       micStream,
       camStream,
+      camVideoEl,
       recorder,
       chunks,
       camChunks: camStream ? [] : null,
@@ -1219,7 +1226,38 @@ async function startRecording() {
     console.error(err);
     closeModal('modal-record');
     toast(`录制失败：${err.message}。请检查屏幕录制权限。`);
+    // A start that dies after acquiring streams must not leave the camera (or
+    // screen) hot: release whatever this take already holds (user-reported
+    // 2026-11-15: camera stayed on after stop).
+    if (S.recording) {
+      const rec = S.recording;
+      S.recording = null;
+      S.lastRecordingRef = rec;
+      releaseRecordingStreams(rec);
+      try { rec.recorder?.state === 'recording' && rec.recorder.stop(); } catch {}
+    }
+    try { await window.focusee.capture.hideControl(); } catch {}
   }
+}
+
+// Stop every capture track this take holds, exactly once. The camera indicator
+// must go dark the moment a take is done — a fire-and-forget timer alone can
+// race app teardown and leave the device hot (user-reported 2026-11-15).
+function releaseRecordingStreams(rec) {
+  if (!rec || rec.tracksReleased) return;
+  rec.tracksReleased = true;
+  const stopAll = (s) => { try { s?.getTracks?.().forEach((t) => t.stop()); } catch {} };
+  stopAll(rec.stream);
+  stopAll(rec.videoStream);
+  stopAll(rec.micStream);
+  stopAll(rec.camStream);
+  try {
+    if (rec.camVideoEl && rec.camVideoEl.srcObject) {
+      rec.camVideoEl.srcObject.getTracks().forEach((t) => t.stop());
+      rec.camVideoEl.srcObject = null;
+    }
+  } catch {}
+  rec.releasedAt = Date.now();
 }
 
 async function finishRecording(mode = 'save') {
@@ -1227,6 +1265,7 @@ async function finishRecording(mode = 'save') {
   const rec = S.recording;
   const cancelled = mode === 'cancel';
   S.recording = null;
+  S.lastRecordingRef = rec;
   clearInterval(rec.timer);
   window.__stopPhase = 'teardown-start';
   // Unblock the person FIRST: hide the pill and bring the editor back — the
@@ -1242,15 +1281,16 @@ async function finishRecording(mode = 'save') {
     try { if (rec.recorder.state !== 'inactive') rec.recorder.stop(); } catch (e1) { console.warn('[record] stop:', e1.message); }
     try { if (rec.camRecorder && rec.camRecorder.state !== 'inactive') rec.camRecorder.stop(); } catch (e2) { console.warn('[record] cam stop:', e2.message); }
     if (rec.bakeRaf) clearInterval(rec.bakeRaf);
-    // Tracks stop once the recorder has flushed its final chunk.
-    setTimeout(() => {
-      try {
-        rec.stream?.getTracks().forEach((t) => t.stop());
-        rec.videoStream?.getTracks().forEach((t) => t.stop());
-        rec.micStream?.getTracks().forEach((t) => t.stop());
-        rec.camStream?.getTracks().forEach((t) => t.stop());
-      } catch {}
-    }, 900);
+    if (cancelled) {
+      // Cancel discards the chunks — nothing needs the device: release NOW
+      // instead of waiting for a flush that will never be awaited.
+      releaseRecordingStreams(rec);
+    } else {
+      // Save: stop the tracks as soon as the final chunks have flushed, with
+      // a 900ms fallback timer in case the stop event wedges (idempotent).
+      Promise.resolve(rec.flushed).catch(() => {}).then(() => releaseRecordingStreams(rec));
+      setTimeout(() => releaseRecordingStreams(rec), 900);
+    }
     // Bounded wait for the final chunks (recorder stop event); a wedged
     // recorder must never stall the teardown, hence the 1.5s escape.
     await Promise.race([rec.flushed, new Promise((r) => setTimeout(r, 1500))]);
@@ -1583,6 +1623,31 @@ function exposeTestApi() {
     ready: () => true,
     pipLive: () => (S.pipLive ? { nx: S.pipLive.nx, ny: S.pipLive.ny, size: S.pipLive.size } : null),
     pillRect: () => S.pillRect || null,
+    // Camera release assertion for the e2e gate: every track of the last take
+    // must be ended and the bubble page must have ACKed its own release.
+    cameraReleased: () => {
+      const rec = S.lastRecordingRef;
+      const held = [];
+      const scan = (name, s) => {
+        try {
+          // readyState is the authoritative state; track.ended can lag behind
+          // it on merged streams (observed: ended=false, readyState='ended').
+          s?.getTracks?.().forEach((t) => { if (t.readyState !== 'ended') held.push(`${name}:${t.kind}:${t.readyState}`); });
+        } catch {}
+      };
+      scan('stream', rec?.stream);
+      scan('video', rec?.videoStream);
+      scan('mic', rec?.micStream);
+      scan('cam', rec?.camStream);
+      if (rec?.camVideoEl?.srcObject) held.push('camVideoEl:srcObject');
+      return {
+        tracksEnded: held.length === 0,
+        held,
+        releasedAt: rec?.releasedAt || null,
+        previewAckAt: window.__previewCameraReleasedAt || null,
+        hadCamera: !!(rec?.camStream || rec?.camRecorder),
+      };
+    },
     openSample: async () => { await openProject('sample', { sample: true }); return true; },
     selectTab: (t) => { selectTab(t); return t; },
     previewZoom: (t) => { seek(t); S.dirty = true; return t; },
