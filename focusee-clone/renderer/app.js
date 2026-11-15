@@ -1073,13 +1073,15 @@ async function startRecording() {
   closeModal('modal-record');
 
   // Preflight: capture times out silently (no macOS prompt) when the screen
-  // recording grant was invalidated by a binary replacement — say so NOW
-  // instead of letting five 15s attempts burn ~40s before a vague toast.
+  // recording grant was invalidated by a binary replacement ('denied') — say
+  // so NOW instead of letting five 15s attempts burn ~40s before a vague
+  // toast. 'not-determined' must still PROCEED: the first capture attempt is
+  // what makes macOS show its own grant prompt.
   let screenStatus = 'unknown';
   try {
     screenStatus = (await window.focusee.info()).screenStatus || 'unknown';
   } catch {}
-  if (screenStatus && screenStatus !== 'granted' && screenStatus !== 'unknown') {
+  if (screenStatus === 'denied' || screenStatus === 'restricted') {
     toast('屏幕录制权限未授予或已失效（换包/重装后常见）→ 已为你打开系统设置：把 FocuSee Clone 开关打开（列表没有就点 + 添加本应用），然后重启应用再录');
     window.focusee.system.openScreenSettings().catch(() => {});
     return;
