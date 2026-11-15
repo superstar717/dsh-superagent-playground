@@ -109,3 +109,51 @@
 - **memory key**：FocuSee Clone 项目现状——本会话无 memory 工具可写，未提交；项目现状以本文
   与 LESSONS E158–E163 为准。
 - **本文**：`work/项目复盘-focusee复刻.md`（随 PR 入库，公开仓库，不含私域会话标识）。
+
+## 七、机制落地：哪些教训要变成机制（2026-11-15 追问追加）
+
+判定标准（沿用既有取舍，见全局规则 §十五/§十六/§十七）：**管辖范围能可靠识别、
+误伤成本低于漏放成本 → 机制（入口脚本/CI/断言）；识别不可靠或纯语义判断 → 规则/清单**。
+不做 PreToolUse hook：hooks.json 需重启宿主才生效（LESSONS E127），且「这次交付是不是
+focusee」无法可靠识别——门做成「入口脚本 + manifest 凭据」形态。
+
+### 已落地成机制
+
+1. **真机交付门 `focusee-clone/scripts/ship-gate.sh`（本 PR 新增）**——唯一交付入口，
+   单命令串起全部曾靠人盯的环节：
+   ①单测（含 tripwire）→ ②打包 → ③**打包应用真机 e2e**（`--e2e-rec --e2e-rec-takes=3
+   --e2e-rec-cancel-take=2 --e2e-rec-cam`，含摄像头、连续多段闩锁复用、取消路径、
+   真实拖动预览窗回归；独立临时数据目录 + `--focusee-user-data` 隔离已安装应用的
+   单实例锁）→ ④e2e 报告全步校验（落盘段数=期望、取消不落盘、`pipDrawn>0`）→
+   ⑤成片断言（每段 recording.webm 解码帧数 ≥30——拦「静帧幻灯片」与节流回归；
+   容器时长不断言：MediaRecorder WebM 无时长头（E163），且应用按设计在首次编辑器
+   加载时才解析时长回写，落盘时长为 0 属正常）→
+   ⑥manifest（git 修订 + 包代码哈希 + 逐步结果，**仅全过才写**；失败 exit 1 无凭据）。
+   e2e 瞬态失败自动重试（≤3 次、45s 间隔）：频繁重启捕获会触发 ScreenCaptureKit
+   系统级启动超时（本轮实测复现——单次失败 ≠ 回归，连续 3 次才算）。
+   落地教训：E159（真机交付门）、E161（takes≥2 + cancel）、E162（画中画/入镜断言）、
+   E163（帧数断言；容器时长不断言——WebM 无时长头且应用按设计在首次加载时才解析）。
+   **正负验证**：正向 = 当前 main 全过出 manifest；负向 = 用闩锁修复前的构建
+   （740e9392，`--e2e-rec-two`）过门，take2 停止必须 FAIL、门必须 exit 1 不写 manifest
+   （「该拦时真拦」铁律，LESSONS E44）。
+2. **tripwire 单测 + e2e 场景 + CI（已有，非新建）**：`test/stop-flow.test.mjs` 六条禁模式
+   （renderer 禁引用 `mainWindow`、回调禁读全局状态、onstop 不直接驱动保存、main.js 禁对
+   悬浮/预览窗 executeJavaScript、闩锁必须复位）、`main.js` 的 9 个 e2e flag、
+   `.github/workflows/focusee-clone-test.yml`。本次只是把它们串进交付门（落地 E158、
+   E160 的可检部分、E161 的复位断言）。
+
+### 不机制化，保持规则/清单（附理由）
+
+3. **E160「修复声明 ↔ diff 对账」**：判断「声明的行为改动是否真在这条 diff 里」是语义
+   问题，自动化不可靠；保留为修复 PR 自查规则（写 message 前逐条指认文件与行号，
+   复审 `git show --stat` 对账）。
+4. **文档漂移（DIFF-REPORT 随功能同步）**：「该同步没同步」无法可靠识别；保留为收尾
+   清单项（本文 §三.7 已列明漂移点，修正留待下轮）。
+5. **全局 hook/拦截类**：见判定标准——识别不可靠 + 重启门槛 + 误伤成本，与
+   deck-ship / motiongit / open-code-review 三次取舍一致。
+
+### 过门=交付的操作约定
+
+安装包更新、PR 报 ready 之前必须跑 `./scripts/ship-gate.sh` 并持有当次 manifest；
+manifest 缺失或 git 修订/哈希对不上 = 未过门。CI 只覆盖单测（ubuntu 无摄像头/屏幕），
+真机环节只能在本机门里跑——这正是「单测全绿 ≠ 真机可用」的结构性原因。
