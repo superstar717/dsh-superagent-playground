@@ -1550,6 +1550,7 @@ function openSettings() {
 function exposeTestApi() {
   window.__focuseeTest = {
     ready: () => true,
+    pipLive: () => (S.pipLive ? { nx: S.pipLive.nx, ny: S.pipLive.ny, size: S.pipLive.size } : null),
     openSample: async () => { await openProject('sample', { sample: true }); return true; },
     selectTab: (t) => { selectTab(t); return t; },
     previewZoom: (t) => { seek(t); S.dirty = true; return t; },

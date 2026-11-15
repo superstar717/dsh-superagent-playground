@@ -370,11 +370,12 @@ function createCameraPreviewWindow() {
   // Default spot = the default baked PiP spot (nx 0.82, ny 0.82): the first
   // pipMoved report then confirms roughly where the recording puts the circle.
   const place = () => {
-    const display = screen.getPrimaryDisplay().bounds;
+    const b = screen.getPrimaryDisplay()?.bounds;
+    if (!b) return;
     const [w, h] = win.getSize();
     win.setPosition(
-      Math.round(display.x + display.width * 0.82 - w / 2),
-      Math.round(display.y + display.height * 0.82 - h / 2),
+      Math.round(b.x + b.width * 0.82 - w / 2),
+      Math.round(b.y + b.height * 0.82 - h / 2),
       false,
     );
   };
@@ -383,9 +384,11 @@ function createCameraPreviewWindow() {
     if (win.isDestroyed() || !win.isVisible()) return;
     const [x, y] = win.getPosition();
     const [w, h] = win.getSize();
-    const display = screen.getPrimaryDisplay().bounds;
-    const nx = clamp((x + w / 2 - display.bounds.x) / display.bounds.width, 0, 1);
-    const ny = clamp((y + h / 2 - display.bounds.y) / display.bounds.height, 0, 1);
+    const display = screen.getPrimaryDisplay();
+    if (!display) return;
+    const b = display.bounds;
+    const nx = clamp((x + w / 2 - b.x) / Math.max(1, b.width), 0, 1);
+    const ny = clamp((y + h / 2 - b.y) / Math.max(1, b.height), 0, 1);
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('record:pipMoved', { nx: Number(nx.toFixed(3)), ny: Number(ny.toFixed(3)) });
     }
@@ -764,9 +767,10 @@ function registerIpc() {
     if (!previewWindow || previewWindow.isDestroyed() || !previewWindow.isVisible()) return;
     const [x, y] = previewWindow.getPosition();
     const [w, h] = previewWindow.getSize();
-    const display = screen.getPrimaryDisplay().bounds;
-    const nx = clamp((x + w / 2 - display.x) / display.width, 0, 1);
-    const ny = clamp((y + h / 2 - display.y) / display.height, 0, 1);
+    const b = screen.getPrimaryDisplay()?.bounds;
+    if (!b) return;
+    const nx = clamp((x + w / 2 - b.x) / Math.max(1, b.width), 0, 1);
+    const ny = clamp((y + h / 2 - b.y) / Math.max(1, b.height), 0, 1);
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('record:pipMoved', { nx: Number(nx.toFixed(3)), ny: Number(ny.toFixed(3)) });
     }
@@ -1014,6 +1018,23 @@ async function runRecordingTake({ win, report, step, wait, evalJs, withCamera, t
       previewUp = !!(previewWindow && !previewWindow.isDestroyed() && previewWindow.isVisible() && previewBridgeReady);
     }
     step(`${tag}:camera-preview-window-live`, previewUp, previewUp ? 'preview-ack' : 'no-preview-window');
+    if (previewUp) {
+      // Regression gate for the 2026-11-15 reportMove crash (user dragged the
+      // bubble → TypeError reading 'x'): actually MOVE the bubble so its
+      // 'moved' event fires, and require a fresh record:pipMoved to land in
+      // the editor. Before the fix this threw an uncaught exception here.
+      try {
+        const [px, py] = previewWindow.getPosition();
+        previewWindow.setPosition(px + 60, py + 40);
+        await wait(700);
+        previewWindow.setPosition(px, py);
+        await wait(700);
+        const pip = await evalJs(`window.__focuseeTest?.pipLive?.() || null`);
+        step(`${tag}:bubble-move-updates-pip`, !!pip && typeof pip.nx === 'number', JSON.stringify(pip));
+      } catch (e) {
+        step(`${tag}:bubble-move-updates-pip`, false, e.message);
+      }
+    }
     if (previewUp) await evalJs(`window.focusee.e2e.shotPreview('${tag}-preview')`);
     await evalJs(`window.focusee.e2e.shotControl('${tag}-pill')`);
   }

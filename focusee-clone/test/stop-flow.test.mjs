@@ -126,3 +126,24 @@ test('stop-signal replay reaches pages that loaded after showControl', () => {
   assert.match(mainJs, /did-finish-load/);
   assert.match(mainJs, /replayControlInfo/);
 });
+
+test('preview position math never double-unwraps the display bounds', () => {
+  // 2026-11-15 crash (user dragged the bubble): `const display =
+  // getPrimaryDisplay().bounds` followed by `display.bounds.x` read `.bounds`
+  // off the bounds object — undefined — and threw an uncaught exception in
+  // the main process. Every display lookup now keeps the Display object and
+  // unwraps .bounds exactly once, with a guard.
+  assert.doesNotMatch(mainJs, /getPrimaryDisplay\(\)\.bounds;[\s\S]{0,200}\.bounds\./);
+  const reportMove = mainJs.match(/const reportMove = \(\) => \{[\s\S]{0,600}?\n  \};/);
+  assert.ok(reportMove, 'preview reportMove block not found');
+  assert.match(reportMove[0], /const display = screen\.getPrimaryDisplay\(\);/);
+  assert.match(reportMove[0], /if \(!display\) return;/);
+  // Unwrap exactly once into a fresh name; never read .bounds off the bounds.
+  assert.match(reportMove[0], /const b = display\.bounds;/);
+  assert.match(reportMove[0], /- b\.x\)/);
+  assert.doesNotMatch(reportMove[0], /display\.bounds\./);
+  // The harness must exercise a real bubble move so this class ships broken
+  // never again.
+  assert.match(mainJs, /bubble-move-updates-pip/);
+  assert.match(appJs, /pipLive: \(\) =>/);
+});
