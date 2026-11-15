@@ -1080,7 +1080,7 @@ async function startRecording() {
     screenStatus = (await window.focusee.info()).screenStatus || 'unknown';
   } catch {}
   if (screenStatus && screenStatus !== 'granted' && screenStatus !== 'unknown') {
-    toast('屏幕录制权限未授予或已失效（换包/重装后常见）→ 已为你打开系统设置，请允许后重启应用再录');
+    toast('屏幕录制权限未授予或已失效（换包/重装后常见）→ 已为你打开系统设置：把 FocuSee Clone 开关打开（列表没有就点 + 添加本应用），然后重启应用再录');
     window.focusee.system.openScreenSettings().catch(() => {});
     return;
   }
@@ -1354,7 +1354,7 @@ async function startRecording() {
     // ScreenCaptureKit — give the person the two known fixes, not a dead end.
     if (/timeout/i.test(String(err.message))) {
       if (screenStatus && screenStatus !== 'granted' && screenStatus !== 'unknown') {
-        toast('屏幕录制权限未授予或已失效 → 打开系统设置允许「屏幕录制」后，重启应用再试');
+        toast('屏幕录制权限未授予或已失效 → 在系统设置打开 FocuSee Clone 的「屏幕录制」开关（没有就点 + 添加本应用），然后重启应用再试');
         window.focusee.system.openScreenSettings().catch(() => {});
       } else {
         toast('屏幕采集无法启动。修法①：系统设置→隐私与安全性→屏幕录制，把 FocuSee Clone 关掉再打开并重启应用；修法②：重启电脑（清除系统采集服务卡死）');
