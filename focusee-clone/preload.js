@@ -126,6 +126,15 @@ contextBridge.exposeInMainWorld('focusee', {
     toggle: () => ipcRenderer.invoke('teleprompter:toggle'),
   },
 
+  captions: {
+    generate: (id) => ipcRenderer.invoke('captions:generate', { id }),
+    onProgress: (cb) => {
+      const handler = (_e, payload) => cb(payload);
+      ipcRenderer.on('captions:progress', handler);
+      return () => ipcRenderer.removeListener('captions:progress', handler);
+    },
+  },
+
   camera: {
     save: (id, data) => ipcRenderer.invoke('projects:saveCamera', { id, data }),
     load: (id) => ipcRenderer.invoke('projects:camera', id),

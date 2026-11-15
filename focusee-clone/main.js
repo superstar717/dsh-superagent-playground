@@ -169,6 +169,149 @@ function runFfmpeg(args, onLine) {
 }
 
 // ---------------------------------------------------------------------------
+// AI captions: local speech-to-text (SenseVoice-small + fsmn-vad) running in
+// the machine-local Python env (no cloud, no credits — FocuSee's "local
+// model" tier). The env and model cache are machine setup, not app deps:
+// without them the feature is simply unavailable (UI shows why).
+// ---------------------------------------------------------------------------
+
+function asrError(code, message) {
+  return Object.assign(new Error(message), { code });
+}
+
+function findAsrPython() {
+  const candidates = [];
+  if (process.env.FOCUSEE_ASR_PY) candidates.push(process.env.FOCUSEE_ASR_PY);
+  candidates.push(path.join(os.homedir(), 'src', 'compare-ocr-models-8ca7b0b3fd79', 'test', 'venv', 'bin', 'python'));
+  for (const p of candidates) {
+    try {
+      if (fs.existsSync(p)) return p;
+    } catch {}
+  }
+  return null;
+}
+
+function findAsrScript() {
+  const p = path.join(__dirname, 'scripts', 'asr', 'generate_captions.py');
+  try {
+    return fs.existsSync(p) ? p : null;
+  } catch {
+    return null;
+  }
+}
+
+function runAsrPython(py, script, args, onLine, timeoutMs = 20 * 60 * 1000) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(py, [script, ...args], { stdio: ['ignore', 'pipe', 'pipe'] });
+    let out = '';
+    let err = '';
+    const timer = setTimeout(() => {
+      try { child.kill('SIGKILL'); } catch {}
+      reject(asrError('asr_timeout', '语音识别超时（超过 20 分钟），已中止'));
+    }, timeoutMs);
+    child.stdout.on('data', (d) => {
+      const s = d.toString();
+      out += s;
+      for (const line of s.split('\n')) if (line.trim()) onLine(line.trim());
+    });
+    child.stderr.on('data', (d) => { err += d.toString(); });
+    child.on('error', (e) => {
+      clearTimeout(timer);
+      reject(asrError('asr_failed', `无法启动语音识别进程: ${e.message}`));
+    });
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      if (code === 0) return resolve(out);
+      reject(asrError('asr_failed', `语音识别进程退出 ${code}: ${(err || out).slice(-600)}`));
+    });
+  });
+}
+
+/** Extract audio → transcribe with sentence timestamps → raw segments.
+ *  Returns the raw JSON list; the caller normalises it (renderer/captions). */
+async function generateCaptionsForProject(id, onPhase = () => {}) {
+  const ffmpeg = findFfmpeg();
+  if (!ffmpeg) throw asrError('no_ffmpeg', '未找到 ffmpeg，无法提取音频（装上 ffmpeg 后可用）');
+  const py = findAsrPython();
+  if (!py) throw asrError('no_asr_python', '本机没有语音识别环境（SenseVoice venv），AI 字幕不可用');
+  const script = findAsrScript();
+  if (!script) throw asrError('no_asr_script', 'ASR 脚本缺失（scripts/asr/generate_captions.py）');
+  const p = await loadProject(id);
+  if (!p.videoFile) throw asrError('no_video', '这个项目没有视频文件');
+  const video = path.join(projectDir(id), p.videoFile);
+  const tmpDir = path.join(dataRoot(), 'asr');
+  await fsp.mkdir(tmpDir, { recursive: true });
+  const base = `${id}-${Date.now()}`;
+  const wav = path.join(tmpDir, `${base}.wav`);
+  const outJson = path.join(tmpDir, `${base}.json`);
+  try {
+    onPhase('extract');
+    try {
+      await runFfmpeg(['-y', '-i', video, '-vn', '-ac', '1', '-ar', '16000', '-acodec', 'pcm_s16le', wav]);
+    } catch (err) {
+      // A recording without a mic track fails here ("Output file does not
+      // contain any stream") — map it to the friendly no-audio message.
+      if (/does not contain any stream/i.test(err.message)) {
+        throw asrError('no_audio', '这个视频没有音频轨道（录制时未开麦克风）');
+      }
+      throw err;
+    }
+    // <0.1s of 16kHz mono 16-bit audio means the file has no audio track.
+    const stat = await fsp.stat(wav).catch(() => null);
+    if (!stat || stat.size < 44 + 3200) throw asrError('no_audio', '这个视频没有音频轨道（录制时未开麦克风）');
+    onPhase('transcribe');
+    await runAsrPython(py, script, [wav, outJson], (line) => onPhase('transcribe', line));
+    onPhase('parse');
+    let parsed;
+    try {
+      parsed = JSON.parse(await fsp.readFile(outJson, 'utf8'));
+    } catch (err) {
+      throw asrError('asr_failed', `识别输出不可解析: ${err.message}`);
+    }
+    return Array.isArray(parsed) ? parsed : [];
+  } finally {
+    await Promise.allSettled([fsp.rm(wav, { force: true }), fsp.rm(outJson, { force: true })]);
+  }
+}
+
+// E2E harness for the full ASR chain without a person clicking: import the
+// video at FOCUSEE_ASR_E2E_VIDEO into a throwaway e2e data dir, generate
+// captions, normalise with the exact same module the renderer uses, and write
+// a report. CI never has the Python env — this mode is opt-in.
+async function runE2EAsr() {
+  const video = process.env.FOCUSEE_ASR_E2E_VIDEO;
+  if (!video) throw new Error('set FOCUSEE_ASR_E2E_VIDEO=<speech video> first');
+  const { normalizeCaptionSegments } = require('./renderer/captions.cjs');
+  const dir = projectDir('asr-e2e');
+  const ext = path.extname(video) || '.mp4';
+  await fsp.mkdir(dir, { recursive: true });
+  await fsp.copyFile(video, path.join(dir, `recording${ext}`));
+  await fsp.writeFile(path.join(dir, 'project.json'), JSON.stringify({
+    id: 'asr-e2e', name: 'asr-e2e', videoFile: `recording${ext}`,
+    duration: 0, hasAudio: true, captions: [],
+  }));
+  const t0 = Date.now();
+  const raw = await generateCaptionsForProject('asr-e2e', (phase, line) => {
+    if (line) console.log('[e2e-asr]', phase, line);
+    else console.log('[e2e-asr] phase:', phase);
+  });
+  const segments = normalizeCaptionSegments(raw);
+  const artifactDir = path.join(dataRoot(), 'artifacts');
+  await fsp.mkdir(artifactDir, { recursive: true });
+  const report = {
+    seconds: Number(((Date.now() - t0) / 1000).toFixed(1)),
+    rawCount: raw.length,
+    segments,
+    sample: segments.slice(0, 6),
+  };
+  await fsp.writeFile(path.join(artifactDir, 'asr-report.json'), JSON.stringify(report, null, 2));
+  console.log('[e2e-asr] OK', JSON.stringify({ count: segments.length, seconds: report.seconds }));
+  if (!segments.length) throw new Error('no caption segments produced');
+  await fsp.rm(dir, { recursive: true, force: true });
+  app.exit(0);
+}
+
+// ---------------------------------------------------------------------------
 // Bundled sample project
 // ---------------------------------------------------------------------------
 
@@ -256,6 +399,10 @@ function createMainWindow() {
     });
     if (isE2E_REC) runE2ERecording(win).catch((err) => {
       console.error('[e2e-rec] failed:', err);
+      app.exit(1);
+    });
+    if (process.argv.includes('--e2e-asr')) runE2EAsr().catch((err) => {
+      console.error('[e2e-asr] failed:', err);
       app.exit(1);
     });
   });
@@ -533,6 +680,7 @@ function registerIpc() {
     chrome: process.versions.chrome,
     dataRoot: dataRoot(),
     ffmpeg: findFfmpeg(),
+    asrReady: Boolean(findFfmpeg() && findAsrPython() && findAsrScript()),
     platform: process.platform,
     isE2E,
     isSmoke,
@@ -831,6 +979,20 @@ function registerIpc() {
     }
   });
 
+  // AI captions ------------------------------------------------------------
+  ipcMain.handle('captions:generate', async (e, { id }) => {
+    const sender = e.sender;
+    try {
+      const segments = await generateCaptionsForProject(id, (phase, line) => {
+        if (!sender.isDestroyed()) sender.send('captions:progress', { id, phase, line });
+      });
+      return { ok: true, segments };
+    } catch (err) {
+      console.warn('[captions] generate failed:', err.message);
+      return { ok: false, code: err.code || 'asr_failed', error: err.message };
+    }
+  });
+
   ipcMain.handle('settings:get', async () => readSettings());
   ipcMain.handle('settings:set', async (_e, patch) => writeSettings(patch));
 
@@ -898,6 +1060,9 @@ async function runE2E(win) {
   await evalJs(`window.__focuseeTest.selectTab('cursor')`);
   await wait(400);
   await shot('04-cursor');
+  await evalJs(`window.__focuseeTest.selectTab('captions')`);
+  await wait(400);
+  await shot('04b-captions');
   await evalJs(`window.__focuseeTest.previewZoom(2.4)`);
   await wait(600);
   await shot('05-zoomed-canvas');

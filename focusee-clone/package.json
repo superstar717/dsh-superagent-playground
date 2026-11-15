@@ -6,10 +6,11 @@
   "type": "commonjs",
   "scripts": {
     "start": "electron .",
-    "test": "node scripts/build-zoom-cjs.js && node --test \"test/*.test.mjs\"",
+    "test": "node scripts/build-zoom-cjs.js && node scripts/build-captions-cjs.js && node --test \"test/*.test.mjs\"",
     "sample": "node scripts/make-sample.js",
     "e2e": "electron . --e2e",
-    "build:cjs": "node scripts/build-zoom-cjs.js"
+    "e2e:asr": "electron . --e2e-asr",
+    "build:cjs": "node scripts/build-zoom-cjs.js && node scripts/build-captions-cjs.js"
   },
   "license": "MIT",
   "devDependencies": {

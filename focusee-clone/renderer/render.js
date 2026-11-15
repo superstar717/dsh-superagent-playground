@@ -352,8 +352,9 @@ export function drawFrame(ctx, { width, height, project, video, time, preview = 
     ctx.restore();
   }
 
-  // Captions (manual / imported). AI captioning itself is out of scope.
-  const caps = project.captions || [];
+  // Captions (manual / AI-generated). captionsOn===false hides them without
+  // deleting (FocuSee's enable/disable); undefined keeps them on.
+  const caps = project.captionsOn === false ? [] : (project.captions || []);
   const cap = caps.find((c) => time >= c.start && time <= c.end);
   if (cap?.text) {
     const fontSize = Math.round(H * 0.045);
