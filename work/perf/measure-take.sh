@@ -44,7 +44,8 @@ echo "[measure] launched pid=$APP_JOB label=$LABEL codec=$CODEC cam=$CAM"
 
 # --- wait until the recording is actually live (pill up) ---
 MAINPID=""
-for i in $(seq 1 60); do
+i=0
+for i in $(seq 1 90); do
   sleep 1
   MAINPID=$(pgrep -f "electron . --e2e-rec" 2>/dev/null | head -1)
   [ -n "$MAINPID" ] && grep -q "control-pill-live ok" "$OUT/app.log" 2>/dev/null && break
@@ -54,28 +55,37 @@ if [ -z "$MAINPID" ] || ! grep -q "control-pill-live ok" "$OUT/app.log"; then
 fi
 echo "[measure] recording live at +${i}s, main pid=$MAINPID"
 
-# --- classify children: editor renderer = first spawned --type=renderer child ---
+# --- classify children: electron main = child of the cli wrapper; editor
+# renderer = first spawned --type=renderer child of the electron main ---
 sleep 1
-EDITOR_PID=$(pgrep -P "$MAINPID" | while read p; do
+EPID=$(pgrep -P "$MAINPID" | while read p; do
+  ps -p "$p" -o comm= 2>/dev/null | grep -q "MacOS/Electron$" && { echo "$p"; break; }
+done)
+[ -z "$EPID" ] && EPID="$MAINPID"
+EDITOR_PID=$(pgrep -P "$EPID" 2>/dev/null | while read p; do
   ps -p "$p" -o args= 2>/dev/null | grep -q "type=renderer" && { echo "$p"; break; }
 done)
-GPU_PID=$(pgrep -P "$MAINPID" | while read p; do
+GPU_PID=$(pgrep -P "$EPID" 2>/dev/null | while read p; do
   ps -p "$p" -o args= 2>/dev/null | grep -q "type=gpu-process" && { echo "$p"; break; }
 done)
-echo "[measure] editor_renderer=$EDITOR_PID gpu=$GPU_PID"
+echo "[measure] electron_main=$EPID editor_renderer=$EDITOR_PID gpu=$GPU_PID"
+# full process tree of THIS instance (for per-process CPU attribution),
+# plus the recording window start epoch + length so the summarizer can cut
+# exactly the in-recording samples (top intervals stretch under load).
+{ echo "T $(date +%s)"; echo "MS $REC_MS"; echo "P $APP_JOB"; echo "P $EPID"; pgrep -P "$EPID" 2>/dev/null | sed 's/^/P /'; } > "$OUT/pids.txt"
 
 # --- concurrent samplers over the steady window ---
-(sleep 2; top -l 9 -s 2 -o cpu -stats pid,cpu,command > "$OUT/top.txt" 2>&1) &
+(sleep 2; top -l 16 -s 2 -o cpu -stats pid,cpu,command > "$OUT/top.txt" 2>&1) &
 TOP_JOB=$!
 if [ -n "$EDITOR_PID" ]; then
-  (sleep 3; sample "$EDITOR_PID" 8 15 -file "$OUT/renderer-sample.txt" >/dev/null 2>&1) &
+  (sleep 3; /usr/bin/sample "$EDITOR_PID" 8 15 -file "$OUT/renderer-sample.txt" >/dev/null 2>&1) &
   SMP_JOB=$?
 else
   SMP_JOB=""
 fi
 
 # let the take finish (pill live -> rec_ms + teardown margin)
-TOTAL=$(( i + REC_MS/1000 + 22 ))
+TOTAL=$(( i + REC_MS/1000 + 30 ))
 for t in $(seq 1 $TOTAL); do
   kill -0 $APP_JOB 2>/dev/null || break
   sleep 1
@@ -90,14 +100,22 @@ echo "[measure] app_exit=$APP_EXIT newest=$NEWEST"
 if [ -n "$NEWEST" ] && [ -f "$NEWEST/recording.webm" ]; then
   ffprobe -v error -select_streams v:0 -show_entries stream=codec_name,profile,width,height \
     -show_entries format=duration,size -of json "$NEWEST/recording.webm" > "$OUT/probe.json" 2>"$OUT/probe.err"
-  cat "$NEWEST/e2e-rec-report.json" > "$OUT/rec-report.json" 2>/dev/null
-  echo "[measure] probe: $(python3 -c "import json;d=json.load(open('$OUT/probe.json'));print(d['streams'][0]['codec_name'],d['streams'][0].get('profile'),d['formats'].get('size'),d['formats'].get('duration'))" 2>/dev/null)"
+  cp "$NEWEST/e2e-rec-report.json" "$OUT/rec-report.json" 2>/dev/null
+  python3 - "$OUT/probe.json" <<'PY'
+import json, sys
+try:
+    d = json.load(open(sys.argv[1]))
+    st = d['streams'][0]
+    print("[measure] probe:", st.get('codec_name'), st.get('profile'), 'size=', d.get('format', {}).get('size'))
+except Exception as e:
+    print("[measure] probe parse failed:", e)
+PY
 else
   echo "[measure] no recording produced"
 fi
 # encoder identity from the sampled stacks
 if [ -f "$OUT/renderer-sample.txt" ]; then
-  for pat in VideoToolbox VTCompression VTBundle openh264 WelsVideoEncoder OpenH264Encoder libvpx vp9; do
+  for pat in VideoToolbox VTCompression VTBundle openh264 WelsVideoEncoder OpenH264Encoder libvpx; do
     c=$(grep -c "$pat" "$OUT/renderer-sample.txt" 2>/dev/null || true)
     [ "$c" != "0" ] && echo "[measure] stack-hits $pat=$c"
   done
