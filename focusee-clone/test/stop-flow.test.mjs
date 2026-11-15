@@ -99,6 +99,14 @@ test('bubble and pill are excluded from the recording capture', () => {
   // its own recording is exactly the failure mode this must prevent.
   const protections = mainJs.match(/setContentProtection\(true\)/g) || [];
   assert.ok(protections.length >= 2, `expected ≥2 content-protected windows, got ${protections.length}`);
+  // macOS 15+ ScreenCaptureKit can ignore content protection (2026-11-15: the
+  // pill appeared in the user's recordings). The bake loop must paint the
+  // pill's live region out of the baked frames — the pill rect is tracked via
+  // record:pillRect, so drags stay covered too.
+  assert.match(mainJs, /record:pillRect/);
+  assert.match(preloadJs, /'record:pillRect'/);
+  assert.match(appJs, /record:pillRect/);
+  assert.match(appJs, /Remove its region from the baked frame/);
 });
 
 test('e2e harness can reproduce the two-take path and leave the app running', () => {

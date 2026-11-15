@@ -291,6 +291,15 @@ function replayControlInfo(win) {
   }
 }
 
+// Screen diameter (px) of the baked PiP for a size percentage — the bubble's
+// circle is sized to match, so the transparent bubble (which macOS may capture
+// despite content protection) stays exactly on top of its own baked circle.
+function previewDiameterFor(sizePct) {
+  const b = screen.getPrimaryDisplay()?.bounds;
+  const pct = clamp(Number(sizePct) || 18, 6, 40);
+  return b ? Math.round((b.width * pct) / 100) : Math.round((1680 * pct) / 100);
+}
+
 function createControlWindow() {
   pillBridgeReady = false; // until the fresh pill page ACKs
   const win = new BrowserWindow({
@@ -301,7 +310,13 @@ function createControlWindow() {
     alwaysOnTop: true,
     skipTaskbar: true,
     hasShadow: true,
-    transparent: true,
+    // MUST stay opaque: on this macOS, transparent windows are captured even
+    // with content protection (2026-11-15: the pill appeared in the user's
+    // recordings after the transparent switch; the opaque 05:37 take was
+    // clean). The rounded look comes from the window's native corners plus a
+    // full-bleed pill style, not from transparency.
+    transparent: false,
+    backgroundColor: '#111318',
     show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -329,7 +344,24 @@ function createControlWindow() {
     win.setPosition(Math.round(display.x + display.width / 2 - w / 2), display.y + 24, false);
   };
   place();
-  win.on('closed', () => { controlWindow = null; });
+  // Live pill rect for the renderer's bake loop: on macOS 15+ ScreenCaptureKit
+  // can ignore content protection, so the pill can end up in the captured
+  // frames — the recorder paints its region out of the baked video itself.
+  const reportPillRect = () => {
+    if (win.isDestroyed() || !mainWindow || mainWindow.isDestroyed()) return;
+    const [x, y] = win.getPosition();
+    const [w, h] = win.getSize();
+    mainWindow.webContents.send('record:pillRect', { x, y, w, h });
+  };
+  win.on('moved', reportPillRect);
+  win.on('resized', reportPillRect);
+  reportPillRect();
+  // Heal any raced/stale rect quickly: window moves can apply asynchronously.
+  const pillRectTimer = setInterval(() => {
+    if (win.isDestroyed() || !win.isVisible()) return;
+    reportPillRect();
+  }, 400);
+  win.on('closed', () => { clearInterval(pillRectTimer); controlWindow = null; });
   return win;
 }
 
@@ -643,7 +675,10 @@ function registerIpc() {
     if (info && info.withCamera) {
       // The camera bubble is its own window (see createCameraPreviewWindow).
       if (!previewWindow) previewWindow = createCameraPreviewWindow();
-      previewWindow.webContents.send('control:state', info);
+      previewWindow.webContents.send('control:state', {
+        ...(info || {}),
+        previewDiameter: previewDiameterFor(info && info.pipSize),
+      });
       previewWindow.showInactive();
     } else if (previewWindow && !previewWindow.isDestroyed()) {
       previewWindow.hide();
@@ -654,7 +689,12 @@ function registerIpc() {
 
   ipcMain.handle('capture:updateControl', async (_e, info) => {
     if (controlWindow && !controlWindow.isDestroyed()) controlWindow.webContents.send('control:state', info);
-    if (previewWindow && !previewWindow.isDestroyed()) previewWindow.webContents.send('control:state', info);
+    if (previewWindow && !previewWindow.isDestroyed()) {
+      previewWindow.webContents.send('control:state', {
+        ...(info || {}),
+        ...(info && info.pipSize ? { previewDiameter: previewDiameterFor(info.pipSize) } : {}),
+      });
+    }
     return true;
   });
 
@@ -1045,6 +1085,14 @@ async function runRecordingTake({ win, report, step, wait, evalJs, withCamera, t
   let bakeDebug = null;
   try { bakeDebug = await evalJs(`window.__bakeDebug || null`); } catch {}
   if (bakeDebug) step(`${tag}:bake-debug`, true, JSON.stringify(bakeDebug));
+  // Pill-rect debug: compare what the editor received with the window's live
+  // geometry (2026-11-15 blur-misplacement hunt).
+  try {
+    const pillRectSeen = await evalJs(`window.__focuseeTest?.pillRect?.() || null`);
+    const pillPos = controlWindow && !controlWindow.isDestroyed() ? controlWindow.getPosition() : null;
+    const pillSize = controlWindow && !controlWindow.isDestroyed() ? controlWindow.getSize() : null;
+    step(`${tag}:pill-rect-probe`, true, JSON.stringify({ seen: pillRectSeen, winPos: pillPos, winSize: pillSize }));
+  } catch (e) { step(`${tag}:pill-rect-probe`, false, e.message); }
   if (cancel) {
     let cancelled = 'no-pill';
     try {

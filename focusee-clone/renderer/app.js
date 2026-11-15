@@ -887,6 +887,9 @@ function bindRecordDialog() {
   ipcRendererOn('record:pipMoved', (p) => {
     if (S.pipLive) { S.pipLive.nx = p.nx; S.pipLive.ny = p.ny; }
   });
+  ipcRendererOn('record:pillRect', (r) => {
+    S.pillRect = r;
+  });
   ipcRendererOn('record:pipResize', (p) => {
     if (!S.pipLive) return;
     S.pipLive.size = Math.min(40, Math.max(6, (S.pipLive.size || 18) + p.delta));
@@ -1088,19 +1091,47 @@ async function startRecording() {
           if (screenVideoEl.readyState >= 2) {
             bctx.drawImage(screenVideoEl, 0, 0, bw, bh);
             window.__bakeDebug.draws += 1;
+            // macOS 15+ ScreenCaptureKit can ignore window content protection,
+            // so the control pill may be present in the captured frames even
+            // though it is excluded. Remove its region from the baked frame by
+            // filling it with the content strip directly BELOW the pill,
+            // mirrored vertically (continuous at the seam). Blurring the pill's
+            // own pixels would just leave a blurred pill behind.
+            try {
+              const pr = S.pillRect;
+              if (pr) {
+                const px = Math.max(0, Math.min(bw - 2, Math.round(pr.x)));
+                const py = Math.max(0, Math.min(bh - 2, Math.round(pr.y)));
+                const pw = Math.max(0, Math.min(bw - px, Math.round(pr.w)));
+                const ph = Math.max(0, Math.min(bh - py, Math.round(pr.h)));
+                if (pw > 2 && ph > 2) {
+                  const srcY = Math.min(bh - 1, py + ph);
+                  const srcH = Math.max(2, Math.min(ph, bh - srcY));
+                  bctx.save();
+                  bctx.translate(px, py + ph);
+                  bctx.scale(1, -1);
+                  bctx.drawImage(screenVideoEl, px, srcY, pw, srcH, 0, 0, pw, ph);
+                  bctx.restore();
+                }
+              }
+            } catch {}
             const cv = camStream ? camVideoEl : null;
             if (cv && cv.videoWidth > 0) {
               try {
                 const pip = pipRectAt(bw, bh, S.pipLive.nx, S.pipLive.ny, S.pipLive.size, cv.videoWidth / cv.videoHeight);
                 const d = pip.w;
-                const cx = pip.x + pip.w / 2;
-                const cy = pip.y + pip.h / 2;
+                const cx = pip.cx;
+                const cy = pip.cy;
                 bctx.save();
                 bctx.beginPath();
                 bctx.arc(cx, cy, d / 2, 0, Math.PI * 2);
                 bctx.clip();
+                // The square camera crop is drawn into the circle's bounding
+                // SQUARE (d×d, centred) — NOT the 4:3/16:9 reference rect.
+                // Drawing into the rect left the circle's top/bottom caps
+                // empty (the avatar looked flat-topped in the recording).
                 const cw = Math.min(cv.videoWidth, cv.videoHeight);
-                bctx.drawImage(cv, (cv.videoWidth - cw) / 2, (cv.videoHeight - cw) / 2, cw, cw, pip.x, pip.y, pip.w, pip.h);
+                bctx.drawImage(cv, (cv.videoWidth - cw) / 2, (cv.videoHeight - cw) / 2, cw, cw, cx - d / 2, cy - d / 2, d, d);
                 bctx.restore();
                 bctx.save();
                 bctx.strokeStyle = 'rgba(255,255,255,0.7)';
@@ -1551,6 +1582,7 @@ function exposeTestApi() {
   window.__focuseeTest = {
     ready: () => true,
     pipLive: () => (S.pipLive ? { nx: S.pipLive.nx, ny: S.pipLive.ny, size: S.pipLive.size } : null),
+    pillRect: () => S.pillRect || null,
     openSample: async () => { await openProject('sample', { sample: true }); return true; },
     selectTab: (t) => { selectTab(t); return t; },
     previewZoom: (t) => { seek(t); S.dirty = true; return t; },

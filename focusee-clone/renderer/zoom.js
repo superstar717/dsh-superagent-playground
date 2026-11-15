@@ -364,8 +364,11 @@ export function activeCameraSettings(camera, time) {
 /**
  * PiP rectangle for live (baked-into-recording) camera compositing: anchored
  * at a free normalized centre point, circle diameter = sizePct of canvas width.
+ * The camera square is drawn into a d×d square centred on (cx, cy) and clipped
+ * to the circle, so the avatar is always a FULL circle (the rect is only the
+ * 4:3/16:9 reference box; the circle's bbox is what must stay inside the frame).
  *
- * @returns {{x:number,y:number,w:number,h:number}}
+ * @returns {{x:number,y:number,w:number,h:number,cx:number,cy:number}}
  */
 export function pipRectAt(canvasW, canvasH, nx, ny, sizePct, camAspect = 4 / 3) {
   const W = Math.max(1, canvasW);
@@ -373,7 +376,15 @@ export function pipRectAt(canvasW, canvasH, nx, ny, sizePct, camAspect = 4 / 3) 
   const d = clamp((W * clamp(Number(sizePct) || 18, 6, 40)) / 100, 24, W * 0.45);
   const w = d;
   const h = d / clamp(Number(camAspect) || 4 / 3, 0.5, 3);
-  const x = clamp(nx * W - w / 2, 4, W - w - 4);
-  const y = clamp(ny * H - h / 2, 4, H - h - 4);
-  return { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) };
+  const box = Math.max(w, h); // the circle's bounding box (taller than rect for landscape cams)
+  const cx = clamp(nx * W, w / 2 + 4, W - w / 2 - 4);
+  const cy = clamp(ny * H, box / 2 + 4, H - box / 2 - 4);
+  return {
+    x: Math.round(cx - w / 2),
+    y: Math.round(cy - h / 2),
+    w: Math.round(w),
+    h: Math.round(h),
+    cx: Math.round(cx),
+    cy: Math.round(cy),
+  };
 }

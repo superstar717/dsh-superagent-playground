@@ -151,7 +151,7 @@ contextBridge.exposeInMainWorld('focusee', {
   pipEvents: {
     on: (channel, cb) => {
       const handler = (_e, payload) => cb(payload);
-      const allowed = ['record:pipMoved', 'record:pipResize'];
+      const allowed = ['record:pipMoved', 'record:pipResize', 'record:pillRect'];
       if (!allowed.includes(channel)) return () => {};
       ipcRenderer.on(channel, handler);
       return () => ipcRenderer.removeListener(channel, handler);

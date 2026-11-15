@@ -62,6 +62,15 @@ window.focusee.control.onState((info) => {
   if (info.pipSize) {
     document.getElementById('cam-size-label').textContent = `${info.pipSize}%`;
   }
+  // Match the baked circle's screen size (WYSIWYG ±): the transparent window
+  // can leak into the capture on macOS, but when the bubble circle coincides
+  // exactly with the baked circle it is visually masked by it.
+  if (info.previewDiameter) {
+    const d = Math.min(460, Math.max(120, Math.round(info.previewDiameter)));
+    const bubble = document.getElementById('bubble');
+    bubble.style.width = `${d}px`;
+    bubble.style.height = `${d}px`;
+  }
 });
 
 window.focusee.control.onAttachCamera(attachCameraPreview);
