@@ -1072,6 +1072,19 @@ async function startRecording() {
   const countdown = $('#opt-countdown').checked;
   closeModal('modal-record');
 
+  // Preflight: capture times out silently (no macOS prompt) when the screen
+  // recording grant was invalidated by a binary replacement — say so NOW
+  // instead of letting five 15s attempts burn ~40s before a vague toast.
+  let screenStatus = 'unknown';
+  try {
+    screenStatus = (await window.focusee.info()).screenStatus || 'unknown';
+  } catch {}
+  if (screenStatus && screenStatus !== 'granted' && screenStatus !== 'unknown') {
+    toast('屏幕录制权限未授予或已失效（换包/重装后常见）→ 已为你打开系统设置，请允许后重启应用再录');
+    window.focusee.system.openScreenSettings().catch(() => {});
+    return;
+  }
+
   if (countdown) {
     for (let n = 3; n > 0; n -= 1) {
       $('#countdown-number').textContent = String(n);
@@ -1336,7 +1349,20 @@ async function startRecording() {
   } catch (err) {
     console.error(err);
     closeModal('modal-record');
-    toast(`录制失败：${err.message}。请检查屏幕录制权限。`);
+    // A desktop-capture timeout is almost always the screen-recording grant
+    // (invalidated by replacing the app binary, no macOS prompt) or a wedged
+    // ScreenCaptureKit — give the person the two known fixes, not a dead end.
+    if (/timeout/i.test(String(err.message))) {
+      if (screenStatus && screenStatus !== 'granted' && screenStatus !== 'unknown') {
+        toast('屏幕录制权限未授予或已失效 → 打开系统设置允许「屏幕录制」后，重启应用再试');
+        window.focusee.system.openScreenSettings().catch(() => {});
+      } else {
+        toast('屏幕采集无法启动。修法①：系统设置→隐私与安全性→屏幕录制，把 FocuSee Clone 关掉再打开并重启应用；修法②：重启电脑（清除系统采集服务卡死）');
+        window.focusee.system.openScreenSettings().catch(() => {});
+      }
+    } else {
+      toast(`录制失败：${err.message}。请检查屏幕录制权限。`);
+    }
   }
 }
 

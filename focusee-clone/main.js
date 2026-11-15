@@ -674,6 +674,17 @@ function registerIpc() {
     forceBake: process.argv.includes('--force-bake'),
     cameraStatus: systemPreferences.getMediaAccessStatus('camera'),
     micStatus: systemPreferences.getMediaAccessStatus('microphone'),
+    // Screen-recording TCC state for THIS bundle. After a binary replacement
+    // (repackage/re-sign) macOS silently invalidates the old grant, capture
+    // then times out with no prompt — surfacing the status lets the renderer
+    // explain the fix instead of hanging for 40s on retries.
+    screenStatus: (() => {
+      try {
+        return systemPreferences.getMediaAccessStatus('screen');
+      } catch {
+        return 'unknown';
+      }
+    })(),
     cameraStatus: systemPreferences.getMediaAccessStatus('camera'),
     micStatus: systemPreferences.getMediaAccessStatus('microphone'),
     electron: process.versions.electron,
@@ -994,6 +1005,13 @@ function registerIpc() {
   });
 
   ipcMain.handle('settings:get', async () => readSettings());
+
+  // Deep link into the exact System Settings pane for screen recording — the
+  // documented self-fix when capture times out after a binary replacement.
+  ipcMain.handle('system:openScreenSettings', async () => {
+    await shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture');
+    return true;
+  });
   ipcMain.handle('settings:set', async (_e, patch) => writeSettings(patch));
 
   // E2E helpers -----------------------------------------------------------

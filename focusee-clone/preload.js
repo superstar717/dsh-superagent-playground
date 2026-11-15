@@ -122,6 +122,10 @@ contextBridge.exposeInMainWorld('focusee', {
     set: (patch) => ipcRenderer.invoke('settings:set', patch),
   },
 
+  system: {
+    openScreenSettings: () => ipcRenderer.invoke('system:openScreenSettings'),
+  },
+
   teleprompter: {
     toggle: () => ipcRenderer.invoke('teleprompter:toggle'),
   },
