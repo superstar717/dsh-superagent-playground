@@ -704,7 +704,12 @@ function registerIpc() {
 
   ipcMain.on('capture:cancelRequested', () => {
     if (controlWindow && !controlWindow.isDestroyed()) controlWindow.hide();
-    if (previewWindow && !previewWindow.isDestroyed()) previewWindow.hide();
+    if (previewWindow && !previewWindow.isDestroyed()) {
+      // Order the bubble page to stop its own capture (event, not injection);
+      // hide() alone relies on visibilitychange racing the teardown.
+      previewWindow.webContents.send('control:releaseCamera');
+      previewWindow.hide();
+    }
     if (mainWindow) mainWindow.webContents.send('record:stopRequested', { mode: 'cancel' });
   });
 
@@ -712,9 +717,18 @@ function registerIpc() {
     // No pill/bubble-page JS from here: those pages stop their own preview
     // tracks on hide (visibilitychange) — see the note above createControlWindow.
     if (controlWindow && !controlWindow.isDestroyed()) controlWindow.hide();
-    if (previewWindow && !previewWindow.isDestroyed()) previewWindow.hide();
+    if (previewWindow && !previewWindow.isDestroyed()) {
+      previewWindow.webContents.send('control:releaseCamera');
+      previewWindow.hide();
+    }
     if (mainWindow) mainWindow.show();
     return true;
+  });
+
+  // The bubble ACKs its preview capture is fully stopped; surface that to the
+  // editor so the e2e camera-released assertion can check the whole chain.
+  ipcMain.on('control:previewReleased', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('record:previewReleased');
   });
 
   // Export ----------------------------------------------------------------
@@ -1012,6 +1026,24 @@ async function runE2ERecording(win) {
   }
 }
 
+// The camera must be fully released after EVERY take (stop AND cancel): the
+// editor's own capture tracks must all be ended, and the bubble page must have
+// ACKed its preview release (user-reported 2026-11-15: camera stayed hot).
+async function assertCameraReleased({ step, tag, evalJs, wait }) {
+  let state = null;
+  for (let i = 0; i < 12; i += 1) {
+    await wait(500);
+    try { state = await evalJs(`window.__focuseeTest?.cameraReleased?.() || null`); } catch {}
+    if (!state) continue;
+    if (state.hadCamera) {
+      if (state.tracksEnded && state.previewAckAt && state.releasedAt) break;
+    } else if (state.tracksEnded) break;
+  }
+  const ok = !!(state && state.tracksEnded && (state.hadCamera ? (state.previewAckAt && state.releasedAt) : true));
+  step(`${tag}:camera-released`, ok, JSON.stringify(state));
+  return ok;
+}
+
 async function runRecordingTake({ win, report, step, wait, evalJs, withCamera, takeNo, baseline, artifactDir, cancel = false }) {
   const tag = `take${takeNo}`;
   // Fresh dialog state each take.
@@ -1038,6 +1070,9 @@ async function runRecordingTake({ win, report, step, wait, evalJs, withCamera, t
     await evalJs(`document.querySelector('#opt-camera').checked = true`);
   }
   await evalJs(`document.querySelector('#opt-countdown').checked = false`);
+  // Clear the previous take's bubble-release ACK so THIS take's assertion can
+  // only pass on a fresh release, never on a stale timestamp.
+  await evalJs(`window.__previewCameraReleasedAt = null; true`);
   await evalJs(`document.querySelector('#btn-start-record').click()`);
   // Poll for the pill: first-time source init can take several seconds.
   let pillUp = false;
@@ -1117,7 +1152,8 @@ async function runRecordingTake({ win, report, step, wait, evalJs, withCamera, t
     const savedNow = (await listProjects()).filter((p) => p.id !== 'sample').length;
     step(`${tag}:cancel-accepted`, !grew && !!toastText && editorBack,
       `projects=${savedNow} baseline=${baseline} toast=${toastText || 'none'} editor=${editorBack}`);
-    return !grew;
+    const camOk = await assertCameraReleased({ step, tag, evalJs, wait });
+    return !grew && camOk;
   }
   let stopped = 'no-pill';
   try {
@@ -1146,7 +1182,8 @@ async function runRecordingTake({ win, report, step, wait, evalJs, withCamera, t
     `projects=${savedCount} baseline=${baseline} saveState=${saveState || 'unknown'} phase=${report[`${tag}StopPhase`] || 'none'}`);
   const rec = (await listProjects()).find((p) => p.id !== 'sample') || null;
   step(`${tag}:project-saved`, savedCount > baseline, rec ? `${rec.name} dur=${rec.duration?.toFixed?.(2)}` : 'none');
-  return savedCount > baseline;
+  const camOk = await assertCameraReleased({ step, tag, evalJs, wait });
+  return savedCount > baseline && camOk;
 }
 
 // ---------------------------------------------------------------------------

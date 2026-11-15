@@ -45,6 +45,14 @@ document.addEventListener('visibilitychange', () => {
 });
 window.addEventListener('pagehide', stopPreviewTracks);
 
+// Explicit release order (stop/cancel/teardown): stop the capture and ACK so
+// the e2e can assert full camera release instead of hoping hide() raced right.
+window.focusee.control.onReleaseCamera(() => {
+  state.stopped = true;
+  stopPreviewTracks();
+  try { window.focusee.control.previewReleased(); } catch {}
+});
+
 // Re-arm per take: this window is REUSED across recordings. A new startedAt
 // resets the stale camera take so the bubble re-attaches fresh — without this
 // a second recording would keep (or lose) the previous take's preview state.

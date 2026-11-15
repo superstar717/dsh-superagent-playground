@@ -72,6 +72,13 @@ contextBridge.exposeInMainWorld('focusee', {
       ipcRenderer.on('record:stopRequested', handler);
       return () => ipcRenderer.removeListener('record:stopRequested', handler);
     },
+    // The camera bubble ACKs that its preview capture is stopped; surfaced to
+    // the editor so the e2e can assert full camera release after a take.
+    onPreviewReleased: (cb) => {
+      const handler = () => cb();
+      ipcRenderer.on('record:previewReleased', handler);
+      return () => ipcRenderer.removeListener('record:previewReleased', handler);
+    },
   },
 
   control: {
@@ -102,6 +109,14 @@ contextBridge.exposeInMainWorld('focusee', {
       ipcRenderer.on('control:cancelSignal', handler);
       return () => ipcRenderer.removeListener('control:cancelSignal', handler);
     },
+    // Explicit release order from the main process (stop/cancel/teardown):
+    // this page stops its own preview capture and ACKs — no JS injection.
+    onReleaseCamera: (cb) => {
+      const handler = () => cb();
+      ipcRenderer.on('control:releaseCamera', handler);
+      return () => ipcRenderer.removeListener('control:releaseCamera', handler);
+    },
+    previewReleased: () => ipcRenderer.send('control:previewReleased'),
     stop: () => ipcRenderer.send('capture:stopRequested'),
     cancel: () => ipcRenderer.send('capture:cancelRequested'),
     reportPip: () => ipcRenderer.send('control:pipReport'),

@@ -51,6 +51,20 @@ FOCUSEE_DATA_DIR=/tmp/focusee-e2e ./node_modules/.bin/electron . --e2e
 
 无人值守跑完 6 屏截图 + 1 次导出，产物在 `artifacts/`。
 
+### 交付门（ship gate）
+
+```sh
+./scripts/ship-gate.sh     # 不过门 = 不可交付（安装包不更新、PR 不报 ready）
+```
+
+单命令跑完整门：单元测试（含 tripwire）→ 打包 → **打包应用真机 e2e**
+（摄像头 + 连续 3 段 + 第 2 段取消 + 真实拖动预览窗回归，独立临时数据目录）→
+e2e 报告全步校验（落盘段数/取消不落盘/画中画已烘焙）→ 成片断言
+（每段时长 >1s 且 ≥12fps，拦静帧/节流回归）→ 全过才写
+`artifacts/ship-gate/manifest.json`。任何一步失败 exit 1、不写 manifest。
+背景见 `../work/项目复盘-focusee复刻.md` §七（复盘结论的机制化，
+LESSONS E159「单测全绿 ≠ 真机可用」）。
+
 ## 结构
 
 ```
