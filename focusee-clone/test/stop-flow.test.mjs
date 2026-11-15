@@ -128,6 +128,17 @@ test('cancel path is event-driven and resets with the same latch', () => {
   assert.match(mainJs, /control:cancelSignal/);
 });
 
+test('preview page releases every camera stream it opens (orphan leak)', () => {
+  // 2026-11-15 user report: 停止录制后摄像头没有关. Overlapping attach signals
+  // each open a device stream; the superseded one must be released, and an
+  // attach that resolves after hide/stop must release instead of adopting.
+  assert.match(camPreviewJs, /const liveStreams = new Set\(\)/);
+  assert.match(camPreviewJs, /for \(const stream of liveStreams\)/);
+  assert.match(camPreviewJs, /seq !== attachSeq/);
+  assert.match(camPreviewJs, /stopPreviewTracks\(\); \/\/ release any superseded/);
+  assert.match(camPreviewJs, /attachSeq \+= 1/);
+});
+
 test('stop-signal replay reaches pages that loaded after showControl', () => {
   // First-take flakiness class: state sent before the page finished loading
   // was lost; did-finish-load replays the latest per-take info.

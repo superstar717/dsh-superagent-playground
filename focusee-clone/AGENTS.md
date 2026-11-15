@@ -26,6 +26,9 @@
 6. **e2e 启动必须 `--focusee-user-data <dir>`**：否则与已安装应用共用 userData/单实例锁，静默退出。
 7. **强杀进程后 SCK 拒绝新会话（Timeout starting video source）**：`kill -9 replayd` 让 launchd
    重启即恢复；同一 bundle 路径不要同时跑两个捕获进程。
+8. **预览页每一路 getUserMedia 都要登记并在 stop/隐藏/被替换时释放**（`renderer/cam-preview.js`
+   的 liveStreams 集合 + attachSeq 代号守卫）：attach 信号可能重叠（状态重放+显式调用各发一次），
+   被取代的流不释放 = 摄像头停止录制后常开（2026-11-15 事故）。
 
 ## 未实现（有意边界，见 DIFF-REPORT）
 

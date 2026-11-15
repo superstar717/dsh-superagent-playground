@@ -8,30 +8,54 @@
 
 const $ = (sel) => document.querySelector(sel);
 const state = { startedAt: 0, timer: null, stopped: false };
+// Every camera stream this page obtains is registered here; stopPreviewTracks
+// releases ALL of them. Attach signals can overlap (state replay + explicit
+// attach) and each opens its own device stream — without the registry the
+// superseded stream keeps the camera on after the recording stops
+// (2026-11-15 user report: 停止录制后摄像头没有关).
+const liveStreams = new Set();
+let attachSeq = 0;
 
 function stopPreviewTracks() {
-  const v = document.getElementById('cam-video');
-  if (v && v.srcObject) {
-    v.srcObject.getTracks().forEach((t) => t.stop());
-    v.srcObject = null;
+  // Invalidate any attach still opening: when its getUserMedia resolves it
+  // must release the stream instead of assigning it to a hidden page.
+  attachSeq += 1;
+  for (const stream of liveStreams) {
+    try { stream.getTracks().forEach((t) => t.stop()); } catch {}
   }
+  liveStreams.clear();
+  const v = document.getElementById('cam-video');
+  if (v && v.srcObject) v.srcObject = null;
   document.getElementById('bubble').classList.add('no-video');
+  state.stopped = true;
 }
 
 async function attachCameraPreview() {
+  const seq = attachSeq;
   const v = document.getElementById('cam-video');
   if (!v || v.srcObject) return;
+  let stream = null;
   try {
-    v.srcObject = await navigator.mediaDevices.getUserMedia({
+    stream = await navigator.mediaDevices.getUserMedia({
       video: { width: { ideal: 640 }, height: { ideal: 480 } },
       audio: false,
     });
-    document.getElementById('bubble').classList.remove('no-video');
   } catch (err) {
     // No camera / busy camera: the recording is unaffected (its capture is a
     // separate one); the bubble just stays as an empty round frame.
     console.warn('[preview] camera unavailable:', err && err.message);
+    return;
   }
+  // The take may have ended or the window hidden while the device was
+  // opening — release immediately instead of leaking the camera.
+  if (seq !== attachSeq || document.visibilityState === 'hidden' || state.stopped) {
+    try { stream.getTracks().forEach((t) => t.stop()); } catch {}
+    return;
+  }
+  stopPreviewTracks(); // release any superseded stream before adopting this one
+  liveStreams.add(stream);
+  v.srcObject = stream;
+  document.getElementById('bubble').classList.remove('no-video');
 }
 
 // Stop the capture when the window hides; re-attach when it shows again with
@@ -49,9 +73,9 @@ window.addEventListener('pagehide', stopPreviewTracks);
 // resets the stale camera take so the bubble re-attaches fresh — without this
 // a second recording would keep (or lose) the previous take's preview state.
 function rearmForNewTake(startedAt) {
+  stopPreviewTracks(); // releases the previous take's streams (marks stopped)
   state.stopped = false;
   state.startedAt = startedAt;
-  stopPreviewTracks();
   attachCameraPreview();
 }
 
