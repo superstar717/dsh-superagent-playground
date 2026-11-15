@@ -43,6 +43,9 @@ mkdir -p "$APP_RES"
 cp "$ROOT"/package.json "$ROOT"/main.js "$ROOT"/preload.js "$APP_RES/"
 cp -R "$ROOT/renderer" "$APP_RES/renderer"
 cp -R "$ROOT/assets" "$APP_RES/assets"
+# AI 字幕：main.js 在打包版里按 __dirname 找 scripts/asr/generate_captions.py，
+# 漏拷会让打包版的 AI 字幕按钮永远置灰。
+cp -R "$ROOT/scripts" "$APP_RES/scripts"
 # 分割模型走 preload 的 require('@mediapipe/tasks-vision')，需要包内 node_modules 子集
 mkdir -p "$APP_RES/node_modules/@mediapipe"
 cp "$ROOT/node_modules/@mediapipe/tasks-vision/package.json" "$APP_RES/node_modules/@mediapipe/tasks-vision/" 2>/dev/null || true
