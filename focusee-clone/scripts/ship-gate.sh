@@ -74,6 +74,35 @@ GIT_REV="$(git -C "$ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)"
 echo "[gate] ===== focusee-clone 真机交付门 @ $GIT_REV ====="
 echo "[gate] e2e battery: $E2E_ARGS"
 
+# ── ⓪ 采集设备预检：相机不可用 = 环境故障，早失败早报因 ─────────────────────
+# 背景（2026-11-15 实测）：系统 CMIO 栈卡死时 Chromium 相机 getUserMedia 超时，
+# harness 的 pill 等待窗（10s）< 相机超时（20s），门会产出 3 次误导性 FAIL——
+# 先花几秒探明设备，把「环境故障」与「代码回归」区分开（LESSONS E159 补充②）。
+CAM_PROBE_JPG="$(mktemp "${TMPDIR:-/tmp}/gate-camprobe.XXXXXX")/frame.jpg"
+mkdir -p "$(dirname "$CAM_PROBE_JPG")" 2>/dev/null || true
+CAM_PROBE_LOG="${TMPDIR:-/tmp}/gate-camprobe.$$.log"
+ffmpeg -f avfoundation -framerate 30 -video_size 640x480 -i "0" -frames:v 1 -y "$CAM_PROBE_JPG" >"$CAM_PROBE_LOG" 2>&1 &
+CAM_PID=$!
+CAM_DEADLINE=$((SECONDS + 60))
+CAM_EXIT=""
+while [ $SECONDS -lt $CAM_DEADLINE ]; do
+  if ! kill -0 "$CAM_PID" 2>/dev/null; then wait "$CAM_PID"; CAM_EXIT=$?; break; fi
+  sleep 1
+done
+if [ -z "$CAM_EXIT" ]; then
+  kill -9 "$CAM_PID" 2>/dev/null || true
+  record "camera-preflight" 1 "系统相机打开超时（60s）——CMIO 栈卡死或被占用：先恢复相机（重启系统 / sudo 重启 VDCAssistant / 关闭占用相机的应用）再跑门，不是代码问题"
+else
+  if [ "$CAM_EXIT" = 0 ] && [ -s "$CAM_PROBE_JPG" ]; then
+    record "camera-preflight" 0 "相机可用（探测帧已捕获）"
+  else
+    record "camera-preflight" 1 "相机打开失败（exit ${CAM_EXIT}，日志 ${CAM_PROBE_LOG}）——环境问题，恢复后重跑门；e2e 的相机步骤必然连带失败，勿据此改代码"
+  fi
+fi
+# 预检失败 → 不再烧 3 次 e2e（省时，且避免产出误导性证据）；探测帧在 = 相机可用
+SKIP_E2E=0
+[ -s "$CAM_PROBE_JPG" ] || SKIP_E2E=1
+
 # ── ① 单元测试（含 tripwire） ────────────────────────────────────────────────
 UNIT_LOG="${TMPDIR:-/tmp}/gate-unit.$$.log"
 if [ "$SKIP_UNIT" = 1 ]; then
@@ -114,6 +143,11 @@ REPORT_JSON=""
 run_e2e_battery() { # $1 = attempt no.
   STEP_PREFIX="a$1/"
   BLOCK_FAIL=0
+  if [ "$SKIP_E2E" = 1 ]; then
+    record "e2e-run" 1 "跳过：采集设备预检未过（环境故障，跑 e2e 只会产出误导性证据）"
+    BLOCK_FAIL=1
+    return 0
+  fi
   DATA_DIR="$(mktemp -d "${TMPDIR:-/tmp}/focusee-gate.XXXXXX")"
   local E2E_LOG="$DATA_DIR/e2e.log"
   REPORT_JSON="$DATA_DIR/artifacts/e2e-rec-report.json"
@@ -239,6 +273,7 @@ ATTEMPT=1
 while :; do
   run_e2e_battery "$ATTEMPT"
   [ "$BLOCK_FAIL" = 0 ] && break
+  [ "$SKIP_E2E" = 1 ] && break   # 环境故障是确定性的，重试没有意义
   [ "$ATTEMPT" -ge 3 ] && break
   ATTEMPT=$((ATTEMPT + 1))
   echo "[gate] e2e 第 $((ATTEMPT - 1)) 次未过，45 秒后重试（让 ScreenCaptureKit/摄像头服务恢复；频繁重启捕获会触发系统级启动超时）…"
