@@ -1,0 +1,26 @@
+{
+  "name": "dsh-para-knowledge",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "PARA 知识库插件（~/我的知识库）：para_route 路由建议 + para_save 受控写入（路径围栏/默认拒覆盖/来源强制/原子写/处理日志/直写拦截）。2026-11-16 自 dsh-superagent 包内入口拆分为独立 bundle，使其在插件列表可见。",
+  "exports": {
+    ".": "./index.js",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "knowledge.js",
+    "cordis.patch.yml",
+    "icon.svg",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test \"tests/*.test.mjs\""
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}
