@@ -1,0 +1,11 @@
+# dsh-para-knowledge bundle patch.
+#
+# The plugin itself is activated per-session by the dsh-superagent worker preset's plugins
+# list, whose row references this package by name (`dsh-para-knowledge`), so only executor
+# sessions gain the knowledge tools and the main Session never does. This row keeps the
+# bundle's own layer present (a bundle's patch is what the Plugins page and `dsh plugin`
+# treat as the bundle marker) and stays disabled so no session composes the plugin twice.
+- insert:
+    - id: para-knowledge-bundle
+      name: 'dsh-para-knowledge'
+      disabled: true
