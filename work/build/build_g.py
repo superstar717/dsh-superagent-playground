@@ -179,29 +179,23 @@ def main():
     lay = blank_layout(base)
     es = list(content.slides)
 
-    # ---- 封面（自定义，官方模板封面样式）----
+    # ---- 封面（完全按官方模板封面版式：大赛名 32pt 顶部居中 + 成员内容区 + y=4.93 横线）----
     s = base.slides.add_slide(lay)
     comp = next(sh.text_frame.text.strip() for sh in es[0].shapes
                 if sh.has_text_frame and "武威" in sh.text_frame.text)
     case = next(sh for sh in es[0].shapes if sh.has_text_frame and "月龄" in sh.text_frame.text)
-    add_text(s, 0.85, 2.05, 11.63, 0.6,
+    add_text(s, 0.33, 0.28, 13.00, 1.45,
              [{"runs": [{"text": comp, "size": 32, "color": TEAL, "bold": True}]}],
              align=PP_ALIGN.CENTER)
-    add_line(s, 4.42, 2.95, 8.92, 2.95)
     cparas = extract_paras(case, 1, True)
     for p in cparas:
         p["align"] = PP_ALIGN.CENTER
         for r in p["runs"]:
-            r["size"] = min(r["size"], 30)
+            r["size"] = min(r["size"], 28)
             r["color"] = INK
             r["bold"] = True
-    add_text(s, 0.85, 3.5, 6.6, 1.6, cparas, align=PP_ALIGN.CENTER)
-    try:
-        ct = next(sh for sh in es[0].shapes if str(sh.shape_type).startswith("PICTURE"))
-        s.shapes.add_picture(io.BytesIO(ct.image.blob), Inches(8.1), Inches(4.3),
-                             Inches(4.4), Inches(2.95))
-    except StopIteration:
-        pass
+    add_text(s, 1.71, 3.62, 10.00, 1.31, cparas, align=PP_ALIGN.CENTER)
+    add_line(s, 1.71, 4.93, 11.87, 4.93)
     s.notes_slide.notes_text_frame.text = es[0].notes_slide.notes_text_frame.text.strip()
 
     # ---- 内容页（E 版页序 3..16；跳过 p2 目录、p17 致谢）----
@@ -212,27 +206,27 @@ def main():
         s = base.slides.add_slide(lay)
         sec = SECTION[page_idx]
 
-        # 1) 标题：官方章节名，居中 40→36pt，深青加粗
-        add_text(s, 0.85, 0.42, 11.63, 0.66,
-                 [{"runs": [{"text": sec, "size": 36, "color": TEAL, "bold": True}]}],
+        # 1) 标题：官方章节名，40pt、y=0.15、居中（与官方模板标题框一致）
+        add_text(s, 0.92, 0.15, 11.50, 1.00,
+                 [{"runs": [{"text": sec, "size": 40, "color": TEAL, "bold": True}]}],
                  align=PP_ALIGN.CENTER)
-        # 2) 导语：原 E 版页面标题句，灰色小字（总结页除外）
+        # 2) 导语：原 E 版页面标题句，作为正文区第一行（左对齐深色，模板正文样式）
         if page_idx not in DROP_SUBTITLE:
             sub = next((sh for sh in eslide.shapes if sh.has_text_frame and
                         is_page_title(eslide, sh)), None)
             if sub is not None and sub.text_frame.text.strip():
                 sp = extract_paras(sub, page_idx, False)
                 for p in sp:
-                    p["align"] = PP_ALIGN.CENTER
+                    p["align"] = PP_ALIGN.LEFT
                     for r in p["runs"]:
-                        r["size"] = min(r["size"], 16)
-                        r["color"] = MUTED
-                        r["bold"] = False
-                add_text(s, 0.85, 1.14, 11.63, 0.4, sp, align=PP_ALIGN.CENTER)
+                        r["size"] = 18
+                        r["color"] = INK
+                        r["bold"] = True
+                add_text(s, 0.64, 1.58, 11.50, 0.4, sp)
 
         # 3) 正文：纯文本迁移；图片/视频原位；装饰全部去掉
         #    顶部内容统一整体下移到导语线以下（保持相对间距，不互相叠压）
-        CONTENT_TOP = 1.66
+        CONTENT_TOP = 2.05
         items = []
         for sh in eslide.shapes:
             st = str(sh.shape_type)
