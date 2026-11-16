@@ -6,6 +6,7 @@ import {
 import {
   BACKGROUNDS, backgroundById, backgroundCss, drawFrame, loadVideoElement, outputSize,
 } from './render.js';
+import { normalizeCaptionSegments } from './captions.js';
 
 // ---------------------------------------------------------------------------
 // Small helpers
@@ -50,6 +51,9 @@ const S = {
   selectedSource: null,
   sources: [],
   lastThumbAt: 0,
+  asrBusy: false,
+  asrStatus: '',
+  asrError: null,
 };
 
 const canvas = $('#canvas');
@@ -340,7 +344,7 @@ const TABS = {
   background: { title: '背景', sub: 'FocuSee 的背景预设换成了自绘渐变，可另行调配色。' },
   cursor: { title: '光标', sub: '录制已包含系统光标；这里控制点击强调效果。' },
   zoom: { title: '缩放', sub: '自动缩放由光标停留点生成，也可以手动补一段。' },
-  captions: { title: '字幕', sub: 'AI 字幕未实现；可手动添加一条字幕验证渲染链路。' },
+  captions: { title: '字幕', sub: 'AI 字幕（本机识别）+ 手动字幕，逐句可编辑。' },
   audio: { title: '音频', sub: '音频增强/降噪未实现。' },
   layout: { title: '布局', sub: '摄像头画中画、镜头布局、布局片段、背景移除、3D 动效与提词器。' },
   more: { title: '更多', sub: '原型信息与已知差异。' },
@@ -474,19 +478,37 @@ function inspectorZoom(p) {
 
 function inspectorCaptions(p) {
   const caps = p.captions || [];
+  const on = p.captionsOn !== false;
+  const asrReady = S.info ? S.info.asrReady !== false : true;
+  const busy = S.asrBusy;
   return `
     <div class="insp-section">
+      <div class="switch-row"><span>显示字幕</span><button class="switch ${on ? 'on' : ''}" data-toggle="captionsOn" ${caps.length ? '' : 'disabled'}></button></div>
+      <h4>AI 字幕</h4>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn xs" data-action="ai-captions" ${busy || !asrReady ? 'disabled' : ''}>${busy ? '生成中…' : 'AI 生成字幕'}</button>
+        ${busy ? `<span id="asr-status" style="font-size:12px;color:var(--muted)">${escapeHtml(S.asrStatus || '准备中…')}</span>` : ''}
+      </div>
+      <p class="hint">${asrReady
+        ? '本机 SenseVoice 识别语音，按停顿断句生成带时间轴的字幕；首次使用要加载模型（约半分钟）。'
+        : '本机缺少语音识别环境（ffmpeg / SenseVoice venv），AI 生成不可用；仍可手动添加字幕。'}</p>
+      ${S.asrError && !busy ? `<p class="hint" style="color:#b00">${escapeHtml(S.asrError)}</p>` : ''}
       <h4>手动字幕</h4>
       <div style="display:flex;gap:6px">
         <input id="cap-text" placeholder="在此输入字幕…" style="flex:1;height:30px;border:1px solid var(--line-strong);border-radius:7px;padding:0 8px;outline:none" />
         <button class="btn xs" data-action="add-caption">添加</button>
       </div>
-      <p class="hint">新字幕从当前播放头开始，持续 2.4 秒。</p>
+      <p class="hint">新字幕从当前播放头开始，持续 2.4 秒；点字幕文字可直接改。</p>
       <div class="seg-list">
-        ${caps.length ? caps.map((c) => `<div class="seg-item"><span class="dot" style="background:#ffb020"></span><span>${formatTime(c.start)} → ${formatTime(c.end)}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px">${escapeHtml(c.text)}</span><button data-del-caption="${c.start}">✕</button></div>`).join('') : '<p class="placeholder">还没有字幕。</p>'}
+        ${caps.length ? caps.map((c) => `<div class="seg-item">
+          <span class="dot" style="background:#ffb020"></span>
+          <span>${formatTime(c.start)} → ${formatTime(c.end)}</span>
+          <span data-edit-caption="${c.start}" title="点击编辑" style="cursor:text;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px">${escapeHtml(c.text)}</span>
+          <button data-del-caption="${c.start}">✕</button>
+        </div>`).join('') : '<p class="placeholder">还没有字幕。打开一段带语音的录制，点上面的「AI 生成字幕」。</p>'}
       </div>
     </div>
-    <div class="insp-section"><p class="placeholder"><b>未实现：</b>AI 字幕识别、字幕样式/位置编辑、跟随音频自动断句。</p></div>`;
+    <div class="insp-section"><p class="placeholder"><b>未实现：</b>字幕样式/位置编辑、翻译。</p></div>`;
 }
 
 function inspectorAudio(p) {
@@ -551,7 +573,7 @@ function inspectorLayout(p) {
       <p class="hint">悬浮窗不录进画面；录屏开始前勾选「提词器」也会自动打开。</p>
     </div>
     <div class="insp-section">
-      <p class="placeholder"><b>仍未实现：</b>AI 字幕、音频增强/降噪、点击音效、云分享。背景移除与布局片段已实现（见上方开关与片段列表）。</p>
+      <p class="placeholder"><b>仍未实现：</b>音频增强/降噪、点击音效、云分享。AI 字幕（本机识别）与背景移除、布局片段已实现。</p>
     </div>`;
 }
 
@@ -564,7 +586,7 @@ function inspectorMore(p) {
     <div class="seg-item" style="border:0;background:transparent;padding:4px 0"><span class="t">缩放片段</span><span>${(p.zooms || []).length}</span></div>
   </div>
   <div class="insp-section">
-    <p class="placeholder"><b>这张原型的边界：</b>录制/预览/自动缩放/背景/导出可用；AI 字幕、音频增强、摄像头布局、3D 动效、云分享未实现。完整差异见仓库 <code>docs/DIFF-REPORT.md</code>。</p>
+    <p class="placeholder"><b>这张原型的边界：</b>录制/预览/自动缩放/背景/导出/AI 字幕可用；音频增强、云分享未实现。完整差异见仓库 <code>docs/DIFF-REPORT.md</code>。</p>
   </div>`;
 }
 
@@ -607,6 +629,10 @@ function bindInspector(host) {
     else if (el.dataset.toggle === 'camera.enabled') p.camera.enabled = !p.camera.enabled;
     else if (el.dataset.toggle === 'camera.forceOverlay') p.camera.forceOverlay = !p.camera.forceOverlay;
     else if (el.dataset.toggle === 'style.tiltFollow') p.style.tiltFollow = !p.style.tiltFollow;
+    else if (el.dataset.toggle === 'captionsOn') {
+      p.captionsOn = p.captionsOn === false;
+      saveCaptionsSoon(p);
+    }
     renderInspector();
     S.dirty = true;
   }));
@@ -614,6 +640,8 @@ function bindInspector(host) {
   host.querySelector('[data-action="reanalyze"]')?.addEventListener('click', () => applyAutoZooms({ announce: true }));
   host.querySelector('[data-action="add-zoom"]')?.addEventListener('click', addManualZoom);
   host.querySelector('[data-action="add-caption"]')?.addEventListener('click', addCaption);
+  host.querySelector('[data-action="ai-captions"]')?.addEventListener('click', aiGenerateCaptions);
+  host.querySelectorAll('[data-edit-caption]').forEach((el) => el.addEventListener('click', () => beginCaptionEdit(el, p)));
   host.querySelectorAll('[data-del-zoom]').forEach((el) => el.addEventListener('click', () => {
     p.zooms = p.zooms.filter((z) => z.id !== el.dataset.delZoom);
     renderInspector();
@@ -623,6 +651,7 @@ function bindInspector(host) {
   host.querySelectorAll('[data-del-caption]').forEach((el) => el.addEventListener('click', () => {
     const start = Number(el.dataset.delCaption);
     p.captions = p.captions.filter((c) => c.start !== start);
+    saveCaptionsSoon(p);
     renderInspector();
     S.dirty = true;
   }));
@@ -805,17 +834,106 @@ function nearestCursor(track, t) {
 // Captions
 // ---------------------------------------------------------------------------
 
+/** Persist caption changes (project.json). Debounced: a burst of edits lands
+ *  as one write. Failures are logged, not thrown — captions stay in memory. */
+let captionsSaveTimer = null;
+function saveCaptionsSoon(p = S.project) {
+  if (!p?.id) return;
+  clearTimeout(captionsSaveTimer);
+  captionsSaveTimer = setTimeout(async () => {
+    try {
+      await window.focusee.projects.save(stripRuntime(S.project));
+    } catch (err) {
+      console.warn('[captions] save failed', err);
+    }
+  }, 350);
+}
+
 function addCaption() {
   const input = $('#cap-text');
   const text = (input?.value || '').trim();
   if (!text) return toast('先输入字幕文字');
   const start = clamp(S.time, 0, Math.max(0, S.duration - 0.5));
   const end = clamp(start + 2.4, 0, S.duration);
-  S.project.captions = [...(S.project.captions || []), { start: Number(start.toFixed(2)), end: Number(end.toFixed(2)), text }];
+  S.project.captions = [...(S.project.captions || []), { start: Number(start.toFixed(2)), end: Number(end.toFixed(2)), text }]
+    .sort((a, b) => a.start - b.start);
   input.value = '';
+  saveCaptionsSoon();
   renderInspector();
   S.dirty = true;
   toast('已添加字幕');
+}
+
+/** Inline caption text editing: swap the span for an input, commit on
+ *  blur/Enter (Esc restores). Timestamps stay untouched. */
+function beginCaptionEdit(el, p) {
+  const start = Number(el.dataset.editCaption);
+  const cap = (p.captions || []).find((c) => c.start === start);
+  if (!cap || el.querySelector('input')) return;
+  const input = document.createElement('input');
+  input.value = cap.text;
+  input.style.cssText = 'flex:1;min-width:0;height:24px;border:1px solid var(--line-strong);border-radius:6px;padding:0 6px;outline:none;font-size:12px';
+  const commit = () => {
+    const text = input.value.trim();
+    if (text && text !== cap.text) {
+      cap.text = text;
+      saveCaptionsSoon();
+      S.dirty = true;
+    }
+    renderInspector();
+  };
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') {
+      input.removeEventListener('blur', commit);
+      renderInspector();
+    }
+  });
+  input.addEventListener('blur', commit);
+  el.replaceChildren(input);
+  input.focus();
+  input.select();
+}
+
+/** AI captions: local SenseVoice ASR via the main process (ffmpeg audio
+ *  extraction + VAD sentence timestamps), then the same normalisation the
+ *  unit tests cover. Replaces existing captions, like FocuSee's regenerate. */
+async function aiGenerateCaptions() {
+  if (S.asrBusy || !S.project) return;
+  S.asrBusy = true;
+  S.asrError = null;
+  S.asrStatus = '准备中…';
+  renderInspector();
+  const off = window.focusee.captions.onProgress(({ phase, line }) => {
+    if (phase === 'extract') S.asrStatus = '提取音频…';
+    else if (phase === 'parse') S.asrStatus = '整理字幕…';
+    else if (phase === 'transcribe') S.asrStatus = line || '识别中…（首次要加载模型，约半分钟）';
+    const el = $('#asr-status');
+    if (el) el.textContent = S.asrStatus;
+  });
+  try {
+    const res = await window.focusee.captions.generate(S.project.id);
+    if (!res?.ok) throw new Error(res?.error || '生成失败');
+    const segments = normalizeCaptionSegments(res.segments, { duration: S.duration || null });
+    if (!segments.length) {
+      toast('没有识别到语音（这条录制里可能没有说话声）');
+      return;
+    }
+    S.project.captions = segments;
+    S.project.captionsOn = true;
+    saveCaptionsSoon();
+    renderInspector();
+    S.dirty = true;
+    toast(`已生成 ${segments.length} 条字幕；点字幕文字可修改`);
+  } catch (err) {
+    S.asrError = String(err.message || err);
+    toast(`AI 字幕失败：${S.asrError.slice(0, 80)}`);
+  } finally {
+    S.asrBusy = false;
+    S.asrStatus = '';
+    off();
+    renderInspector();
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -955,6 +1073,21 @@ async function startRecording() {
   const mic = $('#opt-mic').checked;
   const countdown = $('#opt-countdown').checked;
   closeModal('modal-record');
+
+  // Preflight: capture times out silently (no macOS prompt) when the screen
+  // recording grant was invalidated by a binary replacement ('denied') — say
+  // so NOW instead of letting five 15s attempts burn ~40s before a vague
+  // toast. 'not-determined' must still PROCEED: the first capture attempt is
+  // what makes macOS show its own grant prompt.
+  let screenStatus = 'unknown';
+  try {
+    screenStatus = (await window.focusee.info()).screenStatus || 'unknown';
+  } catch {}
+  if (screenStatus === 'denied' || screenStatus === 'restricted') {
+    toast('屏幕录制权限未授予或已失效（换包/重装后常见）→ 已为你打开系统设置：把 FocuSee Clone 开关打开（列表没有就点 + 添加本应用），然后重启应用再录');
+    window.focusee.system.openScreenSettings().catch(() => {});
+    return;
+  }
 
   if (countdown) {
     for (let n = 3; n > 0; n -= 1) {
@@ -1220,7 +1353,20 @@ async function startRecording() {
   } catch (err) {
     console.error(err);
     closeModal('modal-record');
-    toast(`录制失败：${err.message}。请检查屏幕录制权限。`);
+    // A desktop-capture timeout is almost always the screen-recording grant
+    // (invalidated by replacing the app binary, no macOS prompt) or a wedged
+    // ScreenCaptureKit — give the person the two known fixes, not a dead end.
+    if (/timeout/i.test(String(err.message))) {
+      if (screenStatus && screenStatus !== 'granted' && screenStatus !== 'unknown') {
+        toast('屏幕录制权限未授予或已失效 → 在系统设置打开 FocuSee Clone 的「屏幕录制」开关（没有就点 + 添加本应用），然后重启应用再试');
+        window.focusee.system.openScreenSettings().catch(() => {});
+      } else {
+        toast('屏幕采集无法启动。修法①：系统设置→隐私与安全性→屏幕录制，把 FocuSee Clone 关掉再打开并重启应用；修法②：重启电脑（清除系统采集服务卡死）');
+        window.focusee.system.openScreenSettings().catch(() => {});
+      }
+    } else {
+      toast(`录制失败：${err.message}。请检查屏幕录制权限。`);
+    }
   }
 }
 
