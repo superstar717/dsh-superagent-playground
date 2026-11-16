@@ -1,0 +1,7 @@
+template_b.pptx
+out/
+ship/
+render*/
+__pycache__/
+*.pyc
+fonttest*
