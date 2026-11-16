@@ -36,3 +36,21 @@ bash ship_e.sh                                          # 门禁+发货
 
 `template_b.pptx` 不入库（20 MB 二进制）：来自用户飞书附件
 `file_v3_0017g_95640041-83d9-4d82-9d0a-8831f9e4eeeg`（消息 `om_x100b609a103beca8de8e8bf95ce1724`）。
+
+---
+
+## 追加：F 版（2026-11-16 21:55，用户澄清"模板没换"后）
+
+用户指出 E 版只对齐了章节结构、外观仍是深色设计，要求 deck 本身长在官方规定模板上。
+**F 版** = 以 `official-template.pptx`（用户发的比赛规定模板 template_a.pptx，56KB）为基底文件
+（继承官方母版/版式），用 `build_f.py` 把 E 版内容逐页换肤迁移：
+
+- 顶部深色标题带/整页深底 → 删除，改为官方样式（居中小眉题 PART 0X + 居中深青 #074B6E 标题）
+- 深色结论条/图注条/数据砖/雪佛龙 → 浅青底色块（#EEF6F9）+ 深色文字
+- 白字/浅蓝字 → 深青（标题/数据）或深灰（正文）；红色 ↑/↓、绿色达标值保留
+- 小装饰图标（<0.5in）不迁移；图片 17 张 + 视频 2 段原位迁移；备注 1269 字原样；页序与 E 版一致
+
+门禁：deck-lint 0 fail（5 warn）；cite 93 claims 0 blocking；ship 正/负 e2e 通过。
+交付物：`…病例汇报-F版.pptx/.pdf`（带水印）+ manifest。整册渲染图：`docs/evidence/f-official-template.jpg`。
+坑：复用模板 pptx 做基底必须 `drop_rel` 掉模板自带 8 页的 sldId 与 rel，否则包里留孤儿 slide part，
+LibreOffice 报 "source file could not be loaded"（python-pptx 自己能开，别被 lint 通过迷惑）。
