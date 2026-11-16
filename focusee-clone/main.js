@@ -1078,7 +1078,15 @@ async function runRecordingTake({ win, report, step, wait, evalJs, withCamera, t
     if (previewUp) await evalJs(`window.focusee.e2e.shotPreview('${tag}-preview')`);
     await evalJs(`window.focusee.e2e.shotControl('${tag}-pill')`);
   }
-  await wait(2500);
+  // --e2e-rec-ms=N extends the recording window for load/encoder measurement
+  // (default 2500ms keeps the original timing); sampling a steady-state take
+  // needs several seconds, a 2.5s window is too short for stable CPU averages.
+  const recMs = (() => {
+    const a = process.argv.find((x) => x.startsWith('--e2e-rec-ms='));
+    const n = a ? parseInt(a.split('=')[1], 10) : NaN;
+    return Number.isFinite(n) && n >= 1000 ? n : 2500;
+  })();
+  await wait(recMs);
   // Stop/cancel via the pill's own button path: signal it, its own handler
   // runs the flow in its own context (never inject JS into the pill — that
   // API natively crashed the app during teardown).

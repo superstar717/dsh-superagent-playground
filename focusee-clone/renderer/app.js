@@ -942,7 +942,9 @@ function renderSources() {
 }
 
 function pickMime() {
-  const options = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+  // H.264 first: macOS VideoToolbox hardware encode costs far less CPU than
+  // software VP9/VP8 on Intel Macs; falls back automatically if unsupported.
+  const options = ['video/webm;codecs=h264,opus', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
   for (const m of options) if (window.MediaRecorder?.isTypeSupported(m)) return m;
   return '';
 }
@@ -1467,7 +1469,8 @@ async function runExport({ width, height, fps, format, ui = false, silent = fals
 
   const stream = outCanvas.captureStream(fps);
   for (const t of audioTracks) stream.addTrack(t);
-  const mime = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
+  // H.264 first for export too: hardware encode is much faster offline.
+  const mime = ['video/webm;codecs=h264,opus', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
     .find((m) => MediaRecorder.isTypeSupported(m)) || 'video/webm';
   const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 10_000_000 });
   const chunks = [];

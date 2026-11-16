@@ -1,0 +1,10 @@
+[e2e-rec] take1:pick-screen-source ok screen:2077750265:0
+[e2e-rec] take1:control-pill-live FAIL no-bridge-ack
+[e2e-rec] take1:main-window-hidden FAIL 
+[e2e-rec] take1:camera-preview-window-live FAIL no-preview-window
+[e2e-rec] take1:pill-rect-probe ok {"seen":null,"winPos":null,"winSize":null}
+[e2e-rec] take1:stop-signalled FAIL send:Cannot read properties of null (reading 'webContents')
+[e2e-rec] take1:stop-accepted FAIL projects=0 baseline=0 saveState=unknown phase=none
+[e2e-rec] take1:project-saved FAIL none
+[e2e-rec] take1:camera-released ok {"tracksEnded":true,"held":[],"releasedAt":null,"previewAckAt":null,"hadCamera":false}
+[e2e-rec] ALL_OK=false

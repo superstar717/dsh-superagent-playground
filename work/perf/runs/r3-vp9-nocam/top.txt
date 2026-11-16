@@ -1,0 +1,4147 @@
+Processes: 447 total, 33 running, 414 sleeping, 2683 threads 
+2026/11/16 04:16:34
+Load Avg: 31.41, 25.90, 16.96 
+CPU usage: 44.63% user, 26.41% sys, 28.94% idle 
+SharedLibs: 276M resident, 56M data, 21M linkedit.
+MemRegions: 530827 total, 2692M resident, 69M private, 2030M shared.
+PhysMem: 16G used (9949M wired, 442M compressor), 85M unused.
+VM: 56T vsize, 3569M framework vsize, 48238661(0) swapins, 54246784(0) swapouts.
+Networks: packets: 17370081/12G in, 15699161/9989M out.
+Disks: 6370680/260G read, 5309915/273G written.
+
+PID    %CPU COMMAND         
+99528  0.0  dirhelper       
+98206  0.0  StocksWidget    
+98205  0.0  WorldClockWidget
+98203  0.0  CalendarWidgetEx
+90339  0.0  Google Chrome He
+90325  0.0  Google Chrome He
+89905  0.0  aned            
+88557  0.0  Google Chrome He
+87023  0.0  talagent        
+81714  0.0  biometrickitd   
+78583  0.0  amsengagementd  
+78580  0.0  amsaccountsd    
+78570  0.0  itunescloudd    
+77475  0.0  trustd          
+76588  0.0  MTLCompilerServi
+73770  0.0  Obsidian Helper 
+73768  0.0  Obsidian Helper 
+73767  0.0  Obsidian Helper 
+73765  0.0  Obsidian        
+73606  0.0  Google Chrome He
+73521  0.0  Google Chrome He
+69812  0.0  sysextd         
+68234  0.0  hidd            
+68227  0.0  ioupsd          
+66482  0.0  WeatherWidget   
+66042  0.0  SoftwareUpdateNo
+65986  0.0  WeChatAppEx     
+65985  0.0  WeChatAppEx Help
+63147  0.0  plugin_host-3.8 
+63146  0.0  plugin_host-3.3 
+63119  0.0  crash_handler   
+63114  0.0  sublime_text    
+62212  0.0  ReportCrash     
+62013  0.0  XProtectPluginSe
+62012  0.0  XProtect        
+61937  0.0  XProtectPluginSe
+61936  0.0  XProtect        
+61902  0.0  cloudphotod     
+61885  0.0  photoanalysisd  
+61882  0.0  CoreServicesUIAg
+61863  0.0  PlugInLibrarySer
+61856  0.0  ScopedBookmarkAg
+61853  0.0  endpointsecurity
+61852  0.0  photolibraryd   
+61763  0.0  proactiveeventtr
+61762  0.0  dprivacyd       
+61694  0.0  CoreSpotlightSer
+60110  0.0  iconservicesd   
+60109  0.0  UIKitSystem     
+60108  0.0  iconservicesagen
+60091  0.0  ScreenTimeWidget
+60090  0.0  extensionkitserv
+59080  0.0  WeChatAppEx Help
+56967  0.0  biomesyncd      
+56780  0.0  amfid           
+56701  0.0  Google Chrome He
+56547  0.0  backgroundtaskma
+55611  0.0  logd_helper     
+55553  0.0  JavaUpdater     
+55370  0.0  PowerUIAgent    
+55324  0.0  sysmond         
+55260  0.0  CMFSyncAgent    
+55255  0.0  fmfd            
+55236  0.0  com.apple.audio.
+55234  0.0  calaccessd      
+55233  0.0  CarbonComponentS
+55226  0.0  AudioComponentRe
+55221  0.0  TrustedPeersHelp
+55210  0.0  cdpd            
+55160  0.0  pbs             
+55159  0.0  axassetsd       
+55106  0.0  PerfPowerService
+55101  0.0  adid            
+55097  0.0  akd             
+55090  0.0  AssetCacheLocato
+55085  0.0  homed           
+55084  0.0  MTLAssetUpgrader
+55081  0.0  neagent         
+55072  0.0  nehelper        
+55071  0.0  donotdisturbd   
+55070  0.0  ContainerMetadat
+55069  0.0  siriknowledged  
+55068  0.0  mobiletimerd    
+55066  0.0  networkservicepr
+55065  0.0  siriactionsd    
+55064  0.0  assistantd      
+54883  0.0  com.apple.CodeSi
+54879  0.0  OSDUIHelper     
+54807  0.0  containermanager
+54805  0.0  trustdFileHelper
+54801  0.0  trustd          
+54796  0.0  mapspushd       
+54791  0.0  com.apple.geod  
+54650  0.0  csnameddatad    
+54645  0.0  fileproviderd   
+54642  0.0  sandboxd        
+54625  0.0  pkd             
+54621  0.0  deleted         
+54614  0.0  coreduetd       
+54609  0.0  smd             
+54599  0.0  containermanager
+54592  0.0  nfcd            
+54591  0.0  com.apple.geod  
+54449  0.0  keyboardservices
+54405  0.0  usermanagerd    
+53921  0.0  secinitd        
+53468  0.0  countryd        
+53326  0.0  coresymbolicatio
+53198  0.0  wifip2pd        
+53131  0.0  backupd         
+53129  0.0  online-authd    
+53125  0.0  com.apple.audio.
+53124  0.0  contactsd       
+53120  0.0  syncdefaultsd   
+53118  0.0  callservicesd   
+53112  0.0  CommCenter      
+53111  0.0  contentlinkingd 
+53085  0.0  Keychain Circle 
+53084  0.0  com.apple.hiserv
+53072  0.0  com.apple.audio.
+53067  0.0  CoreLocationAgen
+53049  0.0  tccd            
+52881  0.0  dmd             
+52802  0.0  VPN             
+52798  0.0  GameControllerMa
+52795  0.0  MouseExtension  
+52793  0.0  Family          
+52792  0.0  CDs & DVDs Setti
+52791  0.0  ClassKitSettings
+52787  0.0  WalletSettingsEx
+52786  0.0  ClassroomSetting
+52784  0.0  TrackpadExtensio
+52783  0.0  PowerPreferences
+52780  0.0  FamilySettings  
+52742  0.0  FollowUpSettings
+52741  0.0  HeadphoneSetting
+52740  0.0  Touch ID & Passw
+52739  0.0  SecurityPrivacyE
+52713  0.0  AppleIDSettings 
+52712  0.0  tccd            
+52701  0.0  System Settings 
+52358  0.0  UsageTrackingAge
+52129  0.0  mediaremoted    
+52108  0.0  routined        
+49736  0.0  suggestd        
+49643  0.0  AppleSpell      
+49598  0.0  lark-cli        
+49570  0.0  lark-cli        
+49559  0.0  node            
+49083  0.0  node            
+49032  0.0  knowledge-agent 
+49027  0.0  biomed          
+49022  0.0  ctkd            
+49020  0.0  secd            
+48769  0.0  triald          
+48767  0.0  backupd-helper  
+48697  0.0  deleted_helper  
+48676  0.0  swcd            
+48529  0.0  coreauthd       
+48448  0.0  trustd          
+48444  0.0  WirelessRadioMan
+48311  0.0  accountsd       
+46295  0.0  python3.10      
+46259  0.0  CVMServer       
+46142  0.0  bash            
+44099  0.0  python3.10      
+44044  0.0  netbiosd        
+43931  0.0  installd        
+43930  0.0  system_installd 
+43925  0.0  softwareupdated 
+43537  0.0  mobileassetd    
+41160  0.0  storedownloadd  
+36520  0.0  PowerChime      
+35224  0.0  ssh-agent       
+25830  0.0  top             
+25828  0.0  sleep           
+25827  0.0  bash            
+25748  0.0  bash            
+25658  0.0  Electron Helper 
+25643  0.0  com.apple.audio.
+25596  0.0  Electron Helper 
+25590  0.0  VTEncoderXPCServ
+25511  0.0  Electron Helper 
+25499  0.0  Electron Helper 
+25497  0.0  Electron Helper 
+25487  0.0  Electron        
+25484  0.0  node            
+25476  0.0  bash            
+25004  0.0  mdworker_shared 
+24843  0.0  mdworker_shared 
+24823  0.0  Google Chrome He
+24120  0.0  mdworker_shared 
+23911  0.0  bash            
+23899  0.0  bash            
+23472  0.0  mdworker_shared 
+23462  0.0  mdworker_shared 
+23454  0.0  mdworker_shared 
+23035  0.0  mdworker_shared 
+20739  0.0  FindMyMacd      
+20672  0.0  findmydeviced   
+16199  0.0  ContextService  
+16165  0.0  storekitagent   
+16163  0.0  CategoriesServic
+16145  0.0  headless_shell  
+16144  0.0  headless_shell  
+16143  0.0  headless_shell  
+16140  0.0  headless_shell  
+16137  0.0  headless_shell  
+16136  0.0  headless_shell  
+16135  0.0  headless_shell  
+16134  0.0  node            
+8343   0.0  WeChatAppEx Help
+8213   0.0  WeChatAppEx Help
+8206   0.0  XPlayer         
+8162   0.0  WeChatAppEx Help
+8157   0.0  WeChatHelper    
+8156   0.0  WeChatAppEx Help
+8128   0.0  WeChatHelper    
+7695   0.0  WeChatAppEx Help
+7694   0.0  WeChatAppEx Help
+7674   0.0  WeChatAppEx     
+7610   0.0  crashpad_handler
+7608   0.0  WeChat          
+7431   0.0  fbahelperd      
+6524   0.0  Electron Helper 
+6523   0.0  Electron Helper 
+6505   0.0  Electron Helper 
+6503   0.0  com.apple.audio.
+6501   0.0  Electron Helper 
+6378   0.0  spindump_agent  
+6357   0.0  VTEncoderXPCServ
+5888   0.0  Electron Helper 
+5883   0.0  Electron Helper 
+5882   0.0  Electron Helper 
+5880   0.0  Electron        
+4982   0.0  com.apple.audio.
+4981   0.0  zsh             
+4980   0.0  AudioComponentRe
+4979   0.0  systemsoundserve
+4978   0.0  login           
+4716   0.0  SogouInput      
+4353   0.0  mdwrite         
+4347   0.0  Typora          
+3959   0.0  mdsync          
+3882   0.0  ospredictiond   
+2932   0.0  mdbulkimport    
+2554   0.0  trustd          
+2299   0.0  VTDecoderXPCServ
+2294   0.0  distnoted       
+2253   0.0  UserNotification
+2249   0.0  searchpartyusera
+2247   0.0  studentd        
+2131   0.0  universalAccessA
+2112   0.0  Google Chrome He
+1841   0.0  node            
+1838   0.0  ChatGPT for Chro
+1796   0.0  Google Chrome He
+1794   0.0  Google Chrome He
+1793   0.0  Google Chrome He
+1791   0.0  Google Chrome He
+1775   0.0  Google Chrome He
+1719   0.0  Google Chrome He
+1718   0.0  Google Chrome He
+1717   0.0  Google Chrome He
+1713   0.0  chrome_crashpad_
+1550   0.0  Google Chrome   
+1532   0.0  CrashReporterSup
+1487   0.0  distnoted       
+1103   0.0  node            
+1087   0.0  sed             
+1086   0.0  sed             
+1085   0.0  node            
+1084   0.0  python3.10      
+1082   0.0  bash            
+1081   0.0  bash            
+1031   0.0  distnoted       
+798    0.0  zsh             
+796    0.0  login           
+795    0.0  Terminal        
+759    0.0  mdbulkimport    
+677    0.0  distnoted       
+622    0.0  FlClashCore     
+618    0.0  FlClash         
+596    0.0  taskgated       
+593    0.0  commerce        
+589    0.0  rtcreportingd   
+575    0.0  CAReportingServi
+574    0.0  avconferenced   
+569    0.0  mediaremoteagent
+566    0.0  seserviced      
+555    0.0  fairplayd       
+536    0.0  ollama          
+534    0.0  SubmitDiagInfo  
+525    0.0  EmojiFunctionRow
+523    0.0  spindump        
+522    0.0  PAH_Extension   
+518    0.0  Ollama          
+514    0.0  familycircled   
+513    0.0  com.apple.dock.e
+508    0.0  corespotlightd  
+507    0.0  SogouWBInput    
+504    0.0  com.apple.dock.e
+502    0.0  useractivityd   
+501    0.0  ScreenTimeAgent 
+500    0.0  WiFiAgent       
+493    0.0  Spotlight       
+492    0.0  passd           
+490    0.0  lockoutagent    
+489    0.0  nsurlsessiond   
+488    0.0  ControlStrip    
+486    0.0  ctkahp          
+484    0.0  App Cleaner Help
+483    0.0  Python          
+480    0.0  App Cleaner Moni
+479    0.0  TextInputMenuAge
+477    0.0  diagnostics_agen
+473    0.0  imagent         
+472    0.0  AirPlayUIAgent  
+468    0.0  Squirrel        
+466    0.0  Python          
+465    0.0  icdd            
+462    0.0  bash            
+461    0.0  imklaunchagent  
+457    0.0  ContextStoreAgen
+454    0.0  caffeinate      
+453    0.0  corespeechd     
+451    0.0  wpslaunchhelper 
+447    0.0  fontworker      
+443    0.0  fontd           
+441    0.0  AMPDeviceDiscove
+434    0.0  replayd         
+433    0.0  automountd      
+431    0.0  BiomeAgent      
+430    0.0  sharingd        
+429    0.0  rapportd        
+428    0.0  identityservices
+426    0.0  ViewBridgeAuxili
+425    0.0  sharedfilelistd 
+423    0.0  cloudd          
+419    0.0  bird            
+415    0.0  NotificationCent
+413    0.0  filecoordination
+412    0.0  pboard          
+411    0.0  nearbyd         
+407    0.0  trustd          
+402    0.0  Finder          
+401    0.0  SystemUIServer  
+400    0.0  ControlCenter   
+399    0.0  Dock            
+395    0.0  usernoted       
+394    0.0  lsd             
+391    0.0  WindowManager   
+388    0.0  ContinuityCaptur
+383    0.0  UserEventAgent  
+382    0.0  cfprefsd        
+381    0.0  securityd_servic
+379    0.0  distnoted       
+367    0.0  IOUserBluetoothS
+366    0.0  IOUserBluetoothS
+363    0.0  com.apple.Ambien
+362    0.0  systemstats     
+358    0.0  distnoted       
+352    0.0  distnoted       
+337    0.0  ctkahp          
+336    0.0  coreauthd       
+335    0.0  distnoted       
+317    0.0  appleeventsd    
+312    0.0  TouchBarServer  
+299    0.0  distnoted       
+295    0.0  mds_stores      
+293    0.0  distnoted       
+288    0.0  searchpartyd    
+285    0.0  distnoted       
+280    0.0  cron            
+278    0.0  thermald        
+277    0.0  com.apple.AppleU
+276    0.0  com.apple.Driver
+271    0.0  eoshostd        
+265    0.0  UVCAssistant    
+263    0.0  com.obsproject.o
+262    0.0  wifianalyticsd  
+259    0.0  distnoted       
+253    0.0  distnoted       
+251    0.0  audioclocksyncd 
+249    0.0  mDNSResponderHel
+247    0.0  symptomsd       
+242    0.0  distnoted       
+241    0.0  suhelperd       
+229    0.0  diskmanagementd 
+226    0.0  authd           
+224    0.0  awdd            
+212    0.0  mDNSResponder   
+211    0.0  ToDesk_Service  
+208    0.0  systemstatusd   
+206    0.0  xartstorageremot
+204    0.0  VDCAssistant    
+201    0.0  airportd        
+197    0.0  distnoted       
+193    0.0  nsurlsessiond   
+192    0.0  apfsd           
+190    0.0  coreaudiod      
+183    0.0  distnoted       
+164    0.0  runningboardd   
+162    0.0  syspolicyd      
+155    0.0  coreservicesd   
+152    0.0  lsd             
+149    0.0  contextstored   
+148    0.0  loginwindow     
+147    0.0  analyticsd      
+144    0.0  cfprefsd        
+143    0.0  WindowServer    
+142    0.0  com.apple.cmio.r
+141    0.0  AirPlayXPCHelper
+140    0.0  corebrightnessd 
+138    0.0  notifyd         
+137    0.0  bluetoothd      
+134    0.0  KernelEventAgent
+133    0.0  revisiond       
+132    0.0  logind          
+128    0.0  distnoted       
+126    0.0  dasd            
+125    0.0  displaypolicyd  
+124    0.0  autofsd         
+122    0.0  locationd       
+120    0.0  auditd          
+119    0.0  securityd       
+118    0.0  usbmuxd         
+117    0.0  timed           
+116    0.0  launchservicesd 
+115    0.0  apsd            
+114    0.0  opendirectoryd  
+113    0.0  thermalmonitord 
+110    0.0  syslogd         
+106    0.0  diskarbitrationd
+105    0.0  kernelmanagerd  
+103    0.0  mds             
+99     0.0  watchdogd       
+94     0.0  remoted         
+88     0.0  powerd          
+86     0.0  configd         
+84     0.0  systemstats     
+80     0.0  fseventsd       
+79     0.0  uninstalld      
+76     0.0  UserEventAgent  
+74     0.0  logd            
+1      0.0  launchd         
+0      0.0  kernel_task     
+Processes: 450 total, 37 running, 413 sleeping, 2704 threads 
+2026/11/16 04:16:36
+Load Avg: 33.94, 26.51, 17.23 
+CPU usage: 44.76% user, 22.7% sys, 33.15% idle 
+SharedLibs: 276M resident, 56M data, 21M linkedit.
+MemRegions: 531135 total, 2720M resident, 69M private, 2031M shared.
+PhysMem: 16G used (9938M wired, 443M compressor), 49M unused.
+VM: 56T vsize, 3569M framework vsize, 48239488(827) swapins, 54246784(0) swapouts.
+Networks: packets: 17371124/12G in, 15700190/9990M out.
+Disks: 6370708/260G read, 5310046/273G written.
+
+PID    %CPU COMMAND         
+5882   59.5 Electron Helper 
+1717   45.4 Google Chrome He
+143    45.0 WindowServer    
+90325  38.5 Google Chrome He
+25511  31.8 Electron Helper 
+0      22.9 kernel_task     
+1550   14.8 Google Chrome   
+5888   9.2  Electron Helper 
+49083  8.1  node            
+25830  7.9  top             
+204    6.0  VDCAssistant    
+119    5.7  securityd       
+2299   4.7  VTDecoderXPCServ
+25497  4.1  Electron Helper 
+622    3.8  FlClashCore     
+434    3.4  replayd         
+1      3.1  launchd         
+6505   2.7  Electron Helper 
+25487  1.9  Electron        
+211    1.5  ToDesk_Service  
+25658  1.4  Electron Helper 
+618    1.4  FlClash         
+25596  1.2  Electron Helper 
+7608   1.1  WeChat          
+190    1.0  coreaudiod      
+5880   1.0  Electron        
+247    0.7  symptomsd       
+103    0.6  mds             
+63147  0.6  plugin_host-3.8 
+6524   0.6  Electron Helper 
+63146  0.6  plugin_host-3.3 
+114    0.6  opendirectoryd  
+1084   0.6  python3.10      
+1718   0.6  Google Chrome He
+407    0.5  trustd          
+295    0.5  mds_stores      
+48529  0.4  coreauthd       
+122    0.4  locationd       
+80     0.4  fseventsd       
+48448  0.3  trustd          
+74     0.3  logd            
+147    0.3  analyticsd      
+138    0.3  notifyd         
+596    0.2  taskgated       
+16134  0.2  node            
+49022  0.2  ctkd            
+144    0.2  cfprefsd        
+212    0.1  mDNSResponder   
+25004  0.1  mdworker_shared 
+382    0.1  cfprefsd        
+73770  0.1  Obsidian Helper 
+23462  0.1  mdworker_shared 
+402    0.1  Finder          
+208    0.1  systemstatusd   
+201    0.1  airportd        
+73606  0.1  Google Chrome He
+53049  0.0  tccd            
+400    0.0  ControlCenter   
+1791   0.0  Google Chrome He
+53198  0.0  wifip2pd        
+49570  0.0  lark-cli        
+49020  0.0  secd            
+23035  0.0  mdworker_shared 
+24843  0.0  mdworker_shared 
+23454  0.0  mdworker_shared 
+251    0.0  audioclocksyncd 
+164    0.0  runningboardd   
+155    0.0  coreservicesd   
+73767  0.0  Obsidian Helper 
+1794   0.0  Google Chrome He
+7674   0.0  WeChatAppEx     
+336    0.0  coreauthd       
+53125  0.0  com.apple.audio.
+25476  0.0  bash            
+63114  0.0  sublime_text    
+379    0.0  distnoted       
+55106  0.0  PerfPowerService
+56701  0.0  Google Chrome He
+500    0.0  WiFiAgent       
+128    0.0  distnoted       
+52129  0.0  mediaremoted    
+490    0.0  lockoutagent    
+312    0.0  TouchBarServer  
+4716   0.0  SogouInput      
+137    0.0  bluetoothd      
+88     0.0  powerd          
+116    0.0  launchservicesd 
+4347   0.0  Typora          
+54791  0.0  com.apple.geod  
+76     0.0  UserEventAgent  
+483    0.0  Python          
+48444  0.0  WirelessRadioMan
+106    0.0  diskarbitrationd
+73765  0.0  Obsidian        
+84     0.0  systemstats     
+7695   0.0  WeChatAppEx Help
+263    0.0  com.obsproject.o
+162    0.0  syspolicyd      
+457    0.0  ContextStoreAgen
+149    0.0  contextstored   
+8343   0.0  WeChatAppEx Help
+6501   0.0  Electron Helper 
+2112   0.0  Google Chrome He
+23472  0.0  mdworker_shared 
+86     0.0  configd         
+65985  0.0  WeChatAppEx Help
+8213   0.0  WeChatAppEx Help
+65986  0.0  WeChatAppEx     
+411    0.0  nearbyd         
+193    0.0  nsurlsessiond   
+24823  0.0  Google Chrome He
+59080  0.0  WeChatAppEx Help
+8206   0.0  XPlayer         
+73768  0.0  Obsidian Helper 
+430    0.0  sharingd        
+16135  0.0  headless_shell  
+8162   0.0  WeChatAppEx Help
+2249   0.0  searchpartyusera
+8156   0.0  WeChatAppEx Help
+489    0.0  nsurlsessiond   
+394    0.0  lsd             
+16137  0.0  headless_shell  
+575    0.0  CAReportingServi
+148    0.0  loginwindow     
+46295  0.0  python3.10      
+249    0.0  mDNSResponderHel
+183    0.0  distnoted       
+1719   0.0  Google Chrome He
+335    0.0  distnoted       
+358    0.0  distnoted       
+484    0.0  App Cleaner Help
+504    0.0  com.apple.dock.e
+5883   0.0  Electron Helper 
+242    0.0  distnoted       
+55064  0.0  assistantd      
+2294   0.0  distnoted       
+1031   0.0  distnoted       
+480    0.0  App Cleaner Moni
+54591  0.0  com.apple.geod  
+1487   0.0  distnoted       
+677    0.0  distnoted       
+16136  0.0  headless_shell  
+443    0.0  fontd           
+88557  0.0  Google Chrome He
+253    0.0  distnoted       
+197    0.0  distnoted       
+7694   0.0  WeChatAppEx Help
+285    0.0  distnoted       
+388    0.0  ContinuityCaptur
+352    0.0  distnoted       
+55255  0.0  fmfd            
+299    0.0  distnoted       
+514    0.0  familycircled   
+293    0.0  distnoted       
+259    0.0  distnoted       
+52713  0.0  AppleIDSettings 
+55068  0.0  mobiletimerd    
+55097  0.0  akd             
+428    0.0  identityservices
+507    0.0  SogouWBInput    
+78583  0.0  amsengagementd  
+79     0.0  uninstalld      
+55324  0.0  sysmond         
+52780  0.0  FamilySettings  
+8157   0.0  WeChatHelper    
+55553  0.0  JavaUpdater     
+78580  0.0  amsaccountsd    
+362    0.0  systemstats     
+94     0.0  remoted         
+589    0.0  rtcreportingd   
+115    0.0  apsd            
+81714  0.0  biometrickitd   
+8128   0.0  WeChatHelper    
+99528  0.0  dirhelper       
+98206  0.0  StocksWidget    
+98205  0.0  WorldClockWidget
+98203  0.0  CalendarWidgetEx
+90339  0.0  Google Chrome He
+89905  0.0  aned            
+87023  0.0  talagent        
+78570  0.0  itunescloudd    
+77475  0.0  trustd          
+76588  0.0  MTLCompilerServi
+73521  0.0  Google Chrome He
+69812  0.0  sysextd         
+68234  0.0  hidd            
+68227  0.0  ioupsd          
+66482  0.0  WeatherWidget   
+66042  0.0  SoftwareUpdateNo
+63119  0.0  crash_handler   
+62212  0.0  ReportCrash     
+62013  0.0  XProtectPluginSe
+62012  0.0  XProtect        
+61937  0.0  XProtectPluginSe
+61936  0.0  XProtect        
+61902  0.0  cloudphotod     
+61885  0.0  photoanalysisd  
+61882  0.0  CoreServicesUIAg
+61863  0.0  PlugInLibrarySer
+61856  0.0  ScopedBookmarkAg
+61853  0.0  endpointsecurity
+61852  0.0  photolibraryd   
+61763  0.0  proactiveeventtr
+61762  0.0  dprivacyd       
+61694  0.0  CoreSpotlightSer
+60110  0.0  iconservicesd   
+60109  0.0  UIKitSystem     
+60108  0.0  iconservicesagen
+60091  0.0  ScreenTimeWidget
+60090  0.0  extensionkitserv
+56967  0.0  biomesyncd      
+56780  0.0  amfid           
+56547  0.0  backgroundtaskma
+55611  0.0  logd_helper     
+55370  0.0  PowerUIAgent    
+55260  0.0  CMFSyncAgent    
+55236  0.0  com.apple.audio.
+55234  0.0  calaccessd      
+55233  0.0  CarbonComponentS
+55226  0.0  AudioComponentRe
+55221  0.0  TrustedPeersHelp
+55210  0.0  cdpd            
+55160  0.0  pbs             
+55159  0.0  axassetsd       
+55101  0.0  adid            
+55090  0.0  AssetCacheLocato
+55085  0.0  homed           
+55084  0.0  MTLAssetUpgrader
+55081  0.0  neagent         
+55072  0.0  nehelper        
+55071  0.0  donotdisturbd   
+55070  0.0  ContainerMetadat
+55069  0.0  siriknowledged  
+55066  0.0  networkservicepr
+55065  0.0  siriactionsd    
+54883  0.0  com.apple.CodeSi
+54879  0.0  OSDUIHelper     
+54807  0.0  containermanager
+54805  0.0  trustdFileHelper
+54801  0.0  trustd          
+54796  0.0  mapspushd       
+54650  0.0  csnameddatad    
+54645  0.0  fileproviderd   
+54642  0.0  sandboxd        
+54625  0.0  pkd             
+54621  0.0  deleted         
+54614  0.0  coreduetd       
+54609  0.0  smd             
+54599  0.0  containermanager
+54592  0.0  nfcd            
+54449  0.0  keyboardservices
+54405  0.0  usermanagerd    
+53921  0.0  secinitd        
+53468  0.0  countryd        
+53326  0.0  coresymbolicatio
+53131  0.0  backupd         
+53129  0.0  online-authd    
+53124  0.0  contactsd       
+53120  0.0  syncdefaultsd   
+53118  0.0  callservicesd   
+53112  0.0  CommCenter      
+53111  0.0  contentlinkingd 
+53085  0.0  Keychain Circle 
+53084  0.0  com.apple.hiserv
+53072  0.0  com.apple.audio.
+53067  0.0  CoreLocationAgen
+52881  0.0  dmd             
+52802  0.0  VPN             
+52798  0.0  GameControllerMa
+52795  0.0  MouseExtension  
+52793  0.0  Family          
+52792  0.0  CDs & DVDs Setti
+52791  0.0  ClassKitSettings
+52787  0.0  WalletSettingsEx
+52786  0.0  ClassroomSetting
+52784  0.0  TrackpadExtensio
+52783  0.0  PowerPreferences
+52742  0.0  FollowUpSettings
+52741  0.0  HeadphoneSetting
+52740  0.0  Touch ID & Passw
+52739  0.0  SecurityPrivacyE
+52712  0.0  tccd            
+52701  0.0  System Settings 
+52358  0.0  UsageTrackingAge
+52108  0.0  routined        
+49736  0.0  suggestd        
+49643  0.0  AppleSpell      
+49598  0.0  lark-cli        
+49559  0.0  node            
+49032  0.0  knowledge-agent 
+49027  0.0  biomed          
+48769  0.0  triald          
+48767  0.0  backupd-helper  
+48697  0.0  deleted_helper  
+48676  0.0  swcd            
+48311  0.0  accountsd       
+46259  0.0  CVMServer       
+46142  0.0  bash            
+44099  0.0  python3.10      
+44044  0.0  netbiosd        
+43931  0.0  installd        
+43930  0.0  system_installd 
+43925  0.0  softwareupdated 
+43537  0.0  mobileassetd    
+41160  0.0  storedownloadd  
+36520  0.0  PowerChime      
+35224  0.0  ssh-agent       
+25915  0.0  lark-cli        
+25914  0.0  node            
+25850  0.0  mdworker_shared 
+25828  0.0  sleep           
+25827  0.0  bash            
+25748  0.0  bash            
+25643  0.0  com.apple.audio.
+25590  0.0  VTEncoderXPCServ
+25499  0.0  Electron Helper 
+25484  0.0  node            
+24120  0.0  mdworker_shared 
+23911  0.0  bash            
+23899  0.0  bash            
+20739  0.0  FindMyMacd      
+20672  0.0  findmydeviced   
+16199  0.0  ContextService  
+16165  0.0  storekitagent   
+16163  0.0  CategoriesServic
+16145  0.0  headless_shell  
+16144  0.0  headless_shell  
+16143  0.0  headless_shell  
+16140  0.0  headless_shell  
+7610   0.0  crashpad_handler
+7431   0.0  fbahelperd      
+6523   0.0  Electron Helper 
+6503   0.0  com.apple.audio.
+6378   0.0  spindump_agent  
+6357   0.0  VTEncoderXPCServ
+4982   0.0  com.apple.audio.
+4981   0.0  zsh             
+4980   0.0  AudioComponentRe
+4979   0.0  systemsoundserve
+4978   0.0  login           
+4353   0.0  mdwrite         
+3959   0.0  mdsync          
+3882   0.0  ospredictiond   
+2932   0.0  mdbulkimport    
+2554   0.0  trustd          
+2253   0.0  UserNotification
+2247   0.0  studentd        
+2131   0.0  universalAccessA
+1841   0.0  node            
+1838   0.0  ChatGPT for Chro
+1796   0.0  Google Chrome He
+1793   0.0  Google Chrome He
+1775   0.0  Google Chrome He
+1713   0.0  chrome_crashpad_
+1532   0.0  CrashReporterSup
+1103   0.0  node            
+1087   0.0  sed             
+1086   0.0  sed             
+1085   0.0  node            
+1082   0.0  bash            
+1081   0.0  bash            
+798    0.0  zsh             
+796    0.0  login           
+795    0.0  Terminal        
+759    0.0  mdbulkimport    
+593    0.0  commerce        
+574    0.0  avconferenced   
+569    0.0  mediaremoteagent
+566    0.0  seserviced      
+555    0.0  fairplayd       
+536    0.0  ollama          
+534    0.0  SubmitDiagInfo  
+525    0.0  EmojiFunctionRow
+523    0.0  spindump        
+522    0.0  PAH_Extension   
+518    0.0  Ollama          
+513    0.0  com.apple.dock.e
+508    0.0  corespotlightd  
+502    0.0  useractivityd   
+501    0.0  ScreenTimeAgent 
+493    0.0  Spotlight       
+492    0.0  passd           
+488    0.0  ControlStrip    
+486    0.0  ctkahp          
+479    0.0  TextInputMenuAge
+477    0.0  diagnostics_agen
+473    0.0  imagent         
+472    0.0  AirPlayUIAgent  
+468    0.0  Squirrel        
+466    0.0  Python          
+465    0.0  icdd            
+462    0.0  bash            
+461    0.0  imklaunchagent  
+454    0.0  caffeinate      
+453    0.0  corespeechd     
+451    0.0  wpslaunchhelper 
+447    0.0  fontworker      
+441    0.0  AMPDeviceDiscove
+433    0.0  automountd      
+431    0.0  BiomeAgent      
+429    0.0  rapportd        
+426    0.0  ViewBridgeAuxili
+425    0.0  sharedfilelistd 
+423    0.0  cloudd          
+419    0.0  bird            
+415    0.0  NotificationCent
+413    0.0  filecoordination
+412    0.0  pboard          
+401    0.0  SystemUIServer  
+399    0.0  Dock            
+395    0.0  usernoted       
+391    0.0  WindowManager   
+383    0.0  UserEventAgent  
+381    0.0  securityd_servic
+367    0.0  IOUserBluetoothS
+366    0.0  IOUserBluetoothS
+363    0.0  com.apple.Ambien
+337    0.0  ctkahp          
+317    0.0  appleeventsd    
+288    0.0  searchpartyd    
+280    0.0  cron            
+278    0.0  thermald        
+277    0.0  com.apple.AppleU
+276    0.0  com.apple.Driver
+271    0.0  eoshostd        
+265    0.0  UVCAssistant    
+262    0.0  wifianalyticsd  
+241    0.0  suhelperd       
+229    0.0  diskmanagementd 
+226    0.0  authd           
+224    0.0  awdd            
+206    0.0  xartstorageremot
+192    0.0  apfsd           
+152    0.0  lsd             
+142    0.0  com.apple.cmio.r
+141    0.0  AirPlayXPCHelper
+140    0.0  corebrightnessd 
+134    0.0  KernelEventAgent
+133    0.0  revisiond       
+132    0.0  logind          
+126    0.0  dasd            
+125    0.0  displaypolicyd  
+124    0.0  autofsd         
+120    0.0  auditd          
+118    0.0  usbmuxd         
+117    0.0  timed           
+113    0.0  thermalmonitord 
+110    0.0  syslogd         
+105    0.0  kernelmanagerd  
+99     0.0  watchdogd       
+Processes: 451 total, 37 running, 3 stuck, 411 sleeping, 2701 threads 
+2026/11/16 04:16:38
+Load Avg: 33.94, 26.51, 17.23 
+CPU usage: 42.75% user, 24.31% sys, 32.92% idle 
+SharedLibs: 276M resident, 56M data, 21M linkedit.
+MemRegions: 531098 total, 2716M resident, 69M private, 2028M shared.
+PhysMem: 16G used (9935M wired, 483M compressor), 21M unused.
+VM: 56T vsize, 3569M framework vsize, 48240055(567) swapins, 54246784(0) swapouts.
+Networks: packets: 17371829/12G in, 15700702/9990M out.
+Disks: 6370839/260G read, 5310559/274G written.
+
+PID    %CPU  COMMAND         
+5882   105.0 Electron Helper 
+25511  62.5  Electron Helper 
+90325  42.4  Google Chrome He
+0      39.9  kernel_task     
+143    38.3  WindowServer    
+1717   29.9  Google Chrome He
+49083  19.6  node            
+5888   17.4  Electron Helper 
+25497  8.5   Electron Helper 
+204    6.2   VDCAssistant    
+25830  5.9   top             
+73606  5.8   Google Chrome He
+622    5.8   FlClashCore     
+119    5.5   securityd       
+2299   5.4   VTDecoderXPCServ
+6505   5.0   Electron Helper 
+1550   4.4   Google Chrome   
+25487  3.8   Electron        
+434    3.3   replayd         
+1      3.2   launchd         
+25658  2.8   Electron Helper 
+25596  2.6   Electron Helper 
+618    2.3   FlClash         
+5880   1.7   Electron        
+211    1.5   ToDesk_Service  
+7608   1.2   WeChat          
+6524   1.2   Electron Helper 
+190    1.1   coreaudiod      
+407    0.8   trustd          
+63146  0.7   plugin_host-3.3 
+63147  0.7   plugin_host-3.8 
+103    0.6   mds             
+1084   0.5   python3.10      
+247    0.5   symptomsd       
+48448  0.4   trustd          
+48529  0.4   coreauthd       
+80     0.3   fseventsd       
+1718   0.3   Google Chrome He
+114    0.3   opendirectoryd  
+201    0.3   airportd        
+74     0.2   logd            
+138    0.2   notifyd         
+16134  0.2   node            
+147    0.2   analyticsd      
+295    0.2   mds_stores      
+144    0.2   cfprefsd        
+212    0.2   mDNSResponder   
+382    0.1   cfprefsd        
+49022  0.1   ctkd            
+400    0.1   ControlCenter   
+466    0.1   Python          
+122    0.1   locationd       
+7674   0.1   WeChatAppEx     
+53049  0.1   tccd            
+596    0.1   taskgated       
+23462  0.1   mdworker_shared 
+49570  0.1   lark-cli        
+65985  0.1   WeChatAppEx Help
+56701  0.1   Google Chrome He
+73770  0.1   Obsidian Helper 
+379    0.0   distnoted       
+25476  0.0   bash            
+500    0.0   WiFiAgent       
+208    0.0   systemstatusd   
+24843  0.0   mdworker_shared 
+73765  0.0   Obsidian        
+155    0.0   coreservicesd   
+402    0.0   Finder          
+23472  0.0   mdworker_shared 
+23035  0.0   mdworker_shared 
+49020  0.0   secd            
+251    0.0   audioclocksyncd 
+53125  0.0   com.apple.audio.
+48444  0.0   WirelessRadioMan
+52129  0.0   mediaremoted    
+128    0.0   distnoted       
+23454  0.0   mdworker_shared 
+86     0.0   configd         
+336    0.0   coreauthd       
+312    0.0   TouchBarServer  
+4716   0.0   SogouInput      
+116    0.0   launchservicesd 
+88     0.0   powerd          
+73767  0.0   Obsidian Helper 
+16135  0.0   headless_shell  
+73768  0.0   Obsidian Helper 
+7695   0.0   WeChatAppEx Help
+483    0.0   Python          
+59080  0.0   WeChatAppEx Help
+53112  0.0   CommCenter      
+16136  0.0   headless_shell  
+79     0.0   uninstalld      
+137    0.0   bluetoothd      
+164    0.0   runningboardd   
+88557  0.0   Google Chrome He
+25850  0.0   mdworker_shared 
+99     0.0   watchdogd       
+7694   0.0   WeChatAppEx Help
+263    0.0   com.obsproject.o
+24823  0.0   Google Chrome He
+490    0.0   lockoutagent    
+65986  0.0   WeChatAppEx     
+677    0.0   distnoted       
+1487   0.0   distnoted       
+249    0.0   mDNSResponderHel
+430    0.0   sharingd        
+489    0.0   nsurlsessiond   
+162    0.0   syspolicyd      
+4347   0.0   Typora          
+1031   0.0   distnoted       
+293    0.0   distnoted       
+285    0.0   distnoted       
+394    0.0   lsd             
+2294   0.0   distnoted       
+126    0.0   dasd            
+94     0.0   remoted         
+5883   0.0   Electron Helper 
+106    0.0   diskarbitrationd
+78570  0.0   itunescloudd    
+8213   0.0   WeChatAppEx Help
+1793   0.0   Google Chrome He
+1796   0.0   Google Chrome He
+54791  0.0   com.apple.geod  
+1719   0.0   Google Chrome He
+8156   0.0   WeChatAppEx Help
+411    0.0   nearbyd         
+253    0.0   distnoted       
+352    0.0   distnoted       
+2249   0.0   searchpartyusera
+299    0.0   distnoted       
+46295  0.0   python3.10      
+1085   0.0   node            
+335    0.0   distnoted       
+183    0.0   distnoted       
+16165  0.0   storekitagent   
+1794   0.0   Google Chrome He
+1791   0.0   Google Chrome He
+2247   0.0   studentd        
+358    0.0   distnoted       
+242    0.0   distnoted       
+197    0.0   distnoted       
+6501   0.0   Electron Helper 
+8157   0.0   WeChatHelper    
+259    0.0   distnoted       
+63114  0.0   sublime_text    
+8128   0.0   WeChatHelper    
+480    0.0   App Cleaner Moni
+90339  0.0   Google Chrome He
+73521  0.0   Google Chrome He
+84     0.0   systemstats     
+1775   0.0   Google Chrome He
+2112   0.0   Google Chrome He
+8206   0.0   XPlayer         
+484    0.0   App Cleaner Help
+55097  0.0   akd             
+99528  0.0   dirhelper       
+98206  0.0   StocksWidget    
+98205  0.0   WorldClockWidget
+98203  0.0   CalendarWidgetEx
+89905  0.0   aned            
+87023  0.0   talagent        
+81714  0.0   biometrickitd   
+78583  0.0   amsengagementd  
+78580  0.0   amsaccountsd    
+77475  0.0   trustd          
+76588  0.0   MTLCompilerServi
+69812  0.0   sysextd         
+68234  0.0   hidd            
+68227  0.0   ioupsd          
+66482  0.0   WeatherWidget   
+66042  0.0   SoftwareUpdateNo
+63119  0.0   crash_handler   
+62212  0.0   ReportCrash     
+62013  0.0   XProtectPluginSe
+62012  0.0   XProtect        
+61937  0.0   XProtectPluginSe
+61936  0.0   XProtect        
+61902  0.0   cloudphotod     
+61885  0.0   photoanalysisd  
+61882  0.0   CoreServicesUIAg
+61863  0.0   PlugInLibrarySer
+61856  0.0   ScopedBookmarkAg
+61853  0.0   endpointsecurity
+61852  0.0   photolibraryd   
+61763  0.0   proactiveeventtr
+61762  0.0   dprivacyd       
+61694  0.0   CoreSpotlightSer
+60110  0.0   iconservicesd   
+60109  0.0   UIKitSystem     
+60108  0.0   iconservicesagen
+60091  0.0   ScreenTimeWidget
+60090  0.0   extensionkitserv
+56967  0.0   biomesyncd      
+56780  0.0   amfid           
+56547  0.0   backgroundtaskma
+55611  0.0   logd_helper     
+55553  0.0   JavaUpdater     
+55370  0.0   PowerUIAgent    
+55324  0.0   sysmond         
+55260  0.0   CMFSyncAgent    
+55255  0.0   fmfd            
+55236  0.0   com.apple.audio.
+55234  0.0   calaccessd      
+55233  0.0   CarbonComponentS
+55226  0.0   AudioComponentRe
+55221  0.0   TrustedPeersHelp
+55210  0.0   cdpd            
+55160  0.0   pbs             
+55159  0.0   axassetsd       
+55106  0.0   PerfPowerService
+55101  0.0   adid            
+55090  0.0   AssetCacheLocato
+55085  0.0   homed           
+55084  0.0   MTLAssetUpgrader
+55081  0.0   neagent         
+55072  0.0   nehelper        
+55071  0.0   donotdisturbd   
+55070  0.0   ContainerMetadat
+55069  0.0   siriknowledged  
+55068  0.0   mobiletimerd    
+55066  0.0   networkservicepr
+55065  0.0   siriactionsd    
+55064  0.0   assistantd      
+54883  0.0   com.apple.CodeSi
+54879  0.0   OSDUIHelper     
+54807  0.0   containermanager
+54805  0.0   trustdFileHelper
+54801  0.0   trustd          
+54796  0.0   mapspushd       
+54650  0.0   csnameddatad    
+54645  0.0   fileproviderd   
+54642  0.0   sandboxd        
+54625  0.0   pkd             
+54621  0.0   deleted         
+54614  0.0   coreduetd       
+54609  0.0   smd             
+54599  0.0   containermanager
+54592  0.0   nfcd            
+54591  0.0   com.apple.geod  
+54449  0.0   keyboardservices
+54405  0.0   usermanagerd    
+53921  0.0   secinitd        
+53468  0.0   countryd        
+53326  0.0   coresymbolicatio
+53198  0.0   wifip2pd        
+53131  0.0   backupd         
+53129  0.0   online-authd    
+53124  0.0   contactsd       
+53120  0.0   syncdefaultsd   
+53118  0.0   callservicesd   
+53111  0.0   contentlinkingd 
+53085  0.0   Keychain Circle 
+53084  0.0   com.apple.hiserv
+53072  0.0   com.apple.audio.
+53067  0.0   CoreLocationAgen
+52881  0.0   dmd             
+52802  0.0   VPN             
+52798  0.0   GameControllerMa
+52795  0.0   MouseExtension  
+52793  0.0   Family          
+52792  0.0   CDs & DVDs Setti
+52791  0.0   ClassKitSettings
+52787  0.0   WalletSettingsEx
+52786  0.0   ClassroomSetting
+52784  0.0   TrackpadExtensio
+52783  0.0   PowerPreferences
+52780  0.0   FamilySettings  
+52742  0.0   FollowUpSettings
+52741  0.0   HeadphoneSetting
+52740  0.0   Touch ID & Passw
+52739  0.0   SecurityPrivacyE
+52713  0.0   AppleIDSettings 
+52712  0.0   tccd            
+52701  0.0   System Settings 
+52358  0.0   UsageTrackingAge
+52108  0.0   routined        
+49736  0.0   suggestd        
+49643  0.0   AppleSpell      
+49598  0.0   lark-cli        
+49559  0.0   node            
+49032  0.0   knowledge-agent 
+49027  0.0   biomed          
+48769  0.0   triald          
+48767  0.0   backupd-helper  
+48697  0.0   deleted_helper  
+48676  0.0   swcd            
+48311  0.0   accountsd       
+46259  0.0   CVMServer       
+46142  0.0   bash            
+44099  0.0   python3.10      
+44044  0.0   netbiosd        
+43931  0.0   installd        
+43930  0.0   system_installd 
+43925  0.0   softwareupdated 
+43537  0.0   mobileassetd    
+41160  0.0   storedownloadd  
+36520  0.0   PowerChime      
+35224  0.0   ssh-agent       
+25941  0.0   security        
+25932  0.0   sleep           
+25927  0.0   lark-cli        
+25921  0.0   node            
+25828  0.0   sleep           
+25827  0.0   bash            
+25748  0.0   bash            
+25643  0.0   com.apple.audio.
+25590  0.0   VTEncoderXPCServ
+25499  0.0   Electron Helper 
+25484  0.0   node            
+24120  0.0   mdworker_shared 
+23911  0.0   bash            
+23899  0.0   bash            
+20739  0.0   FindMyMacd      
+20672  0.0   findmydeviced   
+16199  0.0   ContextService  
+16163  0.0   CategoriesServic
+16145  0.0   headless_shell  
+16144  0.0   headless_shell  
+16143  0.0   headless_shell  
+16140  0.0   headless_shell  
+16137  0.0   headless_shell  
+8343   0.0   WeChatAppEx Help
+8162   0.0   WeChatAppEx Help
+7610   0.0   crashpad_handler
+7431   0.0   fbahelperd      
+6523   0.0   Electron Helper 
+6503   0.0   com.apple.audio.
+6378   0.0   spindump_agent  
+6357   0.0   VTEncoderXPCServ
+4982   0.0   com.apple.audio.
+4981   0.0   zsh             
+4980   0.0   AudioComponentRe
+4979   0.0   systemsoundserve
+4978   0.0   login           
+4353   0.0   mdwrite         
+3959   0.0   mdsync          
+3882   0.0   ospredictiond   
+2932   0.0   mdbulkimport    
+2554   0.0   trustd          
+2253   0.0   UserNotification
+2131   0.0   universalAccessA
+1841   0.0   node            
+1838   0.0   ChatGPT for Chro
+1713   0.0   chrome_crashpad_
+1532   0.0   CrashReporterSup
+1103   0.0   node            
+1087   0.0   sed             
+1086   0.0   sed             
+1082   0.0   bash            
+1081   0.0   bash            
+798    0.0   zsh             
+796    0.0   login           
+795    0.0   Terminal        
+759    0.0   mdbulkimport    
+593    0.0   commerce        
+589    0.0   rtcreportingd   
+575    0.0   CAReportingServi
+574    0.0   avconferenced   
+569    0.0   mediaremoteagent
+566    0.0   seserviced      
+555    0.0   fairplayd       
+536    0.0   ollama          
+534    0.0   SubmitDiagInfo  
+525    0.0   EmojiFunctionRow
+523    0.0   spindump        
+522    0.0   PAH_Extension   
+518    0.0   Ollama          
+514    0.0   familycircled   
+513    0.0   com.apple.dock.e
+508    0.0   corespotlightd  
+507    0.0   SogouWBInput    
+504    0.0   com.apple.dock.e
+502    0.0   useractivityd   
+501    0.0   ScreenTimeAgent 
+493    0.0   Spotlight       
+492    0.0   passd           
+488    0.0   ControlStrip    
+486    0.0   ctkahp          
+479    0.0   TextInputMenuAge
+477    0.0   diagnostics_agen
+473    0.0   imagent         
+472    0.0   AirPlayUIAgent  
+468    0.0   Squirrel        
+465    0.0   icdd            
+462    0.0   bash            
+461    0.0   imklaunchagent  
+457    0.0   ContextStoreAgen
+454    0.0   caffeinate      
+453    0.0   corespeechd     
+451    0.0   wpslaunchhelper 
+447    0.0   fontworker      
+443    0.0   fontd           
+441    0.0   AMPDeviceDiscove
+433    0.0   automountd      
+431    0.0   BiomeAgent      
+429    0.0   rapportd        
+428    0.0   identityservices
+426    0.0   ViewBridgeAuxili
+425    0.0   sharedfilelistd 
+423    0.0   cloudd          
+419    0.0   bird            
+415    0.0   NotificationCent
+413    0.0   filecoordination
+412    0.0   pboard          
+401    0.0   SystemUIServer  
+399    0.0   Dock            
+395    0.0   usernoted       
+391    0.0   WindowManager   
+388    0.0   ContinuityCaptur
+383    0.0   UserEventAgent  
+381    0.0   securityd_servic
+367    0.0   IOUserBluetoothS
+366    0.0   IOUserBluetoothS
+363    0.0   com.apple.Ambien
+362    0.0   systemstats     
+337    0.0   ctkahp          
+317    0.0   appleeventsd    
+288    0.0   searchpartyd    
+280    0.0   cron            
+278    0.0   thermald        
+277    0.0   com.apple.AppleU
+276    0.0   com.apple.Driver
+271    0.0   eoshostd        
+265    0.0   UVCAssistant    
+262    0.0   wifianalyticsd  
+241    0.0   suhelperd       
+229    0.0   diskmanagementd 
+226    0.0   authd           
+224    0.0   awdd            
+206    0.0   xartstorageremot
+193    0.0   nsurlsessiond   
+192    0.0   apfsd           
+152    0.0   lsd             
+149    0.0   contextstored   
+148    0.0   loginwindow     
+142    0.0   com.apple.cmio.r
+141    0.0   AirPlayXPCHelper
+140    0.0   corebrightnessd 
+134    0.0   KernelEventAgent
+133    0.0   revisiond       
+132    0.0   logind          
+125    0.0   displaypolicyd  
+124    0.0   autofsd         
+120    0.0   auditd          
+118    0.0   usbmuxd         
+117    0.0   timed           
+115    0.0   apsd            
+113    0.0   thermalmonitord 
+110    0.0   syslogd         
+105    0.0   kernelmanagerd  
+76     0.0   UserEventAgent  
+Processes: 457 total, 43 running, 9 stuck, 405 sleeping, 2827 threads 
+2026/11/16 04:16:40
+Load Avg: 32.10, 26.25, 17.20 
+CPU usage: 43.27% user, 31.67% sys, 25.4% idle 
+SharedLibs: 276M resident, 56M data, 21M linkedit.
+MemRegions: 531572 total, 2760M resident, 69M private, 2029M shared.
+PhysMem: 16G used (9944M wired, 236M compressor), 101M unused.
+VM: 56T vsize, 3569M framework vsize, 48241333(1278) swapins, 54300637(53853) swapouts.
+Networks: packets: 17373726/12G in, 15702392/9993M out.
+Disks: 6371007/261G read, 5311619/274G written.
+
+PID    %CPU  COMMAND         
+5882   102.1 Electron Helper 
+49083  87.4  node            
+0      70.8  kernel_task     
+90325  39.4  Google Chrome He
+25511  35.2  Electron Helper 
+1717   29.9  Google Chrome He
+143    20.8  WindowServer    
+5888   17.5  Electron Helper 
+190    14.1  coreaudiod      
+25497  10.8  Electron Helper 
+25830  8.9   top             
+25487  8.3   Electron        
+622    7.2   FlClashCore     
+204    5.9   VDCAssistant    
+119    5.4   securityd       
+2299   5.3   VTDecoderXPCServ
+25927  5.2   lark-cli        
+6505   5.2   Electron Helper 
+73606  4.2   Google Chrome He
+25596  3.0   Electron Helper 
+618    1.8   FlClash         
+1      1.8   launchd         
+5880   1.7   Electron        
+1550   1.6   Google Chrome   
+211    1.4   ToDesk_Service  
+7608   1.3   WeChat          
+6524   1.2   Electron Helper 
+1718   1.1   Google Chrome He
+114    1.1   opendirectoryd  
+434    0.9   replayd         
+48529  0.8   coreauthd       
+48448  0.8   trustd          
+63146  0.8   plugin_host-3.3 
+63147  0.8   plugin_host-3.8 
+382    0.6   cfprefsd        
+138    0.6   notifyd         
+25658  0.6   Electron Helper 
+74     0.6   logd            
+103    0.5   mds             
+407    0.5   trustd          
+391    0.5   WindowManager   
+1084   0.4   python3.10      
+80     0.4   fseventsd       
+247    0.4   symptomsd       
+49022  0.4   ctkd            
+144    0.4   cfprefsd        
+575    0.2   CAReportingServi
+212    0.2   mDNSResponder   
+16134  0.2   node            
+164    0.2   runningboardd   
+23462  0.1   mdworker_shared 
+46295  0.1   python3.10      
+55106  0.1   PerfPowerService
+453    0.1   corespeechd     
+2112   0.1   Google Chrome He
+73770  0.1   Obsidian Helper 
+25850  0.1   mdworker_shared 
+106    0.1   diskarbitrationd
+49020  0.1   secd            
+36520  0.1   PowerChime      
+52129  0.1   mediaremoted    
+88557  0.1   Google Chrome He
+49570  0.1   lark-cli        
+400    0.1   ControlCenter   
+488    0.1   ControlStrip    
+25476  0.1   bash            
+402    0.1   Finder          
+148    0.1   loginwindow     
+574    0.0   avconferenced   
+388    0.0   ContinuityCaptur
+6501   0.0   Electron Helper 
+336    0.0   coreauthd       
+141    0.0   AirPlayXPCHelper
+362    0.0   systemstats     
+1794   0.0   Google Chrome He
+415    0.0   NotificationCent
+55064  0.0   assistantd      
+55071  0.0   donotdisturbd   
+596    0.0   taskgated       
+122    0.0   locationd       
+24843  0.0   mdworker_shared 
+4979   0.0   systemsoundserve
+295    0.0   mds_stores      
+53118  0.0   callservicesd   
+23472  0.0   mdworker_shared 
+59080  0.0   WeChatAppEx Help
+251    0.0   audioclocksyncd 
+7674   0.0   WeChatAppEx     
+155    0.0   coreservicesd   
+312    0.0   TouchBarServer  
+116    0.0   launchservicesd 
+589    0.0   rtcreportingd   
+63114  0.0   sublime_text    
+88     0.0   powerd          
+4716   0.0   SogouInput      
+84     0.0   systemstats     
+23035  0.0   mdworker_shared 
+379    0.0   distnoted       
+1796   0.0   Google Chrome He
+4347   0.0   Typora          
+1793   0.0   Google Chrome He
+24823  0.0   Google Chrome He
+490    0.0   lockoutagent    
+263    0.0   com.obsproject.o
+8343   0.0   WeChatAppEx Help
+65985  0.0   WeChatAppEx Help
+1775   0.0   Google Chrome He
+73521  0.0   Google Chrome He
+56701  0.0   Google Chrome He
+147    0.0   analyticsd      
+8206   0.0   XPlayer         
+1791   0.0   Google Chrome He
+483    0.0   Python          
+90339  0.0   Google Chrome He
+399    0.0   Dock            
+1103   0.0   node            
+394    0.0   lsd             
+60109  0.0   UIKitSystem     
+8162   0.0   WeChatAppEx Help
+53125  0.0   com.apple.audio.
+78570  0.0   itunescloudd    
+502    0.0   useractivityd   
+65986  0.0   WeChatAppEx     
+8213   0.0   WeChatAppEx Help
+78583  0.0   amsengagementd  
+1719   0.0   Google Chrome He
+493    0.0   Spotlight       
+53049  0.0   tccd            
+162    0.0   syspolicyd      
+137    0.0   bluetoothd      
+55553  0.0   JavaUpdater     
+23454  0.0   mdworker_shared 
+78580  0.0   amsaccountsd    
+16137  0.0   headless_shell  
+411    0.0   nearbyd         
+2249   0.0   searchpartyusera
+480    0.0   App Cleaner Moni
+249    0.0   mDNSResponderHel
+423    0.0   cloudd          
+54591  0.0   com.apple.geod  
+48311  0.0   accountsd       
+193    0.0   nsurlsessiond   
+484    0.0   App Cleaner Help
+489    0.0   nsurlsessiond   
+48676  0.0   swcd            
+8157   0.0   WeChatHelper    
+54791  0.0   com.apple.geod  
+55255  0.0   fmfd            
+55097  0.0   akd             
+593    0.0   commerce        
+54801  0.0   trustd          
+5883   0.0   Electron Helper 
+226    0.0   authd           
+16165  0.0   storekitagent   
+61902  0.0   cloudphotod     
+1838   0.0   ChatGPT for Chro
+76     0.0   UserEventAgent  
+8128   0.0   WeChatHelper    
+149    0.0   contextstored   
+99528  0.0   dirhelper       
+98206  0.0   StocksWidget    
+98205  0.0   WorldClockWidget
+98203  0.0   CalendarWidgetEx
+89905  0.0   aned            
+87023  0.0   talagent        
+81714  0.0   biometrickitd   
+77475  0.0   trustd          
+76588  0.0   MTLCompilerServi
+73768  0.0   Obsidian Helper 
+73767  0.0   Obsidian Helper 
+73765  0.0   Obsidian        
+69812  0.0   sysextd         
+68234  0.0   hidd            
+68227  0.0   ioupsd          
+66482  0.0   WeatherWidget   
+66042  0.0   SoftwareUpdateNo
+63119  0.0   crash_handler   
+62212  0.0   ReportCrash     
+62013  0.0   XProtectPluginSe
+62012  0.0   XProtect        
+61937  0.0   XProtectPluginSe
+61936  0.0   XProtect        
+61885  0.0   photoanalysisd  
+61882  0.0   CoreServicesUIAg
+61863  0.0   PlugInLibrarySer
+61856  0.0   ScopedBookmarkAg
+61853  0.0   endpointsecurity
+61852  0.0   photolibraryd   
+61763  0.0   proactiveeventtr
+61762  0.0   dprivacyd       
+61694  0.0   CoreSpotlightSer
+60110  0.0   iconservicesd   
+60108  0.0   iconservicesagen
+60091  0.0   ScreenTimeWidget
+60090  0.0   extensionkitserv
+56967  0.0   biomesyncd      
+56780  0.0   amfid           
+56547  0.0   backgroundtaskma
+55611  0.0   logd_helper     
+55370  0.0   PowerUIAgent    
+55324  0.0   sysmond         
+55260  0.0   CMFSyncAgent    
+55236  0.0   com.apple.audio.
+55234  0.0   calaccessd      
+55233  0.0   CarbonComponentS
+55226  0.0   AudioComponentRe
+55221  0.0   TrustedPeersHelp
+55210  0.0   cdpd            
+55160  0.0   pbs             
+55159  0.0   axassetsd       
+55101  0.0   adid            
+55090  0.0   AssetCacheLocato
+55085  0.0   homed           
+55084  0.0   MTLAssetUpgrader
+55081  0.0   neagent         
+55072  0.0   nehelper        
+55070  0.0   ContainerMetadat
+55069  0.0   siriknowledged  
+55068  0.0   mobiletimerd    
+55066  0.0   networkservicepr
+55065  0.0   siriactionsd    
+54883  0.0   com.apple.CodeSi
+54879  0.0   OSDUIHelper     
+54807  0.0   containermanager
+54805  0.0   trustdFileHelper
+54796  0.0   mapspushd       
+54650  0.0   csnameddatad    
+54645  0.0   fileproviderd   
+54642  0.0   sandboxd        
+54625  0.0   pkd             
+54621  0.0   deleted         
+54614  0.0   coreduetd       
+54609  0.0   smd             
+54599  0.0   containermanager
+54592  0.0   nfcd            
+54449  0.0   keyboardservices
+54405  0.0   usermanagerd    
+53921  0.0   secinitd        
+53468  0.0   countryd        
+53326  0.0   coresymbolicatio
+53198  0.0   wifip2pd        
+53131  0.0   backupd         
+53129  0.0   online-authd    
+53124  0.0   contactsd       
+53120  0.0   syncdefaultsd   
+53112  0.0   CommCenter      
+53111  0.0   contentlinkingd 
+53085  0.0   Keychain Circle 
+53084  0.0   com.apple.hiserv
+53072  0.0   com.apple.audio.
+53067  0.0   CoreLocationAgen
+52881  0.0   dmd             
+52802  0.0   VPN             
+52798  0.0   GameControllerMa
+52795  0.0   MouseExtension  
+52793  0.0   Family          
+52792  0.0   CDs & DVDs Setti
+52791  0.0   ClassKitSettings
+52787  0.0   WalletSettingsEx
+52786  0.0   ClassroomSetting
+52784  0.0   TrackpadExtensio
+52783  0.0   PowerPreferences
+52780  0.0   FamilySettings  
+52742  0.0   FollowUpSettings
+52741  0.0   HeadphoneSetting
+52740  0.0   Touch ID & Passw
+52739  0.0   SecurityPrivacyE
+52713  0.0   AppleIDSettings 
+52712  0.0   tccd            
+52701  0.0   System Settings 
+52358  0.0   UsageTrackingAge
+52108  0.0   routined        
+49736  0.0   suggestd        
+49643  0.0   AppleSpell      
+49598  0.0   lark-cli        
+49559  0.0   node            
+49032  0.0   knowledge-agent 
+49027  0.0   biomed          
+48769  0.0   triald          
+48767  0.0   backupd-helper  
+48697  0.0   deleted_helper  
+48444  0.0   WirelessRadioMan
+46259  0.0   CVMServer       
+46142  0.0   bash            
+44099  0.0   python3.10      
+44044  0.0   netbiosd        
+43931  0.0   installd        
+43930  0.0   system_installd 
+43925  0.0   softwareupdated 
+43537  0.0   mobileassetd    
+41160  0.0   storedownloadd  
+35224  0.0   ssh-agent       
+25967  0.0   lark-cli        
+25966  0.0   sleep           
+25965  0.0   node            
+25964  0.0   mdworker_shared 
+25963  0.0   mdworker_shared 
+25962  0.0   MTLCompilerServi
+25961  0.0   mdworker_shared 
+25958  0.0   mdworker_shared 
+25921  0.0   node            
+25828  0.0   sleep           
+25827  0.0   bash            
+25748  0.0   bash            
+25643  0.0   com.apple.audio.
+25590  0.0   VTEncoderXPCServ
+25499  0.0   Electron Helper 
+25484  0.0   node            
+24120  0.0   mdworker_shared 
+23911  0.0   bash            
+23899  0.0   bash            
+20739  0.0   FindMyMacd      
+20672  0.0   findmydeviced   
+16199  0.0   ContextService  
+16163  0.0   CategoriesServic
+16145  0.0   headless_shell  
+16144  0.0   headless_shell  
+16143  0.0   headless_shell  
+16140  0.0   headless_shell  
+16136  0.0   headless_shell  
+16135  0.0   headless_shell  
+8156   0.0   WeChatAppEx Help
+7695   0.0   WeChatAppEx Help
+7694   0.0   WeChatAppEx Help
+7610   0.0   crashpad_handler
+7431   0.0   fbahelperd      
+6523   0.0   Electron Helper 
+6503   0.0   com.apple.audio.
+6378   0.0   spindump_agent  
+6357   0.0   VTEncoderXPCServ
+4982   0.0   com.apple.audio.
+4981   0.0   zsh             
+4980   0.0   AudioComponentRe
+4978   0.0   login           
+4353   0.0   mdwrite         
+3959   0.0   mdsync          
+3882   0.0   ospredictiond   
+2932   0.0   mdbulkimport    
+2554   0.0   trustd          
+2294   0.0   distnoted       
+2253   0.0   UserNotification
+2247   0.0   studentd        
+2131   0.0   universalAccessA
+1841   0.0   node            
+1713   0.0   chrome_crashpad_
+1532   0.0   CrashReporterSup
+1487   0.0   distnoted       
+1087   0.0   sed             
+1086   0.0   sed             
+1085   0.0   node            
+1082   0.0   bash            
+1081   0.0   bash            
+1031   0.0   distnoted       
+798    0.0   zsh             
+796    0.0   login           
+795    0.0   Terminal        
+759    0.0   mdbulkimport    
+677    0.0   distnoted       
+569    0.0   mediaremoteagent
+566    0.0   seserviced      
+555    0.0   fairplayd       
+536    0.0   ollama          
+534    0.0   SubmitDiagInfo  
+525    0.0   EmojiFunctionRow
+523    0.0   spindump        
+522    0.0   PAH_Extension   
+518    0.0   Ollama          
+514    0.0   familycircled   
+513    0.0   com.apple.dock.e
+508    0.0   corespotlightd  
+507    0.0   SogouWBInput    
+504    0.0   com.apple.dock.e
+501    0.0   ScreenTimeAgent 
+500    0.0   WiFiAgent       
+492    0.0   passd           
+486    0.0   ctkahp          
+479    0.0   TextInputMenuAge
+477    0.0   diagnostics_agen
+473    0.0   imagent         
+472    0.0   AirPlayUIAgent  
+468    0.0   Squirrel        
+466    0.0   Python          
+465    0.0   icdd            
+462    0.0   bash            
+461    0.0   imklaunchagent  
+457    0.0   ContextStoreAgen
+454    0.0   caffeinate      
+451    0.0   wpslaunchhelper 
+447    0.0   fontworker      
+443    0.0   fontd           
+441    0.0   AMPDeviceDiscove
+433    0.0   automountd      
+431    0.0   BiomeAgent      
+430    0.0   sharingd        
+429    0.0   rapportd        
+428    0.0   identityservices
+426    0.0   ViewBridgeAuxili
+425    0.0   sharedfilelistd 
+419    0.0   bird            
+413    0.0   filecoordination
+412    0.0   pboard          
+401    0.0   SystemUIServer  
+395    0.0   usernoted       
+383    0.0   UserEventAgent  
+381    0.0   securityd_servic
+367    0.0   IOUserBluetoothS
+366    0.0   IOUserBluetoothS
+363    0.0   com.apple.Ambien
+358    0.0   distnoted       
+352    0.0   distnoted       
+337    0.0   ctkahp          
+335    0.0   distnoted       
+317    0.0   appleeventsd    
+299    0.0   distnoted       
+293    0.0   distnoted       
+288    0.0   searchpartyd    
+285    0.0   distnoted       
+280    0.0   cron            
+278    0.0   thermald        
+277    0.0   com.apple.AppleU
+276    0.0   com.apple.Driver
+271    0.0   eoshostd        
+265    0.0   UVCAssistant    
+262    0.0   wifianalyticsd  
+259    0.0   distnoted       
+253    0.0   distnoted       
+242    0.0   distnoted       
+241    0.0   suhelperd       
+229    0.0   diskmanagementd 
+224    0.0   awdd            
+208    0.0   systemstatusd   
+206    0.0   xartstorageremot
+201    0.0   airportd        
+197    0.0   distnoted       
+192    0.0   apfsd           
+183    0.0   distnoted       
+152    0.0   lsd             
+142    0.0   com.apple.cmio.r
+140    0.0   corebrightnessd 
+134    0.0   KernelEventAgent
+133    0.0   revisiond       
+132    0.0   logind          
+128    0.0   distnoted       
+126    0.0   dasd            
+125    0.0   displaypolicyd  
+124    0.0   autofsd         
+120    0.0   auditd          
+118    0.0   usbmuxd         
+117    0.0   timed           
+115    0.0   apsd            
+113    0.0   thermalmonitord 
+110    0.0   syslogd         
+105    0.0   kernelmanagerd  
+99     0.0   watchdogd       
+94     0.0   remoted         
+86     0.0   configd         
+79     0.0   uninstalld      
+Processes: 449 total, 26 running, 10 stuck, 413 sleeping, 2734 threads 
+2026/11/16 04:16:43
+Load Avg: 32.10, 26.25, 17.20 
+CPU usage: 45.95% user, 31.39% sys, 22.64% idle 
+SharedLibs: 276M resident, 56M data, 21M linkedit.
+MemRegions: 501499 total, 2639M resident, 69M private, 2029M shared.
+PhysMem: 16G used (9911M wired, 150M compressor), 468M unused.
+VM: 53T vsize, 3569M framework vsize, 48244843(3510) swapins, 54312764(12127) swapouts.
+Networks: packets: 17374993/12G in, 15703921/9997M out.
+Disks: 6371654/261G read, 5312536/274G written.
+
+PID    %CPU  COMMAND         
+5882   148.2 Electron Helper 
+90325  73.2  Google Chrome He
+1717   55.2  Google Chrome He
+0      42.2  kernel_task     
+143    24.6  WindowServer    
+5888   23.8  Electron Helper 
+190    20.1  coreaudiod      
+49083  11.4  node            
+25830  8.1   top             
+119    7.7   securityd       
+204    7.1   VDCAssistant    
+6505   6.5   Electron Helper 
+2299   6.4   VTDecoderXPCServ
+25967  4.8   lark-cli        
+622    4.6   FlClashCore     
+25487  3.6   Electron        
+55324  3.3   sysmond         
+1550   2.4   Google Chrome   
+5880   2.4   Electron        
+25927  2.3   lark-cli        
+211    1.9   ToDesk_Service  
+618    1.9   FlClash         
+247    1.8   symptomsd       
+6524   1.5   Electron Helper 
+7608   1.5   WeChat          
+52129  1.5   mediaremoted    
+596    1.3   taskgated       
+1718   1.1   Google Chrome He
+63147  1.1   plugin_host-3.8 
+63146  1.0   plugin_host-3.3 
+114    0.9   opendirectoryd  
+122    0.9   locationd       
+1084   0.8   python3.10      
+1      0.8   launchd         
+103    0.6   mds             
+407    0.6   trustd          
+144    0.6   cfprefsd        
+48529  0.5   coreauthd       
+80     0.5   fseventsd       
+391    0.5   WindowManager   
+138    0.4   notifyd         
+73606  0.4   Google Chrome He
+382    0.4   cfprefsd        
+55106  0.3   PerfPowerService
+25958  0.3   mdworker_shared 
+25963  0.3   mdworker_shared 
+16134  0.3   node            
+164    0.3   runningboardd   
+25964  0.3   mdworker_shared 
+25961  0.3   mdworker_shared 
+295    0.3   mds_stores      
+48448  0.2   trustd          
+49022  0.2   ctkd            
+201    0.2   airportd        
+1791   0.2   Google Chrome He
+74     0.2   logd            
+25850  0.2   mdworker_shared 
+589    0.2   rtcreportingd   
+162    0.2   syspolicyd      
+575    0.1   CAReportingServi
+212    0.1   mDNSResponder   
+53072  0.1   com.apple.audio.
+434    0.1   replayd         
+36520  0.1   PowerChime      
+88557  0.1   Google Chrome He
+63114  0.1   sublime_text    
+2112   0.1   Google Chrome He
+23462  0.1   mdworker_shared 
+453    0.1   corespeechd     
+141    0.1   AirPlayXPCHelper
+394    0.1   lsd             
+1796   0.1   Google Chrome He
+400    0.1   ControlCenter   
+488    0.1   ControlStrip    
+4979   0.1   systemsoundserve
+53125  0.1   com.apple.audio.
+6501   0.1   Electron Helper 
+7674   0.1   WeChatAppEx     
+55064  0.1   assistantd      
+55085  0.1   homed           
+379    0.1   distnoted       
+53198  0.1   wifip2pd        
+59080  0.1   WeChatAppEx Help
+73770  0.1   Obsidian Helper 
+148    0.1   loginwindow     
+49570  0.1   lark-cli        
+574    0.1   avconferenced   
+49020  0.1   secd            
+25476  0.1   bash            
+23035  0.1   mdworker_shared 
+388    0.1   ContinuityCaptur
+402    0.1   Finder          
+4347   0.0   Typora          
+53118  0.0   callservicesd   
+88     0.0   powerd          
+569    0.0   mediaremoteagent
+147    0.0   analyticsd      
+362    0.0   systemstats     
+1794   0.0   Google Chrome He
+116    0.0   launchservicesd 
+336    0.0   coreauthd       
+128    0.0   distnoted       
+251    0.0   audioclocksyncd 
+23472  0.0   mdworker_shared 
+23454  0.0   mdworker_shared 
+73767  0.0   Obsidian Helper 
+155    0.0   coreservicesd   
+73765  0.0   Obsidian        
+76     0.0   UserEventAgent  
+73521  0.0   Google Chrome He
+48311  0.0   accountsd       
+312    0.0   TouchBarServer  
+137    0.0   bluetoothd      
+48444  0.0   WirelessRadioMan
+106    0.0   diskarbitrationd
+4716   0.0   SogouInput      
+1719   0.0   Google Chrome He
+7695   0.0   WeChatAppEx Help
+49598  0.0   lark-cli        
+490    0.0   lockoutagent    
+65985  0.0   WeChatAppEx Help
+24843  0.0   mdworker_shared 
+1775   0.0   Google Chrome He
+149    0.0   contextstored   
+56701  0.0   Google Chrome He
+502    0.0   useractivityd   
+483    0.0   Python          
+457    0.0   ContextStoreAgen
+2249   0.0   searchpartyusera
+1793   0.0   Google Chrome He
+24823  0.0   Google Chrome He
+55068  0.0   mobiletimerd    
+90339  0.0   Google Chrome He
+8156   0.0   WeChatAppEx Help
+16136  0.0   headless_shell  
+253    0.0   distnoted       
+285    0.0   distnoted       
+16165  0.0   storekitagent   
+208    0.0   systemstatusd   
+1031   0.0   distnoted       
+8213   0.0   WeChatAppEx Help
+73768  0.0   Obsidian Helper 
+263    0.0   com.obsproject.o
+259    0.0   distnoted       
+16135  0.0   headless_shell  
+299    0.0   distnoted       
+352    0.0   distnoted       
+8343   0.0   WeChatAppEx Help
+1487   0.0   distnoted       
+86     0.0   configd         
+293    0.0   distnoted       
+335    0.0   distnoted       
+358    0.0   distnoted       
+7694   0.0   WeChatAppEx Help
+197    0.0   distnoted       
+5883   0.0   Electron Helper 
+54791  0.0   com.apple.geod  
+8162   0.0   WeChatAppEx Help
+677    0.0   distnoted       
+500    0.0   WiFiAgent       
+2294   0.0   distnoted       
+183    0.0   distnoted       
+54591  0.0   com.apple.geod  
+53112  0.0   CommCenter      
+126    0.0   dasd            
+480    0.0   App Cleaner Moni
+79     0.0   uninstalld      
+84     0.0   systemstats     
+55255  0.0   fmfd            
+242    0.0   distnoted       
+46295  0.0   python3.10      
+411    0.0   nearbyd         
+52780  0.0   FamilySettings  
+52713  0.0   AppleIDSettings 
+484    0.0   App Cleaner Help
+249    0.0   mDNSResponderHel
+54801  0.0   trustd          
+8206   0.0   XPlayer         
+99528  0.0   dirhelper       
+98206  0.0   StocksWidget    
+98205  0.0   WorldClockWidget
+98203  0.0   CalendarWidgetEx
+89905  0.0   aned            
+87023  0.0   talagent        
+81714  0.0   biometrickitd   
+78583  0.0   amsengagementd  
+78580  0.0   amsaccountsd    
+78570  0.0   itunescloudd    
+77475  0.0   trustd          
+76588  0.0   MTLCompilerServi
+69812  0.0   sysextd         
+68234  0.0   hidd            
+68227  0.0   ioupsd          
+66482  0.0   WeatherWidget   
+66042  0.0   SoftwareUpdateNo
+65986  0.0   WeChatAppEx     
+63119  0.0   crash_handler   
+62212  0.0   ReportCrash     
+62013  0.0   XProtectPluginSe
+62012  0.0   XProtect        
+61937  0.0   XProtectPluginSe
+61936  0.0   XProtect        
+61902  0.0   cloudphotod     
+61885  0.0   photoanalysisd  
+61882  0.0   CoreServicesUIAg
+61863  0.0   PlugInLibrarySer
+61856  0.0   ScopedBookmarkAg
+61853  0.0   endpointsecurity
+61852  0.0   photolibraryd   
+61763  0.0   proactiveeventtr
+61762  0.0   dprivacyd       
+61694  0.0   CoreSpotlightSer
+60110  0.0   iconservicesd   
+60109  0.0   UIKitSystem     
+60108  0.0   iconservicesagen
+60091  0.0   ScreenTimeWidget
+60090  0.0   extensionkitserv
+56967  0.0   biomesyncd      
+56780  0.0   amfid           
+56547  0.0   backgroundtaskma
+55611  0.0   logd_helper     
+55553  0.0   JavaUpdater     
+55370  0.0   PowerUIAgent    
+55260  0.0   CMFSyncAgent    
+55236  0.0   com.apple.audio.
+55234  0.0   calaccessd      
+55233  0.0   CarbonComponentS
+55226  0.0   AudioComponentRe
+55221  0.0   TrustedPeersHelp
+55210  0.0   cdpd            
+55160  0.0   pbs             
+55159  0.0   axassetsd       
+55101  0.0   adid            
+55097  0.0   akd             
+55090  0.0   AssetCacheLocato
+55084  0.0   MTLAssetUpgrader
+55081  0.0   neagent         
+55072  0.0   nehelper        
+55071  0.0   donotdisturbd   
+55070  0.0   ContainerMetadat
+55069  0.0   siriknowledged  
+55066  0.0   networkservicepr
+55065  0.0   siriactionsd    
+54883  0.0   com.apple.CodeSi
+54879  0.0   OSDUIHelper     
+54807  0.0   containermanager
+54805  0.0   trustdFileHelper
+54796  0.0   mapspushd       
+54650  0.0   csnameddatad    
+54645  0.0   fileproviderd   
+54642  0.0   sandboxd        
+54625  0.0   pkd             
+54621  0.0   deleted         
+54614  0.0   coreduetd       
+54609  0.0   smd             
+54599  0.0   containermanager
+54592  0.0   nfcd            
+54449  0.0   keyboardservices
+54405  0.0   usermanagerd    
+53921  0.0   secinitd        
+53468  0.0   countryd        
+53326  0.0   coresymbolicatio
+53131  0.0   backupd         
+53129  0.0   online-authd    
+53124  0.0   contactsd       
+53120  0.0   syncdefaultsd   
+53111  0.0   contentlinkingd 
+53085  0.0   Keychain Circle 
+53084  0.0   com.apple.hiserv
+53067  0.0   CoreLocationAgen
+53049  0.0   tccd            
+52881  0.0   dmd             
+52802  0.0   VPN             
+52798  0.0   GameControllerMa
+52795  0.0   MouseExtension  
+52793  0.0   Family          
+52792  0.0   CDs & DVDs Setti
+52791  0.0   ClassKitSettings
+52787  0.0   WalletSettingsEx
+52786  0.0   ClassroomSetting
+52784  0.0   TrackpadExtensio
+52783  0.0   PowerPreferences
+52742  0.0   FollowUpSettings
+52741  0.0   HeadphoneSetting
+52740  0.0   Touch ID & Passw
+52739  0.0   SecurityPrivacyE
+52712  0.0   tccd            
+52701  0.0   System Settings 
+52358  0.0   UsageTrackingAge
+52108  0.0   routined        
+49736  0.0   suggestd        
+49643  0.0   AppleSpell      
+49559  0.0   node            
+49032  0.0   knowledge-agent 
+49027  0.0   biomed          
+48769  0.0   triald          
+48767  0.0   backupd-helper  
+48697  0.0   deleted_helper  
+48676  0.0   swcd            
+46259  0.0   CVMServer       
+46142  0.0   bash            
+44099  0.0   python3.10      
+44044  0.0   netbiosd        
+43931  0.0   installd        
+43930  0.0   system_installd 
+43925  0.0   softwareupdated 
+43537  0.0   mobileassetd    
+41160  0.0   storedownloadd  
+35224  0.0   ssh-agent       
+26080  0.0   sleep           
+25965  0.0   node            
+25921  0.0   node            
+25828  0.0   sleep           
+25827  0.0   bash            
+25748  0.0   bash            
+25484  0.0   node            
+24120  0.0   mdworker_shared 
+23911  0.0   bash            
+23899  0.0   bash            
+20739  0.0   FindMyMacd      
+20672  0.0   findmydeviced   
+16199  0.0   ContextService  
+16163  0.0   CategoriesServic
+16145  0.0   headless_shell  
+16144  0.0   headless_shell  
+16143  0.0   headless_shell  
+16140  0.0   headless_shell  
+16137  0.0   headless_shell  
+8157   0.0   WeChatHelper    
+8128   0.0   WeChatHelper    
+7610   0.0   crashpad_handler
+7431   0.0   fbahelperd      
+6523   0.0   Electron Helper 
+6503   0.0   com.apple.audio.
+6378   0.0   spindump_agent  
+6357   0.0   VTEncoderXPCServ
+4982   0.0   com.apple.audio.
+4981   0.0   zsh             
+4980   0.0   AudioComponentRe
+4978   0.0   login           
+4353   0.0   mdwrite         
+3959   0.0   mdsync          
+3882   0.0   ospredictiond   
+2932   0.0   mdbulkimport    
+2554   0.0   trustd          
+2253   0.0   UserNotification
+2247   0.0   studentd        
+2131   0.0   universalAccessA
+1841   0.0   node            
+1838   0.0   ChatGPT for Chro
+1713   0.0   chrome_crashpad_
+1532   0.0   CrashReporterSup
+1103   0.0   node            
+1087   0.0   sed             
+1086   0.0   sed             
+1085   0.0   node            
+1082   0.0   bash            
+1081   0.0   bash            
+798    0.0   zsh             
+796    0.0   login           
+795    0.0   Terminal        
+759    0.0   mdbulkimport    
+593    0.0   commerce        
+566    0.0   seserviced      
+555    0.0   fairplayd       
+536    0.0   ollama          
+534    0.0   SubmitDiagInfo  
+525    0.0   EmojiFunctionRow
+523    0.0   spindump        
+522    0.0   PAH_Extension   
+518    0.0   Ollama          
+514    0.0   familycircled   
+513    0.0   com.apple.dock.e
+508    0.0   corespotlightd  
+507    0.0   SogouWBInput    
+504    0.0   com.apple.dock.e
+501    0.0   ScreenTimeAgent 
+493    0.0   Spotlight       
+492    0.0   passd           
+489    0.0   nsurlsessiond   
+486    0.0   ctkahp          
+479    0.0   TextInputMenuAge
+477    0.0   diagnostics_agen
+473    0.0   imagent         
+472    0.0   AirPlayUIAgent  
+468    0.0   Squirrel        
+466    0.0   Python          
+465    0.0   icdd            
+462    0.0   bash            
+461    0.0   imklaunchagent  
+454    0.0   caffeinate      
+451    0.0   wpslaunchhelper 
+447    0.0   fontworker      
+443    0.0   fontd           
+441    0.0   AMPDeviceDiscove
+433    0.0   automountd      
+431    0.0   BiomeAgent      
+430    0.0   sharingd        
+429    0.0   rapportd        
+428    0.0   identityservices
+426    0.0   ViewBridgeAuxili
+425    0.0   sharedfilelistd 
+423    0.0   cloudd          
+419    0.0   bird            
+415    0.0   NotificationCent
+413    0.0   filecoordination
+412    0.0   pboard          
+401    0.0   SystemUIServer  
+399    0.0   Dock            
+395    0.0   usernoted       
+383    0.0   UserEventAgent  
+381    0.0   securityd_servic
+367    0.0   IOUserBluetoothS
+366    0.0   IOUserBluetoothS
+363    0.0   com.apple.Ambien
+337    0.0   ctkahp          
+317    0.0   appleeventsd    
+288    0.0   searchpartyd    
+280    0.0   cron            
+278    0.0   thermald        
+277    0.0   com.apple.AppleU
+276    0.0   com.apple.Driver
+271    0.0   eoshostd        
+265    0.0   UVCAssistant    
+262    0.0   wifianalyticsd  
+241    0.0   suhelperd       
+229    0.0   diskmanagementd 
+226    0.0   authd           
+224    0.0   awdd            
+206    0.0   xartstorageremot
+193    0.0   nsurlsessiond   
+192    0.0   apfsd           
+152    0.0   lsd             
+142    0.0   com.apple.cmio.r
+140    0.0   corebrightnessd 
+134    0.0   KernelEventAgent
+133    0.0   revisiond       
+132    0.0   logind          
+125    0.0   displaypolicyd  
+124    0.0   autofsd         
+120    0.0   auditd          
+118    0.0   usbmuxd         
+117    0.0   timed           
+115    0.0   apsd            
+113    0.0   thermalmonitord 
+110    0.0   syslogd         
+105    0.0   kernelmanagerd  
+99     0.0   watchdogd       
+94     0.0   remoted         
+Processes: 447 total, 15 running, 12 stuck, 420 sleeping, 2756 threads 
+2026/11/16 04:16:45
+Load Avg: 31.77, 26.28, 17.26 
+CPU usage: 45.52% user, 27.2% sys, 27.45% idle 
+SharedLibs: 276M resident, 56M data, 21M linkedit.
+MemRegions: 488240 total, 2604M resident, 69M private, 2031M shared.
+PhysMem: 16G used (9933M wired, 208M compressor), 464M unused.
+VM: 52T vsize, 3569M framework vsize, 48265094(20251) swapins, 54312764(0) swapouts.
+Networks: packets: 17375832/12G in, 15705150/9998M out.
+Disks: 6372091/261G read, 5312551/274G written.
+
+PID    %CPU  COMMAND         
+5882   165.7 Electron Helper 
+90325  90.4  Google Chrome He
+1717   54.4  Google Chrome He
+143    44.1  WindowServer    
+5888   25.4  Electron Helper 
+0      23.7  kernel_task     
+25830  9.9   top             
+1550   7.8   Google Chrome   
+6505   7.4   Electron Helper 
+204    7.1   VDCAssistant    
+2299   7.1   VTDecoderXPCServ
+49083  7.1   node            
+190    3.7   coreaudiod      
+147    3.6   analyticsd      
+119    3.5   securityd       
+5880   2.6   Electron        
+622    2.2   FlClashCore     
+211    2.1   ToDesk_Service  
+7608   2.0   WeChat          
+618    1.9   FlClash         
+52129  1.7   mediaremoted    
+6524   1.7   Electron Helper 
+391    1.7   WindowManager   
+1      1.4   launchd         
+24823  1.3   Google Chrome He
+407    1.3   trustd          
+164    1.3   runningboardd   
+60091  1.3   ScreenTimeWidget
+575    1.2   CAReportingServi
+114    1.1   opendirectoryd  
+382    1.1   cfprefsd        
+63147  1.1   plugin_host-3.8 
+74     1.1   logd            
+1084   1.1   python3.10      
+457    1.0   ContextStoreAgen
+60090  1.0   extensionkitserv
+80     1.0   fseventsd       
+63146  1.0   plugin_host-3.3 
+247    0.9   symptomsd       
+402    0.9   Finder          
+379    0.9   distnoted       
+48448  0.9   trustd          
+412    0.8   pboard          
+144    0.8   cfprefsd        
+122    0.8   locationd       
+138    0.8   notifyd         
+1718   0.7   Google Chrome He
+116    0.7   launchservicesd 
+148    0.7   loginwindow     
+149    0.6   contextstored   
+48529  0.6   coreauthd       
+103    0.5   mds             
+589    0.5   rtcreportingd   
+25958  0.5   mdworker_shared 
+25963  0.4   mdworker_shared 
+795    0.4   Terminal        
+25850  0.4   mdworker_shared 
+507    0.4   SogouWBInput    
+25961  0.4   mdworker_shared 
+295    0.4   mds_stores      
+16134  0.4   node            
+466    0.3   Python          
+53125  0.3   com.apple.audio.
+434    0.3   replayd         
+4347   0.3   Typora          
+52701  0.3   System Settings 
+415    0.3   NotificationCent
+49022  0.3   ctkd            
+59080  0.2   WeChatAppEx Help
+2131   0.2   universalAccessA
+1794   0.2   Google Chrome He
+53118  0.2   callservicesd   
+479    0.2   TextInputMenuAge
+493    0.2   Spotlight       
+60109  0.2   UIKitSystem     
+53072  0.2   com.apple.audio.
+73765  0.2   Obsidian        
+73606  0.2   Google Chrome He
+596    0.2   taskgated       
+65985  0.2   WeChatAppEx Help
+61882  0.1   CoreServicesUIAg
+52739  0.1   SecurityPrivacyE
+362    0.1   systemstats     
+126    0.1   dasd            
+49570  0.1   lark-cli        
+55106  0.1   PerfPowerService
+7674   0.1   WeChatAppEx     
+56701  0.1   Google Chrome He
+88     0.1   powerd          
+8213   0.1   WeChatAppEx Help
+522    0.1   PAH_Extension   
+73770  0.1   Obsidian Helper 
+388    0.1   ContinuityCaptur
+401    0.1   SystemUIServer  
+451    0.1   wpslaunchhelper 
+63114  0.1   sublime_text    
+65986  0.1   WeChatAppEx     
+55064  0.1   assistantd      
+8162   0.1   WeChatAppEx Help
+312    0.1   TouchBarServer  
+52742  0.1   FollowUpSettings
+400    0.1   ControlCenter   
+49020  0.1   secd            
+25476  0.1   bash            
+88557  0.1   Google Chrome He
+52792  0.1   CDs & DVDs Setti
+525    0.1   EmojiFunctionRow
+53084  0.1   com.apple.hiserv
+488    0.1   ControlStrip    
+2112   0.1   Google Chrome He
+212    0.1   mDNSResponder   
+52786  0.1   ClassroomSetting
+141    0.1   AirPlayXPCHelper
+52780  0.1   FamilySettings  
+394    0.1   lsd             
+484    0.1   App Cleaner Help
+86     0.1   configd         
+53112  0.1   CommCenter      
+36520  0.1   PowerChime      
+489    0.1   nsurlsessiond   
+52784  0.0   TrackpadExtensio
+23454  0.0   mdworker_shared 
+4716   0.0   SogouInput      
+443    0.0   fontd           
+60110  0.0   iconservicesd   
+52795  0.0   MouseExtension  
+480    0.0   App Cleaner Moni
+52713  0.0   AppleIDSettings 
+55065  0.0   siriactionsd    
+453    0.0   corespeechd     
+66042  0.0   SoftwareUpdateNo
+502    0.0   useractivityd   
+518    0.0   Ollama          
+8343   0.0   WeChatAppEx Help
+500    0.0   WiFiAgent       
+226    0.0   authd           
+52798  0.0   GameControllerMa
+53067  0.0   CoreLocationAgen
+52741  0.0   HeadphoneSetting
+52783  0.0   PowerPreferences
+54879  0.0   OSDUIHelper     
+426    0.0   ViewBridgeAuxili
+52787  0.0   WalletSettingsEx
+52740  0.0   Touch ID & Passw
+574    0.0   avconferenced   
+251    0.0   audioclocksyncd 
+52802  0.0   VPN             
+52791  0.0   ClassKitSettings
+53111  0.0   contentlinkingd 
+55226  0.0   AudioComponentRe
+155    0.0   coreservicesd   
+106    0.0   diskarbitrationd
+52793  0.0   Family          
+78580  0.0   amsaccountsd    
+431    0.0   BiomeAgent      
+55553  0.0   JavaUpdater     
+513    0.0   com.apple.dock.e
+399    0.0   Dock            
+336    0.0   coreauthd       
+4979   0.0   systemsoundserve
+73767  0.0   Obsidian Helper 
+425    0.0   sharedfilelistd 
+137    0.0   bluetoothd      
+461    0.0   imklaunchagent  
+6501   0.0   Electron Helper 
+23472  0.0   mdworker_shared 
+490    0.0   lockoutagent    
+24843  0.0   mdworker_shared 
+8206   0.0   XPlayer         
+1796   0.0   Google Chrome He
+23035  0.0   mdworker_shared 
+7695   0.0   WeChatAppEx Help
+472    0.0   AirPlayUIAgent  
+2247   0.0   studentd        
+1793   0.0   Google Chrome He
+73521  0.0   Google Chrome He
+504    0.0   com.apple.dock.e
+16135  0.0   headless_shell  
+53085  0.0   Keychain Circle 
+317    0.0   appleeventsd    
+1791   0.0   Google Chrome He
+78583  0.0   amsengagementd  
+483    0.0   Python          
+2253   0.0   UserNotification
+477    0.0   diagnostics_agen
+87023  0.0   talagent        
+25964  0.0   mdworker_shared 
+60108  0.0   iconservicesagen
+16136  0.0   headless_shell  
+193    0.0   nsurlsessiond   
+73768  0.0   Obsidian Helper 
+16137  0.0   headless_shell  
+514    0.0   familycircled   
+49643  0.0   AppleSpell      
+1775   0.0   Google Chrome He
+90339  0.0   Google Chrome He
+263    0.0   com.obsproject.o
+1719   0.0   Google Chrome He
+142    0.0   com.apple.cmio.r
+16165  0.0   storekitagent   
+249    0.0   mDNSResponderHel
+7694   0.0   WeChatAppEx Help
+1085   0.0   node            
+411    0.0   nearbyd         
+55071  0.0   donotdisturbd   
+49598  0.0   lark-cli        
+23462  0.0   mdworker_shared 
+2249   0.0   searchpartyusera
+53049  0.0   tccd            
+46295  0.0   python3.10      
+115    0.0   apsd            
+99528  0.0   dirhelper       
+98206  0.0   StocksWidget    
+98205  0.0   WorldClockWidget
+98203  0.0   CalendarWidgetEx
+89905  0.0   aned            
+81714  0.0   biometrickitd   
+78570  0.0   itunescloudd    
+77475  0.0   trustd          
+76588  0.0   MTLCompilerServi
+69812  0.0   sysextd         
+68234  0.0   hidd            
+68227  0.0   ioupsd          
+66482  0.0   WeatherWidget   
+63119  0.0   crash_handler   
+62212  0.0   ReportCrash     
+62013  0.0   XProtectPluginSe
+62012  0.0   XProtect        
+61937  0.0   XProtectPluginSe
+61936  0.0   XProtect        
+61902  0.0   cloudphotod     
+61885  0.0   photoanalysisd  
+61863  0.0   PlugInLibrarySer
+61856  0.0   ScopedBookmarkAg
+61853  0.0   endpointsecurity
+61852  0.0   photolibraryd   
+61763  0.0   proactiveeventtr
+61762  0.0   dprivacyd       
+61694  0.0   CoreSpotlightSer
+56967  0.0   biomesyncd      
+56780  0.0   amfid           
+56547  0.0   backgroundtaskma
+55611  0.0   logd_helper     
+55370  0.0   PowerUIAgent    
+55324  0.0   sysmond         
+55260  0.0   CMFSyncAgent    
+55255  0.0   fmfd            
+55236  0.0   com.apple.audio.
+55234  0.0   calaccessd      
+55233  0.0   CarbonComponentS
+55221  0.0   TrustedPeersHelp
+55210  0.0   cdpd            
+55160  0.0   pbs             
+55159  0.0   axassetsd       
+55101  0.0   adid            
+55097  0.0   akd             
+55090  0.0   AssetCacheLocato
+55085  0.0   homed           
+55084  0.0   MTLAssetUpgrader
+55081  0.0   neagent         
+55072  0.0   nehelper        
+55070  0.0   ContainerMetadat
+55069  0.0   siriknowledged  
+55068  0.0   mobiletimerd    
+55066  0.0   networkservicepr
+54883  0.0   com.apple.CodeSi
+54807  0.0   containermanager
+54805  0.0   trustdFileHelper
+54801  0.0   trustd          
+54796  0.0   mapspushd       
+54791  0.0   com.apple.geod  
+54650  0.0   csnameddatad    
+54645  0.0   fileproviderd   
+54642  0.0   sandboxd        
+54625  0.0   pkd             
+54621  0.0   deleted         
+54614  0.0   coreduetd       
+54609  0.0   smd             
+54599  0.0   containermanager
+54592  0.0   nfcd            
+54591  0.0   com.apple.geod  
+54449  0.0   keyboardservices
+54405  0.0   usermanagerd    
+53921  0.0   secinitd        
+53468  0.0   countryd        
+53326  0.0   coresymbolicatio
+53198  0.0   wifip2pd        
+53131  0.0   backupd         
+53129  0.0   online-authd    
+53124  0.0   contactsd       
+53120  0.0   syncdefaultsd   
+52881  0.0   dmd             
+52712  0.0   tccd            
+52358  0.0   UsageTrackingAge
+52108  0.0   routined        
+49736  0.0   suggestd        
+49559  0.0   node            
+49032  0.0   knowledge-agent 
+49027  0.0   biomed          
+48769  0.0   triald          
+48767  0.0   backupd-helper  
+48697  0.0   deleted_helper  
+48676  0.0   swcd            
+48444  0.0   WirelessRadioMan
+48311  0.0   accountsd       
+46259  0.0   CVMServer       
+46142  0.0   bash            
+44099  0.0   python3.10      
+44044  0.0   netbiosd        
+43931  0.0   installd        
+43930  0.0   system_installd 
+43925  0.0   softwareupdated 
+43537  0.0   mobileassetd    
+41160  0.0   storedownloadd  
+35224  0.0   ssh-agent       
+26115  0.0   lark-cli        
+26113  0.0   lark-cli        
+26112  0.0   node            
+26111  0.0   mdworker_shared 
+26110  0.0   node            
+25828  0.0   sleep           
+25827  0.0   bash            
+25748  0.0   bash            
+24120  0.0   mdworker_shared 
+23911  0.0   bash            
+23899  0.0   bash            
+20739  0.0   FindMyMacd      
+20672  0.0   findmydeviced   
+16199  0.0   ContextService  
+16163  0.0   CategoriesServic
+16145  0.0   headless_shell  
+16144  0.0   headless_shell  
+16143  0.0   headless_shell  
+16140  0.0   headless_shell  
+8157   0.0   WeChatHelper    
+8156   0.0   WeChatAppEx Help
+8128   0.0   WeChatHelper    
+7610   0.0   crashpad_handler
+7431   0.0   fbahelperd      
+6523   0.0   Electron Helper 
+6503   0.0   com.apple.audio.
+6378   0.0   spindump_agent  
+6357   0.0   VTEncoderXPCServ
+5883   0.0   Electron Helper 
+4982   0.0   com.apple.audio.
+4981   0.0   zsh             
+4980   0.0   AudioComponentRe
+4978   0.0   login           
+4353   0.0   mdwrite         
+3959   0.0   mdsync          
+3882   0.0   ospredictiond   
+2932   0.0   mdbulkimport    
+2554   0.0   trustd          
+2294   0.0   distnoted       
+1841   0.0   node            
+1838   0.0   ChatGPT for Chro
+1713   0.0   chrome_crashpad_
+1532   0.0   CrashReporterSup
+1487   0.0   distnoted       
+1103   0.0   node            
+1087   0.0   sed             
+1086   0.0   sed             
+1082   0.0   bash            
+1081   0.0   bash            
+1031   0.0   distnoted       
+798    0.0   zsh             
+796    0.0   login           
+759    0.0   mdbulkimport    
+677    0.0   distnoted       
+593    0.0   commerce        
+569    0.0   mediaremoteagent
+566    0.0   seserviced      
+555    0.0   fairplayd       
+536    0.0   ollama          
+534    0.0   SubmitDiagInfo  
+523    0.0   spindump        
+508    0.0   corespotlightd  
+501    0.0   ScreenTimeAgent 
+492    0.0   passd           
+486    0.0   ctkahp          
+473    0.0   imagent         
+468    0.0   Squirrel        
+465    0.0   icdd            
+462    0.0   bash            
+454    0.0   caffeinate      
+447    0.0   fontworker      
+441    0.0   AMPDeviceDiscove
+433    0.0   automountd      
+430    0.0   sharingd        
+429    0.0   rapportd        
+428    0.0   identityservices
+423    0.0   cloudd          
+419    0.0   bird            
+413    0.0   filecoordination
+395    0.0   usernoted       
+383    0.0   UserEventAgent  
+381    0.0   securityd_servic
+367    0.0   IOUserBluetoothS
+366    0.0   IOUserBluetoothS
+363    0.0   com.apple.Ambien
+358    0.0   distnoted       
+352    0.0   distnoted       
+337    0.0   ctkahp          
+335    0.0   distnoted       
+299    0.0   distnoted       
+293    0.0   distnoted       
+288    0.0   searchpartyd    
+285    0.0   distnoted       
+280    0.0   cron            
+278    0.0   thermald        
+277    0.0   com.apple.AppleU
+276    0.0   com.apple.Driver
+271    0.0   eoshostd        
+265    0.0   UVCAssistant    
+262    0.0   wifianalyticsd  
+259    0.0   distnoted       
+253    0.0   distnoted       
+242    0.0   distnoted       
+241    0.0   suhelperd       
+229    0.0   diskmanagementd 
+224    0.0   awdd            
+208    0.0   systemstatusd   
+206    0.0   xartstorageremot
+201    0.0   airportd        
+197    0.0   distnoted       
+192    0.0   apfsd           
+183    0.0   distnoted       
+162    0.0   syspolicyd      
+152    0.0   lsd             
+140    0.0   corebrightnessd 
+134    0.0   KernelEventAgent
+133    0.0   revisiond       
+132    0.0   logind          
+128    0.0   distnoted       
+125    0.0   displaypolicyd  
+124    0.0   autofsd         
+120    0.0   auditd          
+118    0.0   usbmuxd         
+117    0.0   timed           
+113    0.0   thermalmonitord 
+110    0.0   syslogd         
+105    0.0   kernelmanagerd  
+99     0.0   watchdogd       
+94     0.0   remoted         
+84     0.0   systemstats     
+79     0.0   uninstalld      
+76     0.0   UserEventAgent  
+Processes: 445 total, 8 running, 11 stuck, 426 sleeping, 2730 threads 
+2026/11/16 04:16:47
+Load Avg: 31.77, 26.28, 17.26 
+CPU usage: 43.92% user, 23.89% sys, 32.18% idle 
+SharedLibs: 276M resident, 56M data, 21M linkedit.
+MemRegions: 488001 total, 2578M resident, 69M private, 2031M shared.
+PhysMem: 15G used (9905M wired, 221M compressor), 596M unused.
+VM: 52T vsize, 3569M framework vsize, 48268919(3825) swapins, 54312764(0) swapouts.
+Networks: packets: 17376826/12G in, 15706728/10G out.
+Disks: 6372252/261G read, 5312700/274G written.
+
+PID    %CPU  COMMAND         
+5882   173.7 Electron Helper 
+90325  109.9 Google Chrome He
+1717   54.2  Google Chrome He
+143    41.5  WindowServer    
+5888   26.5  Electron Helper 
+0      23.6  kernel_task     
+25830  10.6  top             
+119    8.0   securityd       
+204    7.4   VDCAssistant    
+6505   7.1   Electron Helper 
+2299   6.5   VTDecoderXPCServ
+622    5.9   FlClashCore     
+26115  5.6   lark-cli        
+190    5.5   coreaudiod      
+1550   4.0   Google Chrome   
+49083  3.8   node            
+501    3.6   ScreenTimeAgent 
+52129  3.3   mediaremoted    
+618    3.1   FlClash         
+415    2.4   NotificationCent
+5880   2.3   Electron        
+211    2.3   ToDesk_Service  
+6524   1.6   Electron Helper 
+457    1.5   ContextStoreAgen
+7608   1.5   WeChat          
+60091  1.4   ScreenTimeWidget
+73606  1.4   Google Chrome He
+26111  1.3   mdworker_shared 
+164    1.2   runningboardd   
+247    1.1   symptomsd       
+126    1.1   dasd            
+1084   1.1   python3.10      
+63147  1.1   plugin_host-3.8 
+1      1.1   launchd         
+407    1.1   trustd          
+63146  1.0   plugin_host-3.3 
+117    0.8   timed           
+53125  0.7   com.apple.audio.
+48529  0.7   coreauthd       
+53072  0.6   com.apple.audio.
+212    0.5   mDNSResponder   
+74     0.4   logd            
+1718   0.4   Google Chrome He
+80     0.4   fseventsd       
+295    0.4   mds_stores      
+25964  0.4   mdworker_shared 
+382    0.4   cfprefsd        
+138    0.3   notifyd         
+16134  0.3   node            
+114    0.3   opendirectoryd  
+76     0.3   UserEventAgent  
+49022  0.3   ctkd            
+1794   0.2   Google Chrome He
+201    0.2   airportd        
+103    0.2   mds             
+589    0.1   rtcreportingd   
+575    0.1   CAReportingServi
+144    0.1   cfprefsd        
+149    0.1   contextstored   
+49570  0.1   lark-cli        
+55085  0.1   homed           
+53198  0.1   wifip2pd        
+379    0.1   distnoted       
+63114  0.1   sublime_text    
+73770  0.1   Obsidian Helper 
+394    0.1   lsd             
+56701  0.1   Google Chrome He
+147    0.1   analyticsd      
+49032  0.0   knowledge-agent 
+128    0.0   distnoted       
+402    0.0   Finder          
+49020  0.0   secd            
+88     0.0   powerd          
+155    0.0   coreservicesd   
+336    0.0   coreauthd       
+122    0.0   locationd       
+251    0.0   audioclocksyncd 
+24843  0.0   mdworker_shared 
+25961  0.0   mdworker_shared 
+25958  0.0   mdworker_shared 
+23035  0.0   mdworker_shared 
+25963  0.0   mdworker_shared 
+23454  0.0   mdworker_shared 
+4716   0.0   SogouInput      
+137    0.0   bluetoothd      
+23472  0.0   mdworker_shared 
+25850  0.0   mdworker_shared 
+7674   0.0   WeChatAppEx     
+4347   0.0   Typora          
+116    0.0   launchservicesd 
+312    0.0   TouchBarServer  
+60090  0.0   extensionkitserv
+55064  0.0   assistantd      
+400    0.0   ControlCenter   
+1719   0.0   Google Chrome He
+477    0.0   diagnostics_agen
+99     0.0   watchdogd       
+86     0.0   configd         
+569    0.0   mediaremoteagent
+483    0.0   Python          
+48444  0.0   WirelessRadioMan
+490    0.0   lockoutagent    
+24823  0.0   Google Chrome He
+193    0.0   nsurlsessiond   
+16135  0.0   headless_shell  
+79     0.0   uninstalld      
+48448  0.0   trustd          
+263    0.0   com.obsproject.o
+183    0.0   distnoted       
+8206   0.0   XPlayer         
+2112   0.0   Google Chrome He
+259    0.0   distnoted       
+253    0.0   distnoted       
+293    0.0   distnoted       
+88557  0.0   Google Chrome He
+249    0.0   mDNSResponderHel
+1841   0.0   node            
+285    0.0   distnoted       
+84     0.0   systemstats     
+60109  0.0   UIKitSystem     
+197    0.0   distnoted       
+428    0.0   identityservices
+65985  0.0   WeChatAppEx Help
+242    0.0   distnoted       
+23462  0.0   mdworker_shared 
+299    0.0   distnoted       
+46295  0.0   python3.10      
+493    0.0   Spotlight       
+335    0.0   distnoted       
+5883   0.0   Electron Helper 
+6501   0.0   Electron Helper 
+59080  0.0   WeChatAppEx Help
+8156   0.0   WeChatAppEx Help
+507    0.0   SogouWBInput    
+8343   0.0   WeChatAppEx Help
+352    0.0   distnoted       
+115    0.0   apsd            
+52798  0.0   GameControllerMa
+411    0.0   nearbyd         
+52739  0.0   SecurityPrivacyE
+48311  0.0   accountsd       
+2249   0.0   searchpartyusera
+55068  0.0   mobiletimerd    
+52786  0.0   ClassroomSetting
+358    0.0   distnoted       
+73767  0.0   Obsidian Helper 
+2294   0.0   distnoted       
+677    0.0   distnoted       
+1487   0.0   distnoted       
+480    0.0   App Cleaner Moni
+1031   0.0   distnoted       
+52795  0.0   MouseExtension  
+525    0.0   EmojiFunctionRow
+52742  0.0   FollowUpSettings
+52791  0.0   ClassKitSettings
+52802  0.0   VPN             
+52713  0.0   AppleIDSettings 
+55324  0.0   sysmond         
+52784  0.0   TrackpadExtensio
+52787  0.0   WalletSettingsEx
+52741  0.0   HeadphoneSetting
+522    0.0   PAH_Extension   
+52783  0.0   PowerPreferences
+52740  0.0   Touch ID & Passw
+52792  0.0   CDs & DVDs Setti
+55097  0.0   akd             
+52780  0.0   FamilySettings  
+484    0.0   App Cleaner Help
+73521  0.0   Google Chrome He
+99528  0.0   dirhelper       
+98206  0.0   StocksWidget    
+98205  0.0   WorldClockWidget
+98203  0.0   CalendarWidgetEx
+90339  0.0   Google Chrome He
+89905  0.0   aned            
+87023  0.0   talagent        
+81714  0.0   biometrickitd   
+78583  0.0   amsengagementd  
+78580  0.0   amsaccountsd    
+78570  0.0   itunescloudd    
+77475  0.0   trustd          
+76588  0.0   MTLCompilerServi
+73768  0.0   Obsidian Helper 
+73765  0.0   Obsidian        
+69812  0.0   sysextd         
+68234  0.0   hidd            
+68227  0.0   ioupsd          
+66482  0.0   WeatherWidget   
+66042  0.0   SoftwareUpdateNo
+65986  0.0   WeChatAppEx     
+63119  0.0   crash_handler   
+62212  0.0   ReportCrash     
+62013  0.0   XProtectPluginSe
+62012  0.0   XProtect        
+61937  0.0   XProtectPluginSe
+61936  0.0   XProtect        
+61902  0.0   cloudphotod     
+61885  0.0   photoanalysisd  
+61882  0.0   CoreServicesUIAg
+61863  0.0   PlugInLibrarySer
+61856  0.0   ScopedBookmarkAg
+61853  0.0   endpointsecurity
+61852  0.0   photolibraryd   
+61763  0.0   proactiveeventtr
+61762  0.0   dprivacyd       
+61694  0.0   CoreSpotlightSer
+60110  0.0   iconservicesd   
+60108  0.0   iconservicesagen
+56967  0.0   biomesyncd      
+56780  0.0   amfid           
+56547  0.0   backgroundtaskma
+55611  0.0   logd_helper     
+55553  0.0   JavaUpdater     
+55370  0.0   PowerUIAgent    
+55260  0.0   CMFSyncAgent    
+55255  0.0   fmfd            
+55236  0.0   com.apple.audio.
+55234  0.0   calaccessd      
+55233  0.0   CarbonComponentS
+55226  0.0   AudioComponentRe
+55221  0.0   TrustedPeersHelp
+55210  0.0   cdpd            
+55160  0.0   pbs             
+55159  0.0   axassetsd       
+55106  0.0   PerfPowerService
+55101  0.0   adid            
+55090  0.0   AssetCacheLocato
+55084  0.0   MTLAssetUpgrader
+55081  0.0   neagent         
+55072  0.0   nehelper        
+55071  0.0   donotdisturbd   
+55070  0.0   ContainerMetadat
+55069  0.0   siriknowledged  
+55066  0.0   networkservicepr
+55065  0.0   siriactionsd    
+54883  0.0   com.apple.CodeSi
+54879  0.0   OSDUIHelper     
+54807  0.0   containermanager
+54805  0.0   trustdFileHelper
+54801  0.0   trustd          
+54796  0.0   mapspushd       
+54791  0.0   com.apple.geod  
+54650  0.0   csnameddatad    
+54645  0.0   fileproviderd   
+54642  0.0   sandboxd        
+54625  0.0   pkd             
+54621  0.0   deleted         
+54614  0.0   coreduetd       
+54609  0.0   smd             
+54599  0.0   containermanager
+54592  0.0   nfcd            
+54591  0.0   com.apple.geod  
+54449  0.0   keyboardservices
+54405  0.0   usermanagerd    
+53921  0.0   secinitd        
+53468  0.0   countryd        
+53326  0.0   coresymbolicatio
+53131  0.0   backupd         
+53129  0.0   online-authd    
+53124  0.0   contactsd       
+53120  0.0   syncdefaultsd   
+53118  0.0   callservicesd   
+53112  0.0   CommCenter      
+53111  0.0   contentlinkingd 
+53085  0.0   Keychain Circle 
+53084  0.0   com.apple.hiserv
+53067  0.0   CoreLocationAgen
+53049  0.0   tccd            
+52881  0.0   dmd             
+52793  0.0   Family          
+52712  0.0   tccd            
+52701  0.0   System Settings 
+52358  0.0   UsageTrackingAge
+52108  0.0   routined        
+49736  0.0   suggestd        
+49643  0.0   AppleSpell      
+49598  0.0   lark-cli        
+49559  0.0   node            
+49027  0.0   biomed          
+48769  0.0   triald          
+48767  0.0   backupd-helper  
+48697  0.0   deleted_helper  
+48676  0.0   swcd            
+46259  0.0   CVMServer       
+46142  0.0   bash            
+44099  0.0   python3.10      
+44044  0.0   netbiosd        
+43931  0.0   installd        
+43930  0.0   system_installd 
+43925  0.0   softwareupdated 
+43537  0.0   mobileassetd    
+41160  0.0   storedownloadd  
+36520  0.0   PowerChime      
+35224  0.0   ssh-agent       
+26112  0.0   node            
+25828  0.0   sleep           
+25827  0.0   bash            
+25748  0.0   bash            
+25476  0.0   bash            
+24120  0.0   mdworker_shared 
+23911  0.0   bash            
+23899  0.0   bash            
+20739  0.0   FindMyMacd      
+20672  0.0   findmydeviced   
+16199  0.0   ContextService  
+16165  0.0   storekitagent   
+16163  0.0   CategoriesServic
+16145  0.0   headless_shell  
+16144  0.0   headless_shell  
+16143  0.0   headless_shell  
+16140  0.0   headless_shell  
+16137  0.0   headless_shell  
+16136  0.0   headless_shell  
+8213   0.0   WeChatAppEx Help
+8162   0.0   WeChatAppEx Help
+8157   0.0   WeChatHelper    
+8128   0.0   WeChatHelper    
+7695   0.0   WeChatAppEx Help
+7694   0.0   WeChatAppEx Help
+7610   0.0   crashpad_handler
+7431   0.0   fbahelperd      
+6523   0.0   Electron Helper 
+6503   0.0   com.apple.audio.
+6378   0.0   spindump_agent  
+6357   0.0   VTEncoderXPCServ
+4982   0.0   com.apple.audio.
+4981   0.0   zsh             
+4980   0.0   AudioComponentRe
+4979   0.0   systemsoundserve
+4978   0.0   login           
+4353   0.0   mdwrite         
+3959   0.0   mdsync          
+3882   0.0   ospredictiond   
+2932   0.0   mdbulkimport    
+2554   0.0   trustd          
+2253   0.0   UserNotification
+2247   0.0   studentd        
+2131   0.0   universalAccessA
+1838   0.0   ChatGPT for Chro
+1796   0.0   Google Chrome He
+1793   0.0   Google Chrome He
+1791   0.0   Google Chrome He
+1775   0.0   Google Chrome He
+1713   0.0   chrome_crashpad_
+1532   0.0   CrashReporterSup
+1103   0.0   node            
+1087   0.0   sed             
+1086   0.0   sed             
+1085   0.0   node            
+1082   0.0   bash            
+1081   0.0   bash            
+798    0.0   zsh             
+796    0.0   login           
+795    0.0   Terminal        
+759    0.0   mdbulkimport    
+596    0.0   taskgated       
+593    0.0   commerce        
+574    0.0   avconferenced   
+566    0.0   seserviced      
+555    0.0   fairplayd       
+536    0.0   ollama          
+534    0.0   SubmitDiagInfo  
+523    0.0   spindump        
+518    0.0   Ollama          
+514    0.0   familycircled   
+513    0.0   com.apple.dock.e
+508    0.0   corespotlightd  
+504    0.0   com.apple.dock.e
+502    0.0   useractivityd   
+500    0.0   WiFiAgent       
+492    0.0   passd           
+489    0.0   nsurlsessiond   
+488    0.0   ControlStrip    
+486    0.0   ctkahp          
+479    0.0   TextInputMenuAge
+473    0.0   imagent         
+472    0.0   AirPlayUIAgent  
+468    0.0   Squirrel        
+466    0.0   Python          
+465    0.0   icdd            
+462    0.0   bash            
+461    0.0   imklaunchagent  
+454    0.0   caffeinate      
+453    0.0   corespeechd     
+451    0.0   wpslaunchhelper 
+447    0.0   fontworker      
+443    0.0   fontd           
+441    0.0   AMPDeviceDiscove
+434    0.0   replayd         
+433    0.0   automountd      
+431    0.0   BiomeAgent      
+430    0.0   sharingd        
+429    0.0   rapportd        
+426    0.0   ViewBridgeAuxili
+425    0.0   sharedfilelistd 
+423    0.0   cloudd          
+419    0.0   bird            
+413    0.0   filecoordination
+412    0.0   pboard          
+401    0.0   SystemUIServer  
+399    0.0   Dock            
+395    0.0   usernoted       
+391    0.0   WindowManager   
+388    0.0   ContinuityCaptur
+383    0.0   UserEventAgent  
+381    0.0   securityd_servic
+367    0.0   IOUserBluetoothS
+366    0.0   IOUserBluetoothS
+363    0.0   com.apple.Ambien
+362    0.0   systemstats     
+337    0.0   ctkahp          
+317    0.0   appleeventsd    
+288    0.0   searchpartyd    
+280    0.0   cron            
+278    0.0   thermald        
+277    0.0   com.apple.AppleU
+276    0.0   com.apple.Driver
+271    0.0   eoshostd        
+265    0.0   UVCAssistant    
+262    0.0   wifianalyticsd  
+241    0.0   suhelperd       
+229    0.0   diskmanagementd 
+226    0.0   authd           
+224    0.0   awdd            
+208    0.0   systemstatusd   
+206    0.0   xartstorageremot
+192    0.0   apfsd           
+162    0.0   syspolicyd      
+152    0.0   lsd             
+148    0.0   loginwindow     
+142    0.0   com.apple.cmio.r
+141    0.0   AirPlayXPCHelper
+140    0.0   corebrightnessd 
+134    0.0   KernelEventAgent
+133    0.0   revisiond       
+132    0.0   logind          
+125    0.0   displaypolicyd  
+124    0.0   autofsd         
+120    0.0   auditd          
+118    0.0   usbmuxd         
+113    0.0   thermalmonitord 
+110    0.0   syslogd         
+106    0.0   diskarbitrationd
+105    0.0   kernelmanagerd  
+94     0.0   remoted         
+Processes: 446 total, 13 running, 12 stuck, 421 sleeping, 2619 threads 
+2026/11/16 04:16:50
+Load Avg: 30.03, 26.01, 17.22 
+CPU usage: 46.75% user, 28.72% sys, 24.51% idle 
+SharedLibs: 276M resident, 56M data, 21M linkedit.
+MemRegions: 488142 total, 2589M resident, 69M private, 2032M shared.
+PhysMem: 15G used (9913M wired, 233M compressor), 639M unused.
+VM: 52T vsize, 3569M framework vsize, 48271974(3055) swapins, 54312764(0) swapouts.
+Networks: packets: 17377723/12G in, 15707524/10G out.
+Disks: 6372328/261G read, 5312891/274G written.
+
+PID    %CPU  COMMAND         
+5882   154.7 Electron Helper 
+90325  77.4  Google Chrome He
+1717   62.7  Google Chrome He
+143    39.3  WindowServer    
+0      29.3  kernel_task     
+5888   23.6  Electron Helper 
+119    11.8  securityd       
+25830  8.8   top             
+204    8.0   VDCAssistant    
+622    7.9   FlClashCore     
+2299   7.5   VTDecoderXPCServ
+6505   7.1   Electron Helper 
+49083  7.0   node            
+73606  4.7   Google Chrome He
+1550   4.1   Google Chrome   
+190    2.2   coreaudiod      
+5880   2.2   Electron        
+407    2.1   trustd          
+211    2.1   ToDesk_Service  
+247    2.0   symptomsd       
+618    1.9   FlClash         
+48529  1.7   coreauthd       
+7608   1.6   WeChat          
+6524   1.5   Electron Helper 
+48448  1.3   trustd          
+1      1.1   launchd         
+52129  1.1   mediaremoted    
+63147  1.0   plugin_host-3.8 
+63146  1.0   plugin_host-3.3 
+382    1.0   cfprefsd        
+1084   0.9   python3.10      
+74     0.9   logd            
+147    0.9   analyticsd      
+114    0.7   opendirectoryd  
+49022  0.7   ctkd            
+138    0.7   notifyd         
+1718   0.6   Google Chrome He
+212    0.6   mDNSResponder   
+49032  0.6   knowledge-agent 
+80     0.6   fseventsd       
+501    0.6   ScreenTimeAgent 
+402    0.6   Finder          
+144    0.5   cfprefsd        
+117    0.5   timed           
+148    0.5   loginwindow     
+16134  0.3   node            
+76     0.3   UserEventAgent  
+53125  0.3   com.apple.audio.
+126    0.3   dasd            
+103    0.3   mds             
+295    0.3   mds_stores      
+55106  0.2   PerfPowerService
+25963  0.2   mdworker_shared 
+466    0.2   Python          
+25961  0.2   mdworker_shared 
+49020  0.2   secd            
+60091  0.1   ScreenTimeWidget
+336    0.1   coreauthd       
+116    0.1   launchservicesd 
+53072  0.1   com.apple.audio.
+155    0.1   coreservicesd   
+88     0.1   powerd          
+49570  0.1   lark-cli        
+73770  0.1   Obsidian Helper 
+164    0.1   runningboardd   
+457    0.1   ContextStoreAgen
+140    0.0   corebrightnessd 
+63114  0.0   sublime_text    
+379    0.0   distnoted       
+7674   0.0   WeChatAppEx     
+55234  0.0   calaccessd      
+8162   0.0   WeChatAppEx Help
+251    0.0   audioclocksyncd 
+149    0.0   contextstored   
+24843  0.0   mdworker_shared 
+73765  0.0   Obsidian        
+4347   0.0   Typora          
+16135  0.0   headless_shell  
+4716   0.0   SogouInput      
+23472  0.0   mdworker_shared 
+7695   0.0   WeChatAppEx Help
+312    0.0   TouchBarServer  
+25964  0.0   mdworker_shared 
+477    0.0   diagnostics_agen
+490    0.0   lockoutagent    
+8206   0.0   XPlayer         
+25958  0.0   mdworker_shared 
+73767  0.0   Obsidian Helper 
+65985  0.0   WeChatAppEx Help
+8343   0.0   WeChatAppEx Help
+362    0.0   systemstats     
+60108  0.0   iconservicesagen
+25850  0.0   mdworker_shared 
+16136  0.0   headless_shell  
+8213   0.0   WeChatAppEx Help
+525    0.0   EmojiFunctionRow
+65986  0.0   WeChatAppEx     
+483    0.0   Python          
+795    0.0   Terminal        
+53084  0.0   com.apple.hiserv
+434    0.0   replayd         
+484    0.0   App Cleaner Help
+411    0.0   nearbyd         
+60110  0.0   iconservicesd   
+162    0.0   syspolicyd      
+479    0.0   TextInputMenuAge
+507    0.0   SogouWBInput    
+53118  0.0   callservicesd   
+59080  0.0   WeChatAppEx Help
+480    0.0   App Cleaner Moni
+88557  0.0   Google Chrome He
+16165  0.0   storekitagent   
+122    0.0   locationd       
+443    0.0   fontd           
+391    0.0   WindowManager   
+488    0.0   ControlStrip    
+73768  0.0   Obsidian Helper 
+263    0.0   com.obsproject.o
+500    0.0   WiFiAgent       
+399    0.0   Dock            
+453    0.0   corespeechd     
+574    0.0   avconferenced   
+522    0.0   PAH_Extension   
+2112   0.0   Google Chrome He
+6501   0.0   Electron Helper 
+1794   0.0   Google Chrome He
+388    0.0   ContinuityCaptur
+7694   0.0   WeChatAppEx Help
+53112  0.0   CommCenter      
+36520  0.0   PowerChime      
+1719   0.0   Google Chrome He
+46295  0.0   python3.10      
+4979   0.0   systemsoundserve
+1793   0.0   Google Chrome He
+1796   0.0   Google Chrome He
+141    0.0   AirPlayXPCHelper
+317    0.0   appleeventsd    
+8156   0.0   WeChatAppEx Help
+5883   0.0   Electron Helper 
+401    0.0   SystemUIServer  
+2131   0.0   universalAccessA
+16137  0.0   headless_shell  
+2249   0.0   searchpartyusera
+426    0.0   ViewBridgeAuxili
+249    0.0   mDNSResponderHel
+425    0.0   sharedfilelistd 
+412    0.0   pboard          
+52701  0.0   System Settings 
+493    0.0   Spotlight       
+589    0.0   rtcreportingd   
+61882  0.0   CoreServicesUIAg
+66042  0.0   SoftwareUpdateNo
+94     0.0   remoted         
+1775   0.0   Google Chrome He
+461    0.0   imklaunchagent  
+53067  0.0   CoreLocationAgen
+78583  0.0   amsengagementd  
+1791   0.0   Google Chrome He
+400    0.0   ControlCenter   
+518    0.0   Ollama          
+26111  0.0   mdworker_shared 
+489    0.0   nsurlsessiond   
+55065  0.0   siriactionsd    
+451    0.0   wpslaunchhelper 
+78580  0.0   amsaccountsd    
+90339  0.0   Google Chrome He
+99528  0.0   dirhelper       
+98206  0.0   StocksWidget    
+98205  0.0   WorldClockWidget
+98203  0.0   CalendarWidgetEx
+89905  0.0   aned            
+87023  0.0   talagent        
+81714  0.0   biometrickitd   
+78570  0.0   itunescloudd    
+77475  0.0   trustd          
+76588  0.0   MTLCompilerServi
+73521  0.0   Google Chrome He
+69812  0.0   sysextd         
+68234  0.0   hidd            
+68227  0.0   ioupsd          
+66482  0.0   WeatherWidget   
+63119  0.0   crash_handler   
+62212  0.0   ReportCrash     
+62013  0.0   XProtectPluginSe
+62012  0.0   XProtect        
+61937  0.0   XProtectPluginSe
+61936  0.0   XProtect        
+61902  0.0   cloudphotod     
+61885  0.0   photoanalysisd  
+61863  0.0   PlugInLibrarySer
+61856  0.0   ScopedBookmarkAg
+61853  0.0   endpointsecurity
+61852  0.0   photolibraryd   
+61763  0.0   proactiveeventtr
+61762  0.0   dprivacyd       
+61694  0.0   CoreSpotlightSer
+60109  0.0   UIKitSystem     
+60090  0.0   extensionkitserv
+56967  0.0   biomesyncd      
+56780  0.0   amfid           
+56701  0.0   Google Chrome He
+56547  0.0   backgroundtaskma
+55611  0.0   logd_helper     
+55553  0.0   JavaUpdater     
+55370  0.0   PowerUIAgent    
+55324  0.0   sysmond         
+55260  0.0   CMFSyncAgent    
+55255  0.0   fmfd            
+55236  0.0   com.apple.audio.
+55233  0.0   CarbonComponentS
+55226  0.0   AudioComponentRe
+55221  0.0   TrustedPeersHelp
+55210  0.0   cdpd            
+55160  0.0   pbs             
+55159  0.0   axassetsd       
+55101  0.0   adid            
+55097  0.0   akd             
+55090  0.0   AssetCacheLocato
+55085  0.0   homed           
+55084  0.0   MTLAssetUpgrader
+55081  0.0   neagent         
+55072  0.0   nehelper        
+55071  0.0   donotdisturbd   
+55070  0.0   ContainerMetadat
+55069  0.0   siriknowledged  
+55068  0.0   mobiletimerd    
+55066  0.0   networkservicepr
+55064  0.0   assistantd      
+54883  0.0   com.apple.CodeSi
+54879  0.0   OSDUIHelper     
+54807  0.0   containermanager
+54805  0.0   trustdFileHelper
+54801  0.0   trustd          
+54796  0.0   mapspushd       
+54791  0.0   com.apple.geod  
+54650  0.0   csnameddatad    
+54645  0.0   fileproviderd   
+54642  0.0   sandboxd        
+54625  0.0   pkd             
+54621  0.0   deleted         
+54614  0.0   coreduetd       
+54609  0.0   smd             
+54599  0.0   containermanager
+54592  0.0   nfcd            
+54591  0.0   com.apple.geod  
+54449  0.0   keyboardservices
+54405  0.0   usermanagerd    
+53921  0.0   secinitd        
+53468  0.0   countryd        
+53326  0.0   coresymbolicatio
+53198  0.0   wifip2pd        
+53131  0.0   backupd         
+53129  0.0   online-authd    
+53124  0.0   contactsd       
+53120  0.0   syncdefaultsd   
+53111  0.0   contentlinkingd 
+53085  0.0   Keychain Circle 
+53049  0.0   tccd            
+52881  0.0   dmd             
+52802  0.0   VPN             
+52798  0.0   GameControllerMa
+52795  0.0   MouseExtension  
+52793  0.0   Family          
+52792  0.0   CDs & DVDs Setti
+52791  0.0   ClassKitSettings
+52787  0.0   WalletSettingsEx
+52786  0.0   ClassroomSetting
+52784  0.0   TrackpadExtensio
+52783  0.0   PowerPreferences
+52780  0.0   FamilySettings  
+52742  0.0   FollowUpSettings
+52741  0.0   HeadphoneSetting
+52740  0.0   Touch ID & Passw
+52739  0.0   SecurityPrivacyE
+52713  0.0   AppleIDSettings 
+52712  0.0   tccd            
+52358  0.0   UsageTrackingAge
+52108  0.0   routined        
+49736  0.0   suggestd        
+49643  0.0   AppleSpell      
+49598  0.0   lark-cli        
+49559  0.0   node            
+49027  0.0   biomed          
+48769  0.0   triald          
+48767  0.0   backupd-helper  
+48697  0.0   deleted_helper  
+48676  0.0   swcd            
+48444  0.0   WirelessRadioMan
+48311  0.0   accountsd       
+46259  0.0   CVMServer       
+46142  0.0   bash            
+44099  0.0   python3.10      
+44044  0.0   netbiosd        
+43931  0.0   installd        
+43930  0.0   system_installd 
+43925  0.0   softwareupdated 
+43537  0.0   mobileassetd    
+41160  0.0   storedownloadd  
+35224  0.0   ssh-agent       
+26132  0.0   node            
+26129  0.0   lark-cli        
+26121  0.0   node            
+25828  0.0   sleep           
+25827  0.0   bash            
+25748  0.0   bash            
+25476  0.0   bash            
+24823  0.0   Google Chrome He
+24120  0.0   mdworker_shared 
+23911  0.0   bash            
+23899  0.0   bash            
+23462  0.0   mdworker_shared 
+23454  0.0   mdworker_shared 
+23035  0.0   mdworker_shared 
+20739  0.0   FindMyMacd      
+20672  0.0   findmydeviced   
+16199  0.0   ContextService  
+16163  0.0   CategoriesServic
+16145  0.0   headless_shell  
+16144  0.0   headless_shell  
+16143  0.0   headless_shell  
+16140  0.0   headless_shell  
+8157   0.0   WeChatHelper    
+8128   0.0   WeChatHelper    
+7610   0.0   crashpad_handler
+7431   0.0   fbahelperd      
+6523   0.0   Electron Helper 
+6503   0.0   com.apple.audio.
+6378   0.0   spindump_agent  
+6357   0.0   VTEncoderXPCServ
+4982   0.0   com.apple.audio.
+4981   0.0   zsh             
+4980   0.0   AudioComponentRe
+4978   0.0   login           
+4353   0.0   mdwrite         
+3959   0.0   mdsync          
+3882   0.0   ospredictiond   
+2932   0.0   mdbulkimport    
+2554   0.0   trustd          
+2294   0.0   distnoted       
+2253   0.0   UserNotification
+2247   0.0   studentd        
+1841   0.0   node            
+1838   0.0   ChatGPT for Chro
+1713   0.0   chrome_crashpad_
+1532   0.0   CrashReporterSup
+1487   0.0   distnoted       
+1103   0.0   node            
+1087   0.0   sed             
+1086   0.0   sed             
+1085   0.0   node            
+1082   0.0   bash            
+1081   0.0   bash            
+1031   0.0   distnoted       
+798    0.0   zsh             
+796    0.0   login           
+759    0.0   mdbulkimport    
+677    0.0   distnoted       
+596    0.0   taskgated       
+593    0.0   commerce        
+575    0.0   CAReportingServi
+569    0.0   mediaremoteagent
+566    0.0   seserviced      
+555    0.0   fairplayd       
+536    0.0   ollama          
+534    0.0   SubmitDiagInfo  
+523    0.0   spindump        
+514    0.0   familycircled   
+513    0.0   com.apple.dock.e
+508    0.0   corespotlightd  
+504    0.0   com.apple.dock.e
+502    0.0   useractivityd   
+492    0.0   passd           
+486    0.0   ctkahp          
+473    0.0   imagent         
+472    0.0   AirPlayUIAgent  
+468    0.0   Squirrel        
+465    0.0   icdd            
+462    0.0   bash            
+454    0.0   caffeinate      
+447    0.0   fontworker      
+441    0.0   AMPDeviceDiscove
+433    0.0   automountd      
+431    0.0   BiomeAgent      
+430    0.0   sharingd        
+429    0.0   rapportd        
+428    0.0   identityservices
+423    0.0   cloudd          
+419    0.0   bird            
+415    0.0   NotificationCent
+413    0.0   filecoordination
+395    0.0   usernoted       
+394    0.0   lsd             
+383    0.0   UserEventAgent  
+381    0.0   securityd_servic
+367    0.0   IOUserBluetoothS
+366    0.0   IOUserBluetoothS
+363    0.0   com.apple.Ambien
+358    0.0   distnoted       
+352    0.0   distnoted       
+337    0.0   ctkahp          
+335    0.0   distnoted       
+299    0.0   distnoted       
+293    0.0   distnoted       
+288    0.0   searchpartyd    
+285    0.0   distnoted       
+280    0.0   cron            
+278    0.0   thermald        
+277    0.0   com.apple.AppleU
+276    0.0   com.apple.Driver
+271    0.0   eoshostd        
+265    0.0   UVCAssistant    
+262    0.0   wifianalyticsd  
+259    0.0   distnoted       
+253    0.0   distnoted       
+242    0.0   distnoted       
+241    0.0   suhelperd       
+229    0.0   diskmanagementd 
+226    0.0   authd           
+224    0.0   awdd            
+208    0.0   systemstatusd   
+206    0.0   xartstorageremot
+201    0.0   airportd        
+197    0.0   distnoted       
+193    0.0   nsurlsessiond   
+192    0.0   apfsd           
+183    0.0   distnoted       
+152    0.0   lsd             
+142    0.0   com.apple.cmio.r
+137    0.0   bluetoothd      
+134    0.0   KernelEventAgent
+133    0.0   revisiond       
+132    0.0   logind          
+128    0.0   distnoted       
+125    0.0   displaypolicyd  
+124    0.0   autofsd         
+120    0.0   auditd          
+118    0.0   usbmuxd         
+115    0.0   apsd            
+113    0.0   thermalmonitord 
+110    0.0   syslogd         
+106    0.0   diskarbitrationd
+105    0.0   kernelmanagerd  
+99     0.0   watchdogd       
+86     0.0   configd         
+84     0.0   systemstats     
+79     0.0   uninstalld      
+Processes: 447 total, 7 running, 11 stuck, 429 sleeping, 2611 threads 
+2026/11/16 04:16:52
+Load Avg: 30.03, 26.01, 17.22 
+CPU usage: 45.21% user, 27.19% sys, 27.59% idle 
+SharedLibs: 276M resident, 56M data, 21M linkedit.
+MemRegions: 488271 total, 2605M resident, 69M private, 2034M shared.
+PhysMem: 15G used (9926M wired, 243M compressor), 699M unused.
+VM: 52T vsize, 3569M framework vsize, 48274593(2619) swapins, 54312764(0) swapouts.
+Networks: packets: 17379031/12G in, 15708547/10G out.
+Disks: 6372484/261G read, 5312894/274G written.
+
+PID    %CPU  COMMAND         
+5882   159.6 Electron Helper 
+90325  79.9  Google Chrome He
+1717   61.1  Google Chrome He
+143    42.1  WindowServer    
+5888   23.8  Electron Helper 
+0      22.9  kernel_task     
+49083  16.8  node            
+119    10.6  securityd       
+622    10.1  FlClashCore     
+25830  9.1   top             
+6505   7.2   Electron Helper 
+2299   7.0   VTDecoderXPCServ
+204    7.0   VDCAssistant    
+190    5.2   coreaudiod      
+52129  3.1   mediaremoted    
+7608   3.1   WeChat          
+5880   2.3   Electron        
+211    2.2   ToDesk_Service  
+618    2.0   FlClash         
+48529  1.5   coreauthd       
+6524   1.5   Electron Helper 
+1718   1.4   Google Chrome He
+247    1.3   symptomsd       
+49032  1.2   knowledge-agent 
+407    1.2   trustd          
+48448  1.2   trustd          
+63147  1.0   plugin_host-3.8 
+63146  1.0   plugin_host-3.3 
+1      0.9   launchd         
+1084   0.9   python3.10      
+1550   0.9   Google Chrome   
+53125  0.8   com.apple.audio.
+23472  0.7   mdworker_shared 
+49022  0.7   ctkd            
+147    0.7   analyticsd      
+138    0.6   notifyd         
+114    0.6   opendirectoryd  
+212    0.4   mDNSResponder   
+144    0.4   cfprefsd        
+53072  0.4   com.apple.audio.
+74     0.4   logd            
+382    0.3   cfprefsd        
+16134  0.3   node            
+7610   0.3   crashpad_handler
+80     0.3   fseventsd       
+501    0.2   ScreenTimeAgent 
+25958  0.2   mdworker_shared 
+466    0.2   Python          
+25964  0.2   mdworker_shared 
+201    0.2   airportd        
+49020  0.1   secd            
+73770  0.1   Obsidian Helper 
+295    0.1   mds_stores      
+49570  0.1   lark-cli        
+60091  0.1   ScreenTimeWidget
+73606  0.1   Google Chrome He
+103    0.1   mds             
+379    0.1   distnoted       
+53198  0.1   wifip2pd        
+402    0.1   Finder          
+336    0.0   coreauthd       
+55085  0.0   homed           
+128    0.0   distnoted       
+8162   0.0   WeChatAppEx Help
+155    0.0   coreservicesd   
+251    0.0   audioclocksyncd 
+1794   0.0   Google Chrome He
+477    0.0   diagnostics_agen
+23454  0.0   mdworker_shared 
+55106  0.0   PerfPowerService
+137    0.0   bluetoothd      
+4716   0.0   SogouInput      
+60109  0.0   UIKitSystem     
+116    0.0   launchservicesd 
+24843  0.0   mdworker_shared 
+7674   0.0   WeChatAppEx     
+55064  0.0   assistantd      
+23035  0.0   mdworker_shared 
+63114  0.0   sublime_text    
+25850  0.0   mdworker_shared 
+400    0.0   ControlCenter   
+312    0.0   TouchBarServer  
+25961  0.0   mdworker_shared 
+490    0.0   lockoutagent    
+126    0.0   dasd            
+457    0.0   ContextStoreAgen
+25963  0.0   mdworker_shared 
+88557  0.0   Google Chrome He
+569    0.0   mediaremoteagent
+149    0.0   contextstored   
+507    0.0   SogouWBInput    
+48444  0.0   WirelessRadioMan
+483    0.0   Python          
+53112  0.0   CommCenter      
+55068  0.0   mobiletimerd    
+2112   0.0   Google Chrome He
+88     0.0   powerd          
+122    0.0   locationd       
+411    0.0   nearbyd         
+23462  0.0   mdworker_shared 
+162    0.0   syspolicyd      
+16137  0.0   headless_shell  
+263    0.0   com.obsproject.o
+4347   0.0   Typora          
+6501   0.0   Electron Helper 
+242    0.0   distnoted       
+117    0.0   timed           
+394    0.0   lsd             
+253    0.0   distnoted       
+8343   0.0   WeChatAppEx Help
+502    0.0   useractivityd   
+415    0.0   NotificationCent
+65986  0.0   WeChatAppEx     
+1031   0.0   distnoted       
+183    0.0   distnoted       
+65985  0.0   WeChatAppEx Help
+56701  0.0   Google Chrome He
+8213   0.0   WeChatAppEx Help
+451    0.0   wpslaunchhelper 
+299    0.0   distnoted       
+293    0.0   distnoted       
+8206   0.0   XPlayer         
+589    0.0   rtcreportingd   
+164    0.0   runningboardd   
+86     0.0   configd         
+2294   0.0   distnoted       
+60090  0.0   extensionkitserv
+197    0.0   distnoted       
+259    0.0   distnoted       
+285    0.0   distnoted       
+335    0.0   distnoted       
+249    0.0   mDNSResponderHel
+358    0.0   distnoted       
+493    0.0   Spotlight       
+16165  0.0   storekitagent   
+2247   0.0   studentd        
+1487   0.0   distnoted       
+677    0.0   distnoted       
+352    0.0   distnoted       
+79     0.0   uninstalld      
+2249   0.0   searchpartyusera
+46295  0.0   python3.10      
+480    0.0   App Cleaner Moni
+24823  0.0   Google Chrome He
+8156   0.0   WeChatAppEx Help
+1791   0.0   Google Chrome He
+484    0.0   App Cleaner Help
+99528  0.0   dirhelper       
+98206  0.0   StocksWidget    
+98205  0.0   WorldClockWidget
+98203  0.0   CalendarWidgetEx
+90339  0.0   Google Chrome He
+89905  0.0   aned            
+87023  0.0   talagent        
+81714  0.0   biometrickitd   
+78583  0.0   amsengagementd  
+78580  0.0   amsaccountsd    
+78570  0.0   itunescloudd    
+77475  0.0   trustd          
+76588  0.0   MTLCompilerServi
+73768  0.0   Obsidian Helper 
+73767  0.0   Obsidian Helper 
+73765  0.0   Obsidian        
+73521  0.0   Google Chrome He
+69812  0.0   sysextd         
+68234  0.0   hidd            
+68227  0.0   ioupsd          
+66482  0.0   WeatherWidget   
+66042  0.0   SoftwareUpdateNo
+63119  0.0   crash_handler   
+62212  0.0   ReportCrash     
+62013  0.0   XProtectPluginSe
+62012  0.0   XProtect        
+61937  0.0   XProtectPluginSe
+61936  0.0   XProtect        
+61902  0.0   cloudphotod     
+61885  0.0   photoanalysisd  
+61882  0.0   CoreServicesUIAg
+61863  0.0   PlugInLibrarySer
+61856  0.0   ScopedBookmarkAg
+61853  0.0   endpointsecurity
+61852  0.0   photolibraryd   
+61763  0.0   proactiveeventtr
+61762  0.0   dprivacyd       
+61694  0.0   CoreSpotlightSer
+60110  0.0   iconservicesd   
+60108  0.0   iconservicesagen
+59080  0.0   WeChatAppEx Help
+56967  0.0   biomesyncd      
+56780  0.0   amfid           
+56547  0.0   backgroundtaskma
+55611  0.0   logd_helper     
+55553  0.0   JavaUpdater     
+55370  0.0   PowerUIAgent    
+55324  0.0   sysmond         
+55260  0.0   CMFSyncAgent    
+55255  0.0   fmfd            
+55236  0.0   com.apple.audio.
+55234  0.0   calaccessd      
+55233  0.0   CarbonComponentS
+55226  0.0   AudioComponentRe
+55221  0.0   TrustedPeersHelp
+55210  0.0   cdpd            
+55160  0.0   pbs             
+55159  0.0   axassetsd       
+55101  0.0   adid            
+55097  0.0   akd             
+55090  0.0   AssetCacheLocato
+55084  0.0   MTLAssetUpgrader
+55081  0.0   neagent         
+55072  0.0   nehelper        
+55071  0.0   donotdisturbd   
+55070  0.0   ContainerMetadat
+55069  0.0   siriknowledged  
+55066  0.0   networkservicepr
+55065  0.0   siriactionsd    
+54883  0.0   com.apple.CodeSi
+54879  0.0   OSDUIHelper     
+54807  0.0   containermanager
+54805  0.0   trustdFileHelper
+54801  0.0   trustd          
+54796  0.0   mapspushd       
+54791  0.0   com.apple.geod  
+54650  0.0   csnameddatad    
+54645  0.0   fileproviderd   
+54642  0.0   sandboxd        
+54625  0.0   pkd             
+54621  0.0   deleted         
+54614  0.0   coreduetd       
+54609  0.0   smd             
+54599  0.0   containermanager
+54592  0.0   nfcd            
+54591  0.0   com.apple.geod  
+54449  0.0   keyboardservices
+54405  0.0   usermanagerd    
+53921  0.0   secinitd        
+53468  0.0   countryd        
+53326  0.0   coresymbolicatio
+53131  0.0   backupd         
+53129  0.0   online-authd    
+53124  0.0   contactsd       
+53120  0.0   syncdefaultsd   
+53118  0.0   callservicesd   
+53111  0.0   contentlinkingd 
+53085  0.0   Keychain Circle 
+53084  0.0   com.apple.hiserv
+53067  0.0   CoreLocationAgen
+53049  0.0   tccd            
+52881  0.0   dmd             
+52802  0.0   VPN             
+52798  0.0   GameControllerMa
+52795  0.0   MouseExtension  
+52793  0.0   Family          
+52792  0.0   CDs & DVDs Setti
+52791  0.0   ClassKitSettings
+52787  0.0   WalletSettingsEx
+52786  0.0   ClassroomSetting
+52784  0.0   TrackpadExtensio
+52783  0.0   PowerPreferences
+52780  0.0   FamilySettings  
+52742  0.0   FollowUpSettings
+52741  0.0   HeadphoneSetting
+52740  0.0   Touch ID & Passw
+52739  0.0   SecurityPrivacyE
+52713  0.0   AppleIDSettings 
+52712  0.0   tccd            
+52701  0.0   System Settings 
+52358  0.0   UsageTrackingAge
+52108  0.0   routined        
+49736  0.0   suggestd        
+49643  0.0   AppleSpell      
+49598  0.0   lark-cli        
+49559  0.0   node            
+49027  0.0   biomed          
+48769  0.0   triald          
+48767  0.0   backupd-helper  
+48697  0.0   deleted_helper  
+48676  0.0   swcd            
+48311  0.0   accountsd       
+46259  0.0   CVMServer       
+46142  0.0   bash            
+44099  0.0   python3.10      
+44044  0.0   netbiosd        
+43931  0.0   installd        
+43930  0.0   system_installd 
+43925  0.0   softwareupdated 
+43537  0.0   mobileassetd    
+41160  0.0   storedownloadd  
+36520  0.0   PowerChime      
+35224  0.0   ssh-agent       
+26141  0.0   lark-cli        
+26140  0.0   node            
+26137  0.0   lark-cli        
+26136  0.0   node            
+26111  0.0   mdworker_shared 
+25828  0.0   sleep           
+25827  0.0   bash            
+25748  0.0   bash            
+25476  0.0   bash            
+24120  0.0   mdworker_shared 
+23911  0.0   bash            
+23899  0.0   bash            
+20739  0.0   FindMyMacd      
+20672  0.0   findmydeviced   
+16199  0.0   ContextService  
+16163  0.0   CategoriesServic
+16145  0.0   headless_shell  
+16144  0.0   headless_shell  
+16143  0.0   headless_shell  
+16140  0.0   headless_shell  
+16136  0.0   headless_shell  
+16135  0.0   headless_shell  
+8157   0.0   WeChatHelper    
+8128   0.0   WeChatHelper    
+7695   0.0   WeChatAppEx Help
+7694   0.0   WeChatAppEx Help
+7431   0.0   fbahelperd      
+6523   0.0   Electron Helper 
+6503   0.0   com.apple.audio.
+6378   0.0   spindump_agent  
+6357   0.0   VTEncoderXPCServ
+5883   0.0   Electron Helper 
+4982   0.0   com.apple.audio.
+4981   0.0   zsh             
+4980   0.0   AudioComponentRe
+4979   0.0   systemsoundserve
+4978   0.0   login           
+4353   0.0   mdwrite         
+3959   0.0   mdsync          
+3882   0.0   ospredictiond   
+2932   0.0   mdbulkimport    
+2554   0.0   trustd          
+2253   0.0   UserNotification
+2131   0.0   universalAccessA
+1841   0.0   node            
+1838   0.0   ChatGPT for Chro
+1796   0.0   Google Chrome He
+1793   0.0   Google Chrome He
+1775   0.0   Google Chrome He
+1719   0.0   Google Chrome He
+1713   0.0   chrome_crashpad_
+1532   0.0   CrashReporterSup
+1103   0.0   node            
+1087   0.0   sed             
+1086   0.0   sed             
+1085   0.0   node            
+1082   0.0   bash            
+1081   0.0   bash            
+798    0.0   zsh             
+796    0.0   login           
+795    0.0   Terminal        
+759    0.0   mdbulkimport    
+596    0.0   taskgated       
+593    0.0   commerce        
+575    0.0   CAReportingServi
+574    0.0   avconferenced   
+566    0.0   seserviced      
+555    0.0   fairplayd       
+536    0.0   ollama          
+534    0.0   SubmitDiagInfo  
+525    0.0   EmojiFunctionRow
+523    0.0   spindump        
+522    0.0   PAH_Extension   
+518    0.0   Ollama          
+514    0.0   familycircled   
+513    0.0   com.apple.dock.e
+508    0.0   corespotlightd  
+504    0.0   com.apple.dock.e
+500    0.0   WiFiAgent       
+492    0.0   passd           
+489    0.0   nsurlsessiond   
+488    0.0   ControlStrip    
+486    0.0   ctkahp          
+479    0.0   TextInputMenuAge
+473    0.0   imagent         
+472    0.0   AirPlayUIAgent  
+468    0.0   Squirrel        
+465    0.0   icdd            
+462    0.0   bash            
+461    0.0   imklaunchagent  
+454    0.0   caffeinate      
+453    0.0   corespeechd     
+447    0.0   fontworker      
+443    0.0   fontd           
+441    0.0   AMPDeviceDiscove
+434    0.0   replayd         
+433    0.0   automountd      
+431    0.0   BiomeAgent      
+430    0.0   sharingd        
+429    0.0   rapportd        
+428    0.0   identityservices
+426    0.0   ViewBridgeAuxili
+425    0.0   sharedfilelistd 
+423    0.0   cloudd          
+419    0.0   bird            
+413    0.0   filecoordination
+412    0.0   pboard          
+401    0.0   SystemUIServer  
+399    0.0   Dock            
+395    0.0   usernoted       
+391    0.0   WindowManager   
+388    0.0   ContinuityCaptur
+383    0.0   UserEventAgent  
+381    0.0   securityd_servic
+367    0.0   IOUserBluetoothS
+366    0.0   IOUserBluetoothS
+363    0.0   com.apple.Ambien
+362    0.0   systemstats     
+337    0.0   ctkahp          
+317    0.0   appleeventsd    
+288    0.0   searchpartyd    
+280    0.0   cron            
+278    0.0   thermald        
+277    0.0   com.apple.AppleU
+276    0.0   com.apple.Driver
+271    0.0   eoshostd        
+265    0.0   UVCAssistant    
+262    0.0   wifianalyticsd  
+241    0.0   suhelperd       
+229    0.0   diskmanagementd 
+226    0.0   authd           
+224    0.0   awdd            
+208    0.0   systemstatusd   
+206    0.0   xartstorageremot
+193    0.0   nsurlsessiond   
+192    0.0   apfsd           
+152    0.0   lsd             
+148    0.0   loginwindow     
+142    0.0   com.apple.cmio.r
+141    0.0   AirPlayXPCHelper
+140    0.0   corebrightnessd 
+134    0.0   KernelEventAgent
+133    0.0   revisiond       
+132    0.0   logind          
+125    0.0   displaypolicyd  
+124    0.0   autofsd         
+120    0.0   auditd          
+118    0.0   usbmuxd         
+115    0.0   apsd            
+113    0.0   thermalmonitord 
+110    0.0   syslogd         
+106    0.0   diskarbitrationd
+105    0.0   kernelmanagerd  
+99     0.0   watchdogd       
+94     0.0   remoted         
+84     0.0   systemstats     
+76     0.0   UserEventAgent  

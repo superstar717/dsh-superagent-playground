@@ -1,0 +1,5 @@
+[e2e-rec] take1:pick-screen-source ok screen:2077750265:0
+[e2e-rec] take1:control-pill-live FAIL no-bridge-ack
+[e2e-rec] take1:main-window-hidden FAIL 
+[e2e-rec] take1:camera-preview-window-live FAIL no-preview-window
+/Users/huweixing/src/fix-second-stop-865c48b0088f/focusee-clone/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron exited with signal SIGTERM

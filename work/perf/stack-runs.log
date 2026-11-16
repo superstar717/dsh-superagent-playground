@@ -1,0 +1,17 @@
+[measure] codec state: h264 (as committed)
+[measure] launched pid=32187 label=s1-h264-stack codec=h264 cam=0
+[measure] recording live at +14s, main pid=32187
+[measure] electron_main=32202 editor_renderer=32236 gpu=32225
+[measure] app_exit=0 newest=/tmp/hwenc-measure/projects/rec-mwiaa0lh-dbqli
+[measure] probe: h264 Baseline size= 2612986
+[measure] stack-hits VideoToolbox=2
+[measure] done s1-h264-stack
+[measure] codec state: vp9
+[measure] launched pid=32955 label=s2-vp9-stack codec=vp9 cam=0
+[measure] recording live at +63s, main pid=32955
+[measure] electron_main=32962 editor_renderer=32997 gpu=32982
+[measure] app_exit=0 newest=/tmp/hwenc-measure/projects/rec-mwiacrbq-h4gtc
+[measure] probe: vp9 Profile 0 size= 2987686
+[measure] stack-hits VideoToolbox=2
+[measure] done s2-vp9-stack
+STACK_RUNS_DONE
