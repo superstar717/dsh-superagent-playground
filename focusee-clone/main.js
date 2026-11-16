@@ -283,11 +283,32 @@ let lastControlInfo = null;
 function replayControlInfo(win) {
   try {
     if (lastControlInfo) win.webContents.send('control:state', lastControlInfo);
-    if (win === previewWindow && lastControlInfo && lastControlInfo.withCamera) {
+    // Attach only for a take that is actually live: replaying a stale
+    // per-take state after teardown re-acquired the camera for a take that
+    // no longer existed — and nothing ever released it (2026-11-16 leak:
+    // idle instance held the camera 45 minutes, 79,330 frames).
+    if (win === previewWindow && lastControlInfo && lastControlInfo.withCamera && lastControlInfo.startedAt) {
       win.webContents.send('control:attachCamera');
     }
   } catch (err) {
     console.warn('[control] replay failed:', err.message);
+  }
+}
+
+// The preview bubble's own heartbeat about its capture state ({ live, at }).
+// The page reports every 2s and on every attach/release; main only warns —
+// releasing stays the page's job (no cross-window executeJavaScript).
+let lastPreviewCapture = null;
+
+// Zero-capture contract: the moment a take ends, every pill page must drop
+// its media. The preview bubble re-acquired the camera ~8s after a cancelled
+// take and held it forever because its stale per-take state survived the
+// teardown; this is the explicit "take over" signal, and it also neutralises
+// the replayed state so a later page reload cannot re-arm a dead take.
+function broadcastTakeEnded() {
+  lastControlInfo = { startedAt: 0, mic: null, withCamera: false };
+  for (const w of [controlWindow, previewWindow]) {
+    try { if (w && !w.isDestroyed()) w.webContents.send('control:takeEnded'); } catch {}
   }
 }
 
@@ -705,7 +726,15 @@ function registerIpc() {
   ipcMain.on('capture:cancelRequested', () => {
     if (controlWindow && !controlWindow.isDestroyed()) controlWindow.hide();
     if (previewWindow && !previewWindow.isDestroyed()) previewWindow.hide();
+    broadcastTakeEnded();
     if (mainWindow) mainWindow.webContents.send('record:stopRequested', { mode: 'cancel' });
+  });
+
+  ipcMain.on('control:previewCaptureState', (_e, s) => {
+    lastPreviewCapture = { ...(s || {}), at: Date.now() };
+    if (lastPreviewCapture.live && !(lastControlInfo && lastControlInfo.startedAt)) {
+      console.warn('[preview] capture live with no active take');
+    }
   });
 
   ipcMain.handle('capture:hideControl', async () => {
@@ -713,6 +742,7 @@ function registerIpc() {
     // tracks on hide (visibilitychange) — see the note above createControlWindow.
     if (controlWindow && !controlWindow.isDestroyed()) controlWindow.hide();
     if (previewWindow && !previewWindow.isDestroyed()) previewWindow.hide();
+    broadcastTakeEnded();
     if (mainWindow) mainWindow.show();
     return true;
   });
@@ -1125,6 +1155,17 @@ async function runRecordingTake({ win, report, step, wait, evalJs, withCamera, t
     const savedNow = (await listProjects()).filter((p) => p.id !== 'sample').length;
     step(`${tag}:cancel-accepted`, !grew && !!toastText && editorBack,
       `projects=${savedNow} baseline=${baseline} toast=${toastText || 'none'} editor=${editorBack}`);
+    // Zero-capture regression (2026-11-16 leak): the preview bubble
+    // re-acquired the camera ~8s AFTER a cancelled take and held it for 45
+    // minutes. Wait past that re-acquire window and require the bubble's own
+    // heartbeat to report no live capture (a fresh report also proves the
+    // watchdog/event contract is alive, not just quiescent).
+    if (withCamera && previewWindow && !previewWindow.isDestroyed()) {
+      await wait(9000);
+      const cap = lastPreviewCapture;
+      const fresh = !!cap && Date.now() - cap.at < 5000;
+      step(`${tag}:camera-zero-after-cancel`, fresh && cap.live === false, JSON.stringify(cap));
+    }
     return !grew;
   }
   let stopped = 'no-pill';

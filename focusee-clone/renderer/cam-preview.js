@@ -9,6 +9,10 @@
 const $ = (sel) => document.querySelector(sel);
 const state = { startedAt: 0, timer: null, stopped: false };
 
+function reportCaptureState(live) {
+  try { window.focusee.control.reportCaptureState({ live }); } catch {}
+}
+
 function stopPreviewTracks() {
   const v = document.getElementById('cam-video');
   if (v && v.srcObject) {
@@ -16,6 +20,7 @@ function stopPreviewTracks() {
     v.srcObject = null;
   }
   document.getElementById('bubble').classList.add('no-video');
+  reportCaptureState(false);
 }
 
 async function attachCameraPreview() {
@@ -27,10 +32,12 @@ async function attachCameraPreview() {
       audio: false,
     });
     document.getElementById('bubble').classList.remove('no-video');
+    reportCaptureState(true);
   } catch (err) {
     // No camera / busy camera: the recording is unaffected (its capture is a
     // separate one); the bubble just stays as an empty round frame.
     console.warn('[preview] camera unavailable:', err && err.message);
+    reportCaptureState(false);
   }
 }
 
@@ -73,7 +80,36 @@ window.focusee.control.onState((info) => {
   }
 });
 
-window.focusee.control.onAttachCamera(attachCameraPreview);
+// Stray attach requests for a dead take must never re-acquire the camera: a
+// replayed per-take state from a previous recording used to re-arm the bubble
+// after teardown, and nothing released it again (2026-11-16 leak: an idle
+// instance held the camera 45 minutes, 79,330 frames).
+window.focusee.control.onAttachCamera(() => {
+  if (state.startedAt && !state.stopped) attachCameraPreview();
+  else reportCaptureState(false);
+});
+
+// Take over: drop the capture and latch the dead take. The latch (stopped +
+// cleared startedAt) also disarms the visibilitychange re-attach below.
+window.focusee.control.onTakeEnded(() => {
+  state.stopped = true;
+  state.startedAt = 0;
+  stopPreviewTracks();
+});
+
+// Zero-capture watchdog: with no active take, any still-live capture is a
+// leak — release it, whatever path armed it (missed event, stale replay,
+// visibility quirk). Also the capture heartbeat main asserts in e2e.
+setInterval(() => {
+  const v = document.getElementById('cam-video');
+  const live = !!(v && v.srcObject && v.srcObject.getVideoTracks().some((t) => !t.ended && t.readyState === 'live'));
+  if (live && (!state.startedAt || state.stopped)) {
+    console.warn('[preview] watchdog: releasing camera — no active take');
+    stopPreviewTracks();
+    return;
+  }
+  reportCaptureState(live);
+}, 2000);
 
 // PiP live adjust: window position = position in the baked video, ＋/− = size.
 // The editor consumes these via record:pipMoved / record:pipResize.

@@ -92,6 +92,16 @@ contextBridge.exposeInMainWorld('focusee', {
       ipcRenderer.on('control:attachCamera', handler);
       return () => ipcRenderer.removeListener('control:attachCamera', handler);
     },
+    // Explicit "take over" signal: pill pages must drop their media now. The
+    // 2026-11-16 idle-capture leak re-armed a dead take from stale state.
+    onTakeEnded: (cb) => {
+      const handler = () => cb();
+      ipcRenderer.on('control:takeEnded', handler);
+      return () => ipcRenderer.removeListener('control:takeEnded', handler);
+    },
+    // Preview bubble's capture heartbeat ({ live }) — lets main assert the
+    // zero-capture contract without injecting JS into the page.
+    reportCaptureState: (s) => ipcRenderer.send('control:previewCaptureState', s),
     onStopSignal: (cb) => {
       const handler = () => cb();
       ipcRenderer.on('control:stopSignal', handler);

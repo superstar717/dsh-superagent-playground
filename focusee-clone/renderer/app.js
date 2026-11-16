@@ -1151,8 +1151,14 @@ async function startRecording() {
         } catch {}
       };
       drawBakedFrame();
-      bakeRaf = setInterval(drawBakedFrame, 1000 / 30);
-      recordSource = bakeCanvas.captureStream(30);
+      // 15 fps bake (user-approved 2026-11-16): the bake loop is the app's own
+      // biggest cost with PiP on (≈0.3–0.9 core); halving the draw rate halves
+      // it (bench: bake+encode 17.1% → 8.9% of one core, PR #41 baseline) at
+      // the price of slightly less smooth in-take PiP motion. Draw rate and
+      // captureStream cap move together so the recorder never waits on a
+      // faster canvas than we feed it.
+      bakeRaf = setInterval(drawBakedFrame, 1000 / 15);
+      recordSource = bakeCanvas.captureStream(15);
       if (micStream) for (const t of micStream.getAudioTracks()) recordSource.addTrack(t);
     }
     const recorder = new MediaRecorder(recordSource, {
