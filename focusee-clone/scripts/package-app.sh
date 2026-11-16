@@ -49,8 +49,25 @@ cp "$ROOT/node_modules/@mediapipe/tasks-vision/package.json" "$APP_RES/node_modu
 cp "$ROOT/node_modules/@mediapipe/tasks-vision/vision_bundle.cjs" "$APP_RES/node_modules/@mediapipe/tasks-vision/" 2>/dev/null || true
 cp -R "$ROOT/node_modules/@mediapipe/tasks-vision/wasm" "$APP_RES/node_modules/@mediapipe/tasks-vision/wasm" 2>/dev/null || true
 
-echo "④ 本地签名（ad-hoc）…"
-codesign --force --deep --sign - "$APP" 2>/dev/null
+# ④ 签名：默认用自签证书 "FocuSee Clone Dev"（Keychain 已信任）。
+# TCC 授权（屏幕录制/摄像头/麦克风）按「签名身份」记忆：ad-hoc 签名每次重打包
+# 都是全新身份，授权必掉；自签证书身份固定，重打包后授权保持不变。
+# 证书创建/信任方法（一次性）：docs/codesign-selfsigned.md
+SIGN_IDENTITY="${CODESIGN_IDENTITY:-FocuSee Clone Dev}"
+if [ "$SIGN_IDENTITY" = "-" ]; then
+  echo "④ 签名（ad-hoc，显式回退：重打包会丢 TCC 授权）…"
+  codesign --force --deep --sign - "$APP" 2>/dev/null
+else
+  if ! security find-identity -v -p codesigning 2>/dev/null | grep -qF "\"$SIGN_IDENTITY\""; then
+    echo "错误：Keychain 中没有受信任的代码签名身份 \"$SIGN_IDENTITY\"。" >&2
+    echo "  首次创建/信任（一次性）：docs/codesign-selfsigned.md" >&2
+    echo "  临时回退 ad-hoc（会丢 TCC 授权）：CODESIGN_IDENTITY=- $0" >&2
+    exit 1
+  fi
+  echo "④ 签名（自签证书 \"$SIGN_IDENTITY\"，TCC 授权跨重打包稳定）…"
+  codesign --force --deep --sign "$SIGN_IDENTITY" "$APP"
+  codesign --verify --deep --strict "$APP" || { echo "错误：签名校验失败，打包中止" >&2; exit 1; }
+fi
 
 echo "✔ 打包完成：$APP"
 echo "  打开：open \"$APP\""
