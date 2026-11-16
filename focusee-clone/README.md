@@ -38,10 +38,13 @@ npm test             # 11 个几何/自动缩放单元测试
 ### 打包为独立应用
 
 ```sh
-./scripts/package-app.sh   # 产出 build/FocuSee\ Clone.app（改应用身份并 ad-hoc 重签）
+./scripts/package-app.sh   # 产出 build/FocuSee\ Clone.app（改应用身份并用自签证书重签）
 ```
 
-注意：替换 app 二进制后，macOS 的屏幕录制授权需要重授（列表开关关→开 + 重启应用）。
+签名默认用自签证书 `FocuSee Clone Dev`（Keychain 已信任一次）：TCC 授权
+（屏幕录制/摄像头/麦克风）按签名身份记忆，证书签名跨重打包稳定，不再掉授权。
+详见 `docs/codesign-selfsigned.md`。临时回退 ad-hoc（会丢授权）：
+`CODESIGN_IDENTITY=- ./scripts/package-app.sh`。
 
 ### E2E
 
