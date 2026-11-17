@@ -909,17 +909,38 @@ async function openRecordDialog() {
   } catch (err) {
     grid.innerHTML = `<div class="loading">获取失败：${escapeHtml(err.message)}</div>`;
   }
-  // Permission preflight: surface camera/mic state BEFORE the person commits.
+  // Permission preflight: surface screen/camera/mic state BEFORE the person commits.
   try {
     const st = S.info || await window.focusee.info();
-    const badge = (label, v) => {
+    const badge = (label, v, hint) => {
       const ok = v === 'granted';
       const cls = ok ? 'ok' : (v === 'not-determined' || v === 'unknown' ? '' : 'warn');
       const txt = { granted: '已授权', denied: '被拒绝', restricted: '受限', 'not-determined': '待授权', unknown: '未知' }[v] || v;
-      return `<span class="perm-badge ${cls}">${label}：${txt}${ok ? '' : '（勾选后开始录制时会弹授权，请允许）'}</span>`;
+      return `<span class="perm-badge ${cls}">${label}：${txt}${ok ? '' : hint}</span>`;
     };
     const el = $('#perm-status');
-    if (el) el.innerHTML = badge('摄像头', st.cameraStatus || 'unknown') + badge('麦克风', st.micStatus || 'unknown');
+    if (el) {
+      el.innerHTML =
+        badge('屏幕录制', st.screenStatus || 'unknown', '（macOS 不允许应用内弹窗授权，点下方按钮去系统设置开一次）') +
+        badge('摄像头', st.cameraStatus || 'unknown', '（开始录制时会弹授权，请允许）') +
+        badge('麦克风', st.micStatus || 'unknown', '（开始录制时会弹授权，请允许）');
+      // 屏幕录制未授权时给一键直达：开一次（证书签名身份稳定）之后不再提醒。
+      const oldTip = el.parentElement?.querySelector('.screen-perm-tip');
+      if (oldTip) oldTip.remove();
+      if ((st.screenStatus || 'unknown') !== 'granted') {
+        const tip = document.createElement('div');
+        tip.className = 'screen-perm-tip';
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.id = 'btn-open-screen-settings';
+        btn.textContent = '去授权「屏幕录制」（系统设置里开一次即可）';
+        btn.addEventListener('click', () => {
+          window.focusee.openScreenSettings?.().catch(() => {});
+        });
+        tip.appendChild(btn);
+        el.after(tip);
+      }
+    }
   } catch {}
 }
 

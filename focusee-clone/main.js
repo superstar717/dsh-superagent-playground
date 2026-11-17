@@ -527,8 +527,7 @@ function registerIpc() {
     forceBake: process.argv.includes('--force-bake'),
     cameraStatus: systemPreferences.getMediaAccessStatus('camera'),
     micStatus: systemPreferences.getMediaAccessStatus('microphone'),
-    cameraStatus: systemPreferences.getMediaAccessStatus('camera'),
-    micStatus: systemPreferences.getMediaAccessStatus('microphone'),
+    screenStatus: systemPreferences.getMediaAccessStatus('screen'),
     electron: process.versions.electron,
     chrome: process.versions.chrome,
     dataRoot: dataRoot(),
@@ -539,6 +538,14 @@ function registerIpc() {
   }));
 
   ipcMain.handle('projects:list', async () => listProjects());
+
+  ipcMain.handle('app:openScreenSettings', async () => {
+    // 屏幕录制在 macOS 上不允许内联弹窗授权（tccd 日志明示 "does not allow
+    // prompting; returning denied"），只能去系统设置把开关开一次；一键直达面板，
+    // 避免用户在系统提醒里反复打转。开过一次后（证书签名身份稳定）不再提醒。
+    await shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture');
+    return true;
+  });
 
   ipcMain.handle('projects:load', async (_e, id) => loadProject(id));
 

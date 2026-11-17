@@ -460,6 +460,8 @@ input[type="range"]::-webkit-slider-thumb {
 .perm-badge { font-size: 11px; border-radius: 6px; padding: 3px 8px; border: 1px solid var(--line-strong); color: var(--muted); }
 .perm-badge.ok { color: #137a4a; border-color: #a5e2c6; background: #edfaf4; }
 .perm-badge.warn { color: #b25e09; border-color: #ffd9a8; background: #fff7ec; }
+.screen-perm-tip { margin: -4px 0 12px; }
+.screen-perm-tip button { font-size: 12px; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
 .countdown {
   font-size: 120px; font-weight: 800; color: #fff; text-shadow: 0 12px 40px rgba(0,0,0,.35);
   animation: pop .9s ease infinite;

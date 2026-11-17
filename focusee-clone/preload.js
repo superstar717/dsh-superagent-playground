@@ -44,6 +44,7 @@ async function initSegmenter() {
 
 contextBridge.exposeInMainWorld('focusee', {
   info: () => ipcRenderer.invoke('app:info'),
+  openScreenSettings: () => ipcRenderer.invoke('app:openScreenSettings'),
 
   projects: {
     list: () => ipcRenderer.invoke('projects:list'),
