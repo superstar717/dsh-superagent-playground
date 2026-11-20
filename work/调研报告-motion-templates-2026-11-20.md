@@ -71,3 +71,13 @@
 - https://motiongit.com/spec （.motion 开放格式规范 1.0.0-rc.1 candidate）
 - 本机：`~/.local/motiongit-385712/`（README、pkg/render.mjs、pkg/mix.py、kinetic-tech-zh.motion sha256 核验）
 - 既有口径：`~/.local/share/wechat-sph/exports/A3kV93if5a/复盘_口播视频_2026-11-14.md`、`~/.dsh/AGENTS.md` §十六、LESSONS E142
+
+## 九、补充调研（同日追加）：adunext/adu-motion-video（用户指定仓库）
+
+- **仓库实况**：https://github.com/adunext/adu-motion-video 「阿杜的 AI 剪辑 Skill」——973★/105 fork，MIT，创建 2026-09-28，最新提交 2026-11-14「3.14.2-rc.1: export frames as fast lossless PNG through the DevTools protocol」，仍在维护。
+- **定位（README 顶部原文）**：「全系列模板已升级为面向 AI 创作的 MotionGit `.motion` 开放格式」→ 新模板统一从 motiongit.com/@adunext 下载；本仓库保留**旧版 Skill**（SKILL.md v3.14.2-rc.1 + 12 个模板包 `packs/` + `adapters/` + `adaptation-profiles/` + 跨平台 `scripts/pipeline.py`），供已有旧工程沿用，release 提供 v3.14.2-rc.1 zip。
+- **它就是源消息流程的出处之一**：README「开始创作」= 选模板下载 → 发给 AI 助手（附口播/文案/素材）→ 看预览 → 导出 MP4+可编辑工程；助手口径「Codex · Claude Code · Cursor · GitHub Copilot，以及具备相应文件和执行能力的豆包 · DeepSeek · WorkBuddy 等」，与此前对 motiongit.com/use 的核实一致（本仓未点名 Kimi/MiniMax）。
+- **能力**：6 大风格（现代图文口播/纸面透视讲解/深色3D/深色科技控制台/鲜色角色叙事/活力色彩）；**横竖屏都支持**（SKILL.md 自动选型口径：竖屏 11 风格/54 组、横屏 10 风格/47 组）——这一点与 .motion 公开包（仅 #385712 横屏）互补。
+- **渲染同族**：Playwright + Chromium 逐帧 + ffmpeg；3.14.2-rc.1 改用 DevTools 协议快速无损 PNG 导出（作者称解码像素与 screenshot PNG 逐字节一致，docs/export-speed-3.14.2.md）。依赖 Python + FFmpeg + Chromium/Chrome（可选 macOS Vision）。
+- **注意（诚实边界，作者自述）**：①3.14.1 起所有模板导出统一带右上角「成片时间+Circle Logo」角标（references/output-signature.md 有关闭配置）；②「不保证任意新文案能自动无损套用」「experimental 不得当作已验收」，最终以用户同输入 A/B 连续看听为准；③演示视频/封面/历史素材不可复用（THIRD_PARTY.md），字体 OFL 与系统字体（PingFang/SF Mono）另行核对；④可选 Lottie 素材 API 的素材授权需使用前自行确认。
+- **与本机链路的关系**：`packs/kinetic-performance` 与 .motion #385712「Kinetic Tech 酷炫科技风」命名对应（疑似同族，未做包体 diff）；本机渲染栈（Playwright/ffmpeg）一致。**增量结论：竖屏需求可直接用这个 MIT 开源旧版 Skill（免注册），不必等 motiongit.com 官网竖屏版。**
