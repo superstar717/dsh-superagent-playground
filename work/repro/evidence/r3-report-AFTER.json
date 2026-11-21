@@ -1,0 +1,54 @@
+{
+  "steps": [
+    {
+      "name": "pick-screen-source",
+      "ok": true,
+      "extra": "screen:2077750265:0"
+    },
+    {
+      "name": "control-pill-loaded",
+      "ok": true,
+      "extra": "{\"pill\":true,\"visible\":true,\"url\":\"file:///Applications/FocuSee%20Clone.app/Contents/Resources/app/renderer/control.html\",\"bridgeOk\":true}"
+    },
+    {
+      "name": "pill-bridge-alive",
+      "ok": true
+    },
+    {
+      "name": "main-window-hidden-while-recording",
+      "ok": true
+    },
+    {
+      "name": "pill-stop-clicked",
+      "ok": true,
+      "extra": "signalled"
+    },
+    {
+      "name": "save-state",
+      "ok": true,
+      "extra": "done"
+    },
+    {
+      "name": "project-saved",
+      "ok": true,
+      "extra": "录制 11-15 05:23 dur=3.31"
+    }
+  ],
+  "withCamera": false,
+  "stopPhase": "save-started",
+  "project": {
+    "id": "rec-mwgwx889-2rlh6",
+    "name": "录制 11-15 05:23",
+    "createdAt": 1794691401717,
+    "updatedAt": 1794691402118,
+    "duration": 3.31,
+    "videoSize": {
+      "width": 1680,
+      "height": 1050
+    },
+    "videoFile": "recording.webm",
+    "hasAudio": true,
+    "thumb": null,
+    "zoomCount": 1
+  }
+}

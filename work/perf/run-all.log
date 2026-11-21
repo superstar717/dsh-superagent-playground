@@ -1,0 +1,50 @@
+[measure] codec state: vp9
+[measure] launched pid=23933 label=r2-vp9-nocam codec=vp9 cam=0
+[measure] recording live at +40s, main pid=23933
+[measure] electron_main=23953 editor_renderer=24019 gpu=23975
+[measure] app_exit=0 newest=/tmp/hwenc-measure/projects/rec-mwi9y7ur-22b3h
+[measure] probe: 
+[measure] done r2-vp9-nocam
+[measure] codec state: vp9
+[measure] launched pid=25484 label=r3-vp9-nocam codec=vp9 cam=0
+[measure] recording live at +15s, main pid=25484
+[measure] electron_main=25487 editor_renderer=25511 gpu=25497
+[measure] app_exit=0 newest=/tmp/hwenc-measure/projects/rec-mwi9zadw-vktm7
+[measure] probe: 
+[measure] done r3-vp9-nocam
+[measure] codec state: h264 (as committed)
+[measure] launched pid=26204 label=r4-h264-nocam codec=h264 cam=0
+[measure] recording live at +13s, main pid=26204
+[measure] electron_main=26207 editor_renderer=26223 gpu=26214
+[measure] app_exit=0 newest=/tmp/hwenc-measure/projects/rec-mwia0cij-9ty46
+[measure] probe: 
+[measure] done r4-h264-nocam
+[measure] codec state: h264 (as committed)
+[measure] launched pid=26840 label=r5-h264-cam codec=h264 cam=1
+[measure] recording live at +16s, main pid=26840
+[measure] electron_main=26844 editor_renderer=26872 gpu=26863
+[measure] app_exit=1 newest=/tmp/hwenc-measure/projects/rec-mwia1pgg-3282x
+[measure] probe: 
+[measure] done r5-h264-cam
+[measure] codec state: vp9
+[measure] launched pid=27524 label=r6-vp9-cam codec=vp9 cam=1
+[measure] recording live at +15s, main pid=27524
+[measure] electron_main=27527 editor_renderer=27548 gpu=27536
+[measure] app_exit=1 newest=/tmp/hwenc-measure/projects/rec-mwia33mg-xyuxb
+[measure] probe: vp9 Profile 0 size= 4300410
+[measure] done r6-vp9-cam
+[measure] codec state: vp9
+[measure] launched pid=28446 label=r7-vp9-cam codec=vp9 cam=1
+[measure] recording live at +36s, main pid=28446
+[measure] electron_main=28453 editor_renderer=28478 gpu=28468
+[measure] app_exit=1 newest=/tmp/hwenc-measure/projects/rec-mwia53qt-8mmum
+[measure] probe: vp9 Profile 0 size= 4606516
+[measure] done r7-vp9-cam
+[measure] codec state: h264 (as committed)
+[measure] launched pid=29725 label=r8-h264-cam codec=h264 cam=1
+[measure] recording live at +64s, main pid=29725
+[measure] electron_main=29749 editor_renderer=29889 gpu=29874
+[measure] app_exit=1 newest=/tmp/hwenc-measure/projects/rec-mwia7x2w-7ckw9
+[measure] probe: h264 Baseline size= 3336818
+[measure] done r8-h264-cam
+ALL_RUNS_DONE

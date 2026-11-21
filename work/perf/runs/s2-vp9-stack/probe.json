@@ -1,0 +1,16 @@
+{
+    "programs": [
+
+    ],
+    "streams": [
+        {
+            "codec_name": "vp9",
+            "profile": "Profile 0",
+            "width": 1680,
+            "height": 1050
+        }
+    ],
+    "format": {
+        "size": "2987686"
+    }
+}

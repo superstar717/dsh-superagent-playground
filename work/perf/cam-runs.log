@@ -1,0 +1,33 @@
+[measure] codec state: h264 (as committed)
+[measure] launched pid=5035 label=d3-h264-cam codec=h264 cam=1
+[measure] recording live at +8s, main pid=5035
+[measure] electron_main=5038 editor_renderer=5051 gpu=5045
+[measure] app_exit=1 newest=/tmp/hwenc-measure/projects/rec-mwibkocc-t1eh7
+[measure] probe: h264 Baseline size= 5982198
+[measure] stack-hits VideoToolbox=2
+[measure] done d3-h264-cam
+[measure] codec state: vp9
+[measure] launched pid=7050 label=d4-vp9-cam codec=vp9 cam=1
+[measure] recording live at +8s, main pid=7050
+[measure] electron_main=7053 editor_renderer=7061 gpu=7054
+[measure] app_exit=1 newest=/tmp/hwenc-measure/projects/rec-mwiblrtq-ko21w
+[measure] probe: vp9 Profile 0 size= 5825983
+[measure] stack-hits VideoToolbox=2
+[measure] done d4-vp9-cam
+[measure] codec state: h264 (as committed)
+[measure] launched pid=9589 label=d5-h264-cam2 codec=h264 cam=1
+[measure] recording live at +11s, main pid=9589
+[measure] electron_main=9597 editor_renderer=9633 gpu=9622
+[measure] app_exit=1 newest=/tmp/hwenc-measure/projects/rec-mwibn2jm-ynodi
+[measure] probe: h264 Baseline size= 3319472
+[measure] stack-hits VideoToolbox=2
+[measure] done d5-h264-cam2
+[measure] codec state: vp9
+[measure] launched pid=10838 label=d6-vp9-cam2 codec=vp9 cam=1
+[measure] recording live at +10s, main pid=10838
+[measure] electron_main=10853 editor_renderer=10882 gpu=10873
+[measure] app_exit=1 newest=/tmp/hwenc-measure/projects/rec-mwibodzu-xhfu1
+[measure] probe: vp9 Profile 0 size= 5196691
+[measure] stack-hits VideoToolbox=2
+[measure] done d6-vp9-cam2
+CAM_RUNS_DONE
