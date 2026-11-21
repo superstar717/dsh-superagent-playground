@@ -1,0 +1,32 @@
+Timestamp               Ty Process[PID:TID]
+2026-11-22 00:22:04.133 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:assistant] Client Connect for PID 81175
+2026-11-22 00:22:04.133 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] GetDevicesState for client 8223
+2026-11-22 00:22:04.193 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] SetPropertyState <private> for client 8223
+2026-11-22 00:22:04.202 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] SetPropertyState <private> for client 8223
+2026-11-22 00:22:04.203 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] SetPropertyState <private> for client 8223
+2026-11-22 00:22:04.233 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] SetPropertyState <private> for client 8223
+2026-11-22 00:22:04.233 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] SetPropertyState <private> for client 8223
+2026-11-22 00:22:04.234 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] SetPropertyState <private> for client 8223
+2026-11-22 00:22:04.234 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] SetPropertyState <private> for client 8223
+2026-11-22 00:22:04.267 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] StartStream for client 8223
+2026-11-22 00:22:04.267 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:assistant] Sending update command (isStreaming=1) for <private>
+2026-11-22 00:22:04.267 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600]  UpdateTCCAccess for client 81175
+2026-11-22 00:22:04.267 A  VDCAssistant[237:18e26dd] (TCC) TCCAccessRequest() IPC
+2026-11-22 00:22:04.277 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] TCC preflight access returned 0 for pid 81175
+2026-11-22 00:22:04.277 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] Post event kCameraStreamStart
+2026-11-22 00:22:04.277 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] Init -> Streaming on event kCameraStreamStart
+2026-11-22 00:22:04.277 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] ProgramSettings for format H264to420
+2026-11-22 00:22:04.277 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600]  ProgramSettings  Programming 5 buffers with 3 concurrent transfers , real format id: 4, size (640 x 480), frameInterval: 0x00051615 (30.000030)
+2026-11-22 00:22:04.280 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] ProgramSettings bInterval 1
+2026-11-22 00:22:04.281 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] DisposeFrames outstanding completions 0
+2026-11-22 00:22:04.282 Df VDCAssistant[237:18e26dd] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600]  ProgramSettings -- dwClockFrequency:1000000
+2026-11-22 00:22:05.003 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] BulkStreamHandler  Got a transfer out of sequence: last: 52482, this: 0
+2026-11-22 00:22:36.764 Df VDCAssistant[237:18e5807] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] StopStream for client 8223
+2026-11-22 00:22:36.764 Df VDCAssistant[237:18e5807] [com.apple.VDCAssistant:assistant] Sending update command (isStreaming=0) for <private>
+2026-11-22 00:22:36.765 Df VDCAssistant[237:18e5807] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] Post event kCameraStreamStop
+2026-11-22 00:22:36.765 Df VDCAssistant[237:18e5807] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] Streaming -> Init on event kCameraStreamStop
+2026-11-22 00:22:36.777 Df VDCAssistant[237:18e5807] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600]  StopCaptures, mOutstandingReads: 0, retries = 499
+2026-11-22 00:22:36.777 Df VDCAssistant[237:18e5807] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] DisposeFrames outstanding completions 0
+2026-11-22 00:22:36.984 Df VDCAssistant[237:18e5807] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] DisposeFrames outstanding completions 0
+2026-11-22 00:22:36.985 Df VDCAssistant[237:18e5807] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] StopStream TransactionCountFromUSB : 959 FrameCountDispatched : 955 ErrorPacketCount : 3 FrameCompleted : 955
+2026-11-22 00:22:36.986 Df VDCAssistant[237:18e5807] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] SetPropertyState <private> for client 8223

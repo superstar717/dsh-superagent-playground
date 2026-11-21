@@ -1057,7 +1057,8 @@ async function startRecording() {
     const mimeType = pickMime();
     let recordSource = stream;
     let bakeCanvas = null;
-    let bakeRaf = null;
+    let bakeTimer = null;
+    let bakeEls = null;
     let baked = false;
     if (camStream) {
       baked = true;
@@ -1151,7 +1152,8 @@ async function startRecording() {
         } catch {}
       };
       drawBakedFrame();
-      bakeRaf = setInterval(drawBakedFrame, 1000 / 30);
+      bakeTimer = setInterval(drawBakedFrame, 1000 / 30);
+      bakeEls = { screenVideoEl, camVideoEl, bakeCanvas };
       recordSource = bakeCanvas.captureStream(30);
       if (micStream) for (const t of micStream.getAudioTracks()) recordSource.addTrack(t);
     }
@@ -1172,6 +1174,13 @@ async function startRecording() {
       chunks,
       camChunks: camStream ? [] : null,
       baked,
+      // Release handles: the bake loop timer, its video elements and the
+      // capture stream MUST die with the take — a leaked 30fps full-screen
+      // composite keeps the renderer + GPU busy forever and is exactly what
+      // made the take AFTER a camera take lag (2026-11-22 report).
+      recordSource,
+      bakeTimer,
+      bakeEls,
       pip: { ...S.pipLive },
       mic,
       source,
@@ -1224,6 +1233,29 @@ async function startRecording() {
   }
 }
 
+function stopAllTracks(stream) {
+  try {
+    stream?.getTracks?.().forEach((t) => { try { if (t.readyState !== 'ended') t.stop(); } catch {} });
+  } catch {}
+}
+
+/** Kill every capture artifact a take created. Runs at teardown start: the
+ *  bake loop must outlive the take by ZERO frames — a leaked 30fps
+ *  full-resolution composite keeps the renderer + GPU busy forever and is
+ *  exactly what made the take AFTER a camera take lag (2026-11-22 report). */
+function releaseTakeCapture(rec) {
+  if (rec.bakeTimer) { clearInterval(rec.bakeTimer); rec.bakeTimer = null; }
+  for (const el of [rec.bakeEls?.screenVideoEl, rec.bakeEls?.camVideoEl]) {
+    if (!el) continue;
+    try { el.pause(); } catch {}
+    try { el.srcObject = null; } catch {}
+  }
+  // The bake canvas stream feeds only this take's recorder; its tracks die
+  // with the take, not with the 900ms device-track fallback.
+  stopAllTracks(rec.recordSource !== rec.stream ? rec.recordSource : null);
+  window.__bakeDebug = null; // stop advertising a dead loop
+}
+
 async function finishRecording(mode = 'save') {
   if (!S.recording) return;
   const rec = S.recording;
@@ -1243,19 +1275,36 @@ async function finishRecording(mode = 'save') {
     // fine; the save below runs either way.
     try { if (rec.recorder.state !== 'inactive') rec.recorder.stop(); } catch (e1) { console.warn('[record] stop:', e1.message); }
     try { if (rec.camRecorder && rec.camRecorder.state !== 'inactive') rec.camRecorder.stop(); } catch (e2) { console.warn('[record] cam stop:', e2.message); }
-    if (rec.bakeRaf) clearInterval(rec.bakeRaf);
-    // Tracks stop once the recorder has flushed its final chunk.
+    releaseTakeCapture(rec);
+    // Tracks stop once the recorder has flushed its final chunk; a second,
+    // immediate pass runs right after the flush below, and the +1.5s sweep
+    // is the belt-and-braces release accounting (0 live tracks expected).
     setTimeout(() => {
       try {
-        rec.stream?.getTracks().forEach((t) => t.stop());
-        rec.videoStream?.getTracks().forEach((t) => t.stop());
-        rec.micStream?.getTracks().forEach((t) => t.stop());
-        rec.camStream?.getTracks().forEach((t) => t.stop());
+        stopAllTracks(rec.stream);
+        stopAllTracks(rec.videoStream);
+        stopAllTracks(rec.micStream);
+        stopAllTracks(rec.camStream);
       } catch {}
     }, 900);
     // Bounded wait for the final chunks (recorder stop event); a wedged
     // recorder must never stall the teardown, hence the 1.5s escape.
     await Promise.race([rec.flushed, new Promise((r) => setTimeout(r, 1500))]);
+    // Flush done (or timed out): the device tracks can go NOW — the 900ms
+    // fallback above only covers a wedged recorder.
+    stopAllTracks(rec.stream);
+    stopAllTracks(rec.videoStream);
+    stopAllTracks(rec.micStream);
+    setTimeout(() => {
+      stopAllTracks(rec.stream);
+      stopAllTracks(rec.videoStream);
+      stopAllTracks(rec.micStream);
+      stopAllTracks(rec.camStream);
+      const live = [rec.stream, rec.videoStream, rec.micStream, rec.camStream, rec.recordSource]
+        .flatMap((s) => (s ? s.getTracks() : []))
+        .filter((t) => t.readyState !== 'ended').length;
+      window.__lastTakeRelease = { at: Date.now(), mode, liveTracks: live };
+    }, 1500);
     await Promise.race([
       window.focusee.capture.hideControl(),
       new Promise((r) => setTimeout(r, 3000)),
@@ -1586,6 +1635,10 @@ function exposeTestApi() {
     ready: () => true,
     pipLive: () => (S.pipLive ? { nx: S.pipLive.nx, ny: S.pipLive.ny, size: S.pipLive.size } : null),
     pillRect: () => S.pillRect || null,
+    releaseProbe: () => ({
+      bakeDebug: window.__bakeDebug || null,
+      lastTake: window.__lastTakeRelease || null,
+    }),
     openSample: async () => { await openProject('sample', { sample: true }); return true; },
     selectTab: (t) => { selectTab(t); return t; },
     previewZoom: (t) => { seek(t); S.dirty = true; return t; },

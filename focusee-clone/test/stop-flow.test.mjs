@@ -155,3 +155,50 @@ test('preview position math never double-unwraps the display bounds', () => {
   assert.match(mainJs, /bubble-move-updates-pip/);
   assert.match(appJs, /pipLive: \(\) =>/);
 });
+
+test('a take takes its bake loop with it (2026-11-22 leak class)', () => {
+  // finishRecording used to clear `rec.bakeRaf` while the interval handle
+  // only ever lived in a local (`bakeRaf`): every camera take leaked a 30fps
+  // full-resolution composite forever — the renderer+GPU kept burning after
+  // the take and the NEXT take ran on top of it. The handle now lives on the
+  // recording and releaseTakeCapture kills it at teardown start.
+  assert.match(appJs, /bakeTimer = setInterval\(drawBakedFrame/);
+  assert.match(appJs, /recordSource,\s*\n\s*bakeTimer,\s*\n\s*bakeEls,/);
+  assert.match(appJs, /function releaseTakeCapture\(rec\)/);
+  assert.match(appJs, /releaseTakeCapture\(rec\);/);
+  assert.match(appJs, /if \(rec\.bakeTimer\) \{ clearInterval\(rec\.bakeTimer\)/);
+  assert.match(appJs, /window\.__bakeDebug = null;/);
+  // The bake canvas captureStream is its own stream — it must be stopped
+  // with the take, not just the raw device streams.
+  assert.match(appJs, /stopAllTracks\(rec\.recordSource !== rec\.stream \? rec\.recordSource : null\)/);
+  // Device tracks get an immediate post-flush pass plus the 900ms fallback;
+  // the final sweep publishes live-track accounting for the e2e gate.
+  assert.match(appJs, /window\.__lastTakeRelease = \{ at: Date\.now\(\), mode, liveTracks: live \};/);
+  assert.match(appJs, /releaseProbe: \(\) =>/);
+});
+
+test('camera preview never captures without an active take (45-min hold class)', () => {
+  // The bubble page owned the only attach path with no take gate: a late
+  // attach replay (did-finish-load, or a getUserMedia handshake resolving
+  // after the take ended) opened the camera with nothing to stop it.
+  assert.match(camPreviewJs, /if \(!state\.startedAt \|\| state\.stopped\) return;\s*\n\s*const v = document\.getElementById\('cam-video'\);/);
+  // Post-await re-check: the take may end during the device handshake.
+  assert.match(camPreviewJs, /if \(!state\.startedAt \|\| state\.stopped\) \{\s*\n\s*stream\.getTracks\(\)\.forEach\(\(t\) => t\.stop\(\)\);/);
+  // takeEnded forgets the take entirely (startedAt=0), so no later replay or
+  // visibilitychange can resurrect it.
+  assert.match(camPreviewJs, /if \(info\.takeEnded\) \{\s*\n\s*stopPreviewTracks\(true\);/);
+  // The page pushes its release state for the e2e gate (no JS injection).
+  assert.match(preloadJs, /reportPreviewState: \(s\) => ipcRenderer\.send\('control:previewState', s\)/);
+  assert.match(camPreviewJs, /reportPreviewState\(\)/);
+});
+
+test('main process ends the take explicitly and gates camera replays', () => {
+  // Hiding the windows is NOT the release contract: pages get an explicit
+  // takeEnded on hide and cancel, and did-finish-load replays may only
+  // re-attach the camera while a take is actually active.
+  assert.match(mainJs, /function endTakeOnPillPages\(\)/);
+  assert.match(mainJs, /endTakeOnPillPages\(\);/);
+  assert.match(mainJs, /'control:state', \{ takeEnded: true \}/);
+  assert.match(mainJs, /win === previewWindow && recordingActive && lastControlInfo && lastControlInfo\.withCamera/);
+  assert.match(mainJs, /recordingActive = true;/);
+});

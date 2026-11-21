@@ -1,0 +1,9 @@
+1795278520 [e2e-rec] take1:control-pill-live ok bridge-ack
+1795278520 [e2e-rec] take1:camera-preview-window-live ok preview-ack
+1795278530 [e2e-rec] take1:stop-signalled ok signalled
+1795278531 [e2e-rec] take1:project-saved ok 录制 11-22 00:28 dur=13.66
+1795278539 [e2e-rec] take2:control-pill-live ok bridge-ack
+1795278540 [e2e-rec] take2:camera-preview-window-live ok preview-ack
+1795278550 [e2e-rec] take2:stop-signalled ok signalled
+1795278551 [e2e-rec] take2:project-saved ok 录制 11-22 00:29 dur=10.55
+1795278556 [e2e-rec] ALL_OK=true

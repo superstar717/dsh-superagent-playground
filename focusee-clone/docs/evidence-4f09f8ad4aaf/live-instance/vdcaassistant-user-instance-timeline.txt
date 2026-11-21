@@ -1,0 +1,22 @@
+2026-11-21 23:17:57.778 Df VDCAssistant[237:16c5e44] [com.apple.VDCAssistant:assistant] Client Connect for PID 26660
+2026-11-21 23:17:58.200 Df VDCAssistant[237:16c5e44] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] StartStream for client 25035
+2026-11-21 23:17:58.202 Df VDCAssistant[237:16c5e44] [com.apple.VDCAssistant:assistant] Sending update command (isStreaming=1) for <private>
+2026-11-21 23:17:58.211 Df VDCAssistant[237:16c5e44] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] Post event kCameraStreamStart
+2026-11-21 23:17:58.211 Df VDCAssistant[237:16c5e44] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] Init -> Streaming on event kCameraStreamStart
+2026-11-21 23:27:36.952 Df VDCAssistant[237:18bbf54] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] StopStream for client 25035
+2026-11-21 23:27:36.952 Df VDCAssistant[237:18bbf54] [com.apple.VDCAssistant:assistant] Sending update command (isStreaming=0) for <private>
+2026-11-21 23:27:36.953 Df VDCAssistant[237:18bbf54] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] Post event kCameraStreamStop
+2026-11-21 23:27:36.953 Df VDCAssistant[237:18bbf54] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] Streaming -> Init on event kCameraStreamStop
+2026-11-21 23:27:37.163 Df VDCAssistant[237:18bbf54] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] StopStream TransactionCountFromUSB : 17349 FrameCountDispatched : 17345 ErrorPacketCount : 3 FrameCompleted : 17345
+2026-11-22 00:00:22.923 Df VDCAssistant[237:18bc038] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] StartStream for client 25035
+2026-11-22 00:00:22.924 Df VDCAssistant[237:18bc038] [com.apple.VDCAssistant:assistant] Sending update command (isStreaming=1) for <private>
+2026-11-22 00:00:22.929 Df VDCAssistant[237:18bc038] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] Post event kCameraStreamStart
+2026-11-22 00:00:22.929 Df VDCAssistant[237:18bc038] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] Init -> Streaming on event kCameraStreamStart
+2026-11-22 00:11:47.423 Df VDCAssistant[237:18d94cc] [com.apple.VDCAssistant:assistant] Client Connect for PID 69824
+2026-11-22 00:11:48.154 Df VDCAssistant[237:18db626] [com.apple.VDCAssistant:assistant] Client Connect for PID 69833
+2026-11-22 00:12:09.007 Df VDCAssistant[237:18db626] [com.apple.VDCAssistant:assistant] Client Connect for PID 70252
+2026-11-22 00:12:36.383 Df VDCAssistant[237:18db626] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] StopStream for client 25035
+2026-11-22 00:12:36.383 Df VDCAssistant[237:18db626] [com.apple.VDCAssistant:assistant] Sending update command (isStreaming=0) for <private>
+2026-11-22 00:12:36.384 Df VDCAssistant[237:18db626] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] Post event kCameraStreamStop
+2026-11-22 00:12:36.384 Df VDCAssistant[237:18db626] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] Streaming -> Init on event kCameraStreamStop
+2026-11-22 00:12:36.601 Df VDCAssistant[237:18db626] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] StopStream TransactionCountFromUSB : 21991 FrameCountDispatched : 21967 ErrorPacketCount : 3 FrameCompleted : 21987

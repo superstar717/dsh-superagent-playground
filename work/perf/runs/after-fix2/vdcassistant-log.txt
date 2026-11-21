@@ -1,0 +1,40 @@
+2026-11-22 00:28:36.161 Df VDCAssistant[237:18e5807] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] Post event kCameraStreamStart
+2026-11-22 00:28:36.161 Df VDCAssistant[237:18e5807] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] Init -> Streaming on event kCameraStreamStart
+2026-11-22 00:28:36.161 Df VDCAssistant[237:18e5807] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] ProgramSettings for format H264to420
+2026-11-22 00:28:36.161 Df VDCAssistant[237:18e5807] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600]  ProgramSettings  Programming 5 buffers with 3 concurrent transfers , real format id: 4, size (640 x 480), frameInterval: 0x00051615 (30.000030)
+2026-11-22 00:28:36.166 Df VDCAssistant[237:18e5807] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] ProgramSettings bInterval 1
+2026-11-22 00:28:36.168 Df VDCAssistant[237:18e5807] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] DisposeFrames outstanding completions 0
+2026-11-22 00:28:36.171 Df VDCAssistant[237:18e5807] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600]  ProgramSettings -- dwClockFrequency:1000000
+2026-11-22 00:28:36.893 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] BulkStreamHandler  Got a transfer out of sequence: last: 54458, this: 0
+2026-11-22 00:29:06.064 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:06.163 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:06.764 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:06.800 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:06.830 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:07.063 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:07.129 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:07.262 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:07.396 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:07.462 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:07.529 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:07.596 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:07.897 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:07.997 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:08.130 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:08.164 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:08.397 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:08.929 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:09.729 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:09.762 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:09.800 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:09.929 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:09.996 E  VDCAssistant[237:35e628] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] dropping frame - decoding queue fullness 1.000000
+2026-11-22 00:29:10.163 Df VDCAssistant[237:18eb32c] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] StopStream for client 24955
+2026-11-22 00:29:10.163 Df VDCAssistant[237:18eb32c] [com.apple.VDCAssistant:assistant] Sending update command (isStreaming=0) for <private>
+2026-11-22 00:29:10.172 Df VDCAssistant[237:18eb32c] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] Post event kCameraStreamStop
+2026-11-22 00:29:10.172 Df VDCAssistant[237:18eb32c] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] Streaming -> Init on event kCameraStreamStop
+2026-11-22 00:29:10.183 Df VDCAssistant[237:18eb32c] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600]  StopCaptures, mOutstandingReads: 0, retries = 499
+2026-11-22 00:29:10.183 Df VDCAssistant[237:18eb32c] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] DisposeFrames outstanding completions 0
+2026-11-22 00:29:10.414 Df VDCAssistant[237:18eb32c] [com.apple.VDCAssistant:device.frameaccumulator] [guid:0x1420000005ac8600] DisposeFrames outstanding completions 0
+2026-11-22 00:29:10.414 Df VDCAssistant[237:18eb32c] [com.apple.VDCAssistant:device] [guid:0x1420000005ac8600] StopStream TransactionCountFromUSB : 1005 FrameCountDispatched : 964 ErrorPacketCount : 3 FrameCompleted : 1001
+2026-11-22 00:29:10.461 Df VDCAssistant[237:18ebb24] [com.apple.VDCAssistant:assistant] [guid:0x1420000005ac8600] SetPropertyState <private> for client 24955

@@ -1,0 +1,119 @@
+{
+  "steps": [
+    {
+      "name": "take1:pick-screen-source",
+      "ok": true,
+      "extra": "screen:2077750265:0"
+    },
+    {
+      "name": "take1:control-pill-live",
+      "ok": true,
+      "extra": "bridge-ack"
+    },
+    {
+      "name": "take1:main-window-hidden",
+      "ok": true
+    },
+    {
+      "name": "take1:camera-preview-window-live",
+      "ok": true,
+      "extra": "preview-ack"
+    },
+    {
+      "name": "take1:bubble-move-updates-pip",
+      "ok": true,
+      "extra": "{\"nx\":0.82,\"ny\":0.82,\"size\":18}"
+    },
+    {
+      "name": "take1:bake-debug",
+      "ok": true,
+      "extra": "{\"draws\":378,\"camReady\":4,\"camW\":640,\"screenReady\":4,\"pipDrawn\":378}"
+    },
+    {
+      "name": "take1:pill-rect-probe",
+      "ok": true,
+      "extra": "{\"seen\":{\"x\":680,\"y\":49,\"w\":320,\"h\":76},\"winPos\":[680,49],\"winSize\":[320,76]}"
+    },
+    {
+      "name": "take1:stop-signalled",
+      "ok": true,
+      "extra": "signalled"
+    },
+    {
+      "name": "take1:stop-accepted",
+      "ok": true,
+      "extra": "projects=1 baseline=0 saveState=done phase=save-started"
+    },
+    {
+      "name": "take1:project-saved",
+      "ok": true,
+      "extra": "录制 11-22 00:22 dur=12.40"
+    },
+    {
+      "name": "take2:pick-screen-source",
+      "ok": true,
+      "extra": "screen:2077750265:0"
+    },
+    {
+      "name": "take2:control-pill-live",
+      "ok": true,
+      "extra": "bridge-ack"
+    },
+    {
+      "name": "take2:main-window-hidden",
+      "ok": true
+    },
+    {
+      "name": "take2:camera-preview-window-live",
+      "ok": true,
+      "extra": "preview-ack"
+    },
+    {
+      "name": "take2:bubble-move-updates-pip",
+      "ok": true,
+      "extra": "{\"nx\":0.82,\"ny\":0.82,\"size\":18}"
+    },
+    {
+      "name": "take2:bake-debug",
+      "ok": true,
+      "extra": "{\"draws\":627,\"camReady\":4,\"camW\":640,\"screenReady\":4,\"pipDrawn\":627}"
+    },
+    {
+      "name": "take2:pill-rect-probe",
+      "ok": true,
+      "extra": "{\"seen\":{\"x\":680,\"y\":49,\"w\":320,\"h\":76},\"winPos\":[680,49],\"winSize\":[320,76]}"
+    },
+    {
+      "name": "take2:stop-signalled",
+      "ok": true,
+      "extra": "signalled"
+    },
+    {
+      "name": "take2:stop-accepted",
+      "ok": true,
+      "extra": "projects=2 baseline=1 saveState=done phase=save-started"
+    },
+    {
+      "name": "take2:project-saved",
+      "ok": true,
+      "extra": "录制 11-22 00:22 dur=10.31"
+    }
+  ],
+  "withCamera": true,
+  "takes": 2,
+  "cancelTake": 0,
+  "take1StopPhase": "save-started",
+  "take2StopPhase": "save-started",
+  "projects": [
+    {
+      "name": "录制 11-22 00:22",
+      "duration": 10.311,
+      "hasCamera": true
+    },
+    {
+      "name": "录制 11-22 00:22",
+      "duration": 12.396,
+      "hasCamera": true
+    }
+  ]
+}
