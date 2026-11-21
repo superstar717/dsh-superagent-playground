@@ -56,7 +56,7 @@
 1. 风控冷却时长不可预知（24h 退避是自定保守值）；后天 21:00 自动重试是唯一判定点，若仍拦则人工在（现在有头的）专用 Chrome 过一次验证，或再延长退避；
 2. 明早 TTD 对账下载环节是否受限待实测；滚动随机化效果待放行自然验证；
 3. 回填队列 blocked 的 2021-01 是今晚之前旧账未动；2021-07 在 3 次重试轮转中会自然重试；
-4. dysub 仓库无远端（本地 git 防误改不防丢失），加私有 remote 待用户决定；
+4. dysub 私有远端容灾已落地大半：私有仓库 `superstar717/douyin-subscription` 已建成（gh API 实测 PRIVATE）、origin 已配 SSH + `core.sshCommand` 走 Clash socks5（持久化）；推送因当晚 github 双通道间歇阻断未完成 → dtodo 9c6bc851（次日）一条命令收尾；教训已归位 LESSONS E87⑤（代理路径差异第一变量）；
 5. 今晚「有头重启失败」（relaunch 90s 端口未就绪）的具体原因未查明——可能与最小化冷启动耗时或 profile 锁收尾有关；建议风控放行后跑一次手工 `dysub sync jianghushuo` 观察该路径，仍失败再深查。
 
 ## 六、经验归位
