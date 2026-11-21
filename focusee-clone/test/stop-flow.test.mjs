@@ -85,7 +85,10 @@ test('pill and bubble run their media in their own context via events', () => {
   assert.match(preloadJs, /previewReady: \(\) => ipcRenderer\.send\('control:previewReady'\)/);
   assert.match(preloadJs, /onAttachCamera/);
   assert.match(preloadJs, /onStopSignal/);
-  assert.match(camPreviewJs, /onAttachCamera\(attachCameraPreview\)/);
+  // The attach handler stays on this page's own context, gated on a live
+  // take (the 2026-11-16 leak re-armed dead takes from stale state).
+  assert.match(camPreviewJs, /onAttachCamera\(\(\) => \{/);
+  assert.match(camPreviewJs, /if \(state\.startedAt && !state\.stopped\) attachCameraPreview\(\)/);
   assert.match(camPreviewJs, /control\.previewReady\(\)/);
   assert.match(controlJs, /control\.pillReady\(\)/);
   assert.match(mainJs, /control:pillReady/);
@@ -154,4 +157,27 @@ test('preview position math never double-unwraps the display bounds', () => {
   // never again.
   assert.match(mainJs, /bubble-move-updates-pip/);
   assert.match(appJs, /pipLive: \(\) =>/);
+});
+
+test('preview bubble never captures without an active take', () => {
+  // 2026-11-16 idle-capture leak: after a cancelled take the bubble
+  // re-acquired the camera ~8s later and held it for 45 minutes (79,330
+  // frames; every other app got NotReadableError). The page must gate every
+  // attach on a live take, honour the takeEnded signal, and own a watchdog
+  // that releases any capture found live with no take.
+  assert.match(camPreviewJs, /if \(state\.startedAt && !state\.stopped\) attachCameraPreview\(\)/);
+  assert.match(camPreviewJs, /onTakeEnded/);
+  assert.match(camPreviewJs, /watchdog: releasing camera/);
+  assert.match(preloadJs, /control:takeEnded/);
+  assert.match(preloadJs, /control:previewCaptureState/);
+});
+
+test('take teardown clears the replayed control state', () => {
+  // replayControlInfo re-arms freshly loaded pill/preview pages; a stale
+  // per-take state replayed after teardown re-attaches the camera for a take
+  // that no longer exists. broadcastTakeEnded must neutralise it, and the
+  // attach replay must require a truthy startedAt.
+  assert.match(mainJs, /lastControlInfo = \{ startedAt: 0, mic: null, withCamera: false \}/);
+  assert.match(mainJs, /broadcastTakeEnded/);
+  assert.match(mainJs, /lastControlInfo\.withCamera && lastControlInfo\.startedAt/);
 });

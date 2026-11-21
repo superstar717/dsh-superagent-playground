@@ -1,0 +1,168 @@
+{
+  "steps": [
+    {
+      "name": "take1:pick-screen-source",
+      "ok": true,
+      "extra": "screen:2077750265:0"
+    },
+    {
+      "name": "take1:control-pill-live",
+      "ok": true,
+      "extra": "bridge-ack"
+    },
+    {
+      "name": "take1:main-window-hidden",
+      "ok": true
+    },
+    {
+      "name": "take1:camera-preview-window-live",
+      "ok": true,
+      "extra": "preview-ack"
+    },
+    {
+      "name": "take1:bubble-move-updates-pip",
+      "ok": true,
+      "extra": "{\"nx\":0.82,\"ny\":0.82,\"size\":18}"
+    },
+    {
+      "name": "take1:bake-debug",
+      "ok": true,
+      "extra": "{\"draws\":86,\"camReady\":4,\"camW\":640,\"screenReady\":4,\"pipDrawn\":86}"
+    },
+    {
+      "name": "take1:pill-rect-probe",
+      "ok": true,
+      "extra": "{\"seen\":{\"x\":680,\"y\":49,\"w\":320,\"h\":76},\"winPos\":[680,49],\"winSize\":[320,76]}"
+    },
+    {
+      "name": "take1:stop-signalled",
+      "ok": true,
+      "extra": "signalled"
+    },
+    {
+      "name": "take1:stop-accepted",
+      "ok": true,
+      "extra": "projects=1 baseline=0 saveState=done phase=save-started"
+    },
+    {
+      "name": "take1:project-saved",
+      "ok": true,
+      "extra": "录制 11-17 02:32 dur=5.61"
+    },
+    {
+      "name": "take2:pick-screen-source",
+      "ok": true,
+      "extra": "screen:2077750265:0"
+    },
+    {
+      "name": "take2:control-pill-live",
+      "ok": true,
+      "extra": "bridge-ack"
+    },
+    {
+      "name": "take2:main-window-hidden",
+      "ok": true
+    },
+    {
+      "name": "take2:camera-preview-window-live",
+      "ok": true,
+      "extra": "preview-ack"
+    },
+    {
+      "name": "take2:bubble-move-updates-pip",
+      "ok": true,
+      "extra": "{\"nx\":0.82,\"ny\":0.82,\"size\":18}"
+    },
+    {
+      "name": "take2:bake-debug",
+      "ok": true,
+      "extra": "{\"draws\":150,\"camReady\":4,\"camW\":640,\"screenReady\":4,\"pipDrawn\":150}"
+    },
+    {
+      "name": "take2:pill-rect-probe",
+      "ok": true,
+      "extra": "{\"seen\":{\"x\":680,\"y\":49,\"w\":320,\"h\":76},\"winPos\":[680,49],\"winSize\":[320,76]}"
+    },
+    {
+      "name": "take2:cancel-signalled",
+      "ok": true,
+      "extra": "signalled"
+    },
+    {
+      "name": "take2:cancel-accepted",
+      "ok": true,
+      "extra": "projects=1 baseline=1 toast=录制已取消，未保存 editor=true"
+    },
+    {
+      "name": "take2:camera-zero-after-cancel",
+      "ok": true,
+      "extra": "{\"live\":false,\"at\":1794853939805}"
+    },
+    {
+      "name": "take3:pick-screen-source",
+      "ok": true,
+      "extra": "screen:2077750265:0"
+    },
+    {
+      "name": "take3:control-pill-live",
+      "ok": true,
+      "extra": "bridge-ack"
+    },
+    {
+      "name": "take3:main-window-hidden",
+      "ok": true
+    },
+    {
+      "name": "take3:camera-preview-window-live",
+      "ok": true,
+      "extra": "preview-ack"
+    },
+    {
+      "name": "take3:bubble-move-updates-pip",
+      "ok": true,
+      "extra": "{\"nx\":0.82,\"ny\":0.82,\"size\":18}"
+    },
+    {
+      "name": "take3:bake-debug",
+      "ok": true,
+      "extra": "{\"draws\":227,\"camReady\":4,\"camW\":640,\"screenReady\":4,\"pipDrawn\":227}"
+    },
+    {
+      "name": "take3:pill-rect-probe",
+      "ok": true,
+      "extra": "{\"seen\":{\"x\":680,\"y\":49,\"w\":320,\"h\":76},\"winPos\":[680,49],\"winSize\":[320,76]}"
+    },
+    {
+      "name": "take3:stop-signalled",
+      "ok": true,
+      "extra": "signalled"
+    },
+    {
+      "name": "take3:stop-accepted",
+      "ok": true,
+      "extra": "projects=2 baseline=1 saveState=done phase=save-started"
+    },
+    {
+      "name": "take3:project-saved",
+      "ok": true,
+      "extra": "录制 11-17 02:32 dur=4.79"
+    }
+  ],
+  "withCamera": true,
+  "takes": 3,
+  "cancelTake": 2,
+  "take1StopPhase": "save-started",
+  "take3StopPhase": "save-started",
+  "projects": [
+    {
+      "name": "录制 11-17 02:32",
+      "duration": 4.786,
+      "hasCamera": true
+    },
+    {
+      "name": "录制 11-17 02:32",
+      "duration": 5.611,
+      "hasCamera": true
+    }
+  ]
+}
