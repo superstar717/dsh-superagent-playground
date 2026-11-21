@@ -1,0 +1,21 @@
+[e2e-rec] take1:pick-screen-source ok screen:2077750265:0
+[e2e-rec] take1:control-pill-live ok bridge-ack
+[e2e-rec] take1:main-window-hidden ok 
+[e2e-rec] take1:camera-preview-window-live ok preview-ack
+[e2e-rec] take1:bubble-move-updates-pip ok {"nx":0.82,"ny":0.82,"size":18}
+[e2e-rec] take1:bake-debug ok {"draws":378,"camReady":4,"camW":640,"screenReady":4,"pipDrawn":378}
+[e2e-rec] take1:pill-rect-probe ok {"seen":{"x":680,"y":49,"w":320,"h":76},"winPos":[680,49],"winSize":[320,76]}
+[e2e-rec] take1:stop-signalled ok signalled
+[e2e-rec] take1:stop-accepted ok projects=1 baseline=0 saveState=done phase=save-started
+[e2e-rec] take1:project-saved ok 录制 11-22 00:22 dur=12.40
+[e2e-rec] take2:pick-screen-source ok screen:2077750265:0
+[e2e-rec] take2:control-pill-live ok bridge-ack
+[e2e-rec] take2:main-window-hidden ok 
+[e2e-rec] take2:camera-preview-window-live ok preview-ack
+[e2e-rec] take2:bubble-move-updates-pip ok {"nx":0.82,"ny":0.82,"size":18}
+[e2e-rec] take2:bake-debug ok {"draws":627,"camReady":4,"camW":640,"screenReady":4,"pipDrawn":627}
+[e2e-rec] take2:pill-rect-probe ok {"seen":{"x":680,"y":49,"w":320,"h":76},"winPos":[680,49],"winSize":[320,76]}
+[e2e-rec] take2:stop-signalled ok signalled
+[e2e-rec] take2:stop-accepted ok projects=2 baseline=1 saveState=done phase=save-started
+[e2e-rec] take2:project-saved ok 录制 11-22 00:22 dur=10.31
+[e2e-rec] ALL_OK=true

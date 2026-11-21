@@ -105,6 +105,10 @@ contextBridge.exposeInMainWorld('focusee', {
     stop: () => ipcRenderer.send('capture:stopRequested'),
     cancel: () => ipcRenderer.send('capture:cancelRequested'),
     reportPip: () => ipcRenderer.send('control:pipReport'),
+    // Camera bubble pushes its release state ({attached, startedAt,
+    // tracksLive}) on every attach/stop transition — the e2e release gates
+    // read it from the main process, never by injecting into the page.
+    reportPreviewState: (s) => ipcRenderer.send('control:previewState', s),
     pipResize: (delta) => ipcRenderer.send('control:pipResize', delta),
     attachCameraPreview: () => ipcRenderer.invoke('control:attachCameraPreview'),
   },

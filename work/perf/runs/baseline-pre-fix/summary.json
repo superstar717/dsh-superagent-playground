@@ -1,0 +1,61 @@
+{
+ "take1": {
+  "editor_renderer": null,
+  "gpu": null,
+  "video_capture": null,
+  "pill_preview_pages": null,
+  "main": null,
+  "frames": 0
+ },
+ "between": {
+  "editor_renderer": null,
+  "gpu": null,
+  "video_capture": null,
+  "pill_preview_pages": null,
+  "main": null,
+  "frames": 0
+ },
+ "take2": {
+  "editor_renderer": null,
+  "gpu": null,
+  "video_capture": null,
+  "pill_preview_pages": null,
+  "main": null,
+  "frames": 0
+ },
+ "idle": {
+  "editor_renderer": null,
+  "gpu": null,
+  "video_capture": null,
+  "pill_preview_pages": null,
+  "main": null,
+  "frames": 0
+ },
+ "pids": {
+  "MAIN": [
+   76004
+  ],
+  "GPU": [
+   76118
+  ],
+  "RENDERER": [
+   76125,
+   76339,
+   76340
+  ],
+  "VCAM": [
+   76311
+  ],
+  "PILLPAGES": [
+   76339,
+   76340
+  ]
+ },
+ "marks": {
+  "take1:control-pill-live": 1795277834,
+  "take1:stop-signalled": 1795277846,
+  "take2:control-pill-live": 1795277851,
+  "take2:stop-signalled": 1795277873,
+  "ALL_OK": 1795277874
+ }
+}

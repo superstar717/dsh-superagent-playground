@@ -3,3 +3,4 @@ artifacts/
 *.log
 .DS_Store
 build/FocuSee Clone.app/
+build-baseline/

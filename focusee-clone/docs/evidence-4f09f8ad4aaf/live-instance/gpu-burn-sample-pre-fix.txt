@@ -1,0 +1,72 @@
+26664  0.0  Electron Helper 
+26663  0.0  Electron Helper 
+26660  0.0  Electron Helper 
+6946   0.0  Electron Helper 
+6941   0.0  Electron Helper 
+6937   0.0  Electron        
+6941   18.5 Electron Helper 
+6946   4.0  Electron Helper 
+26660  1.9  Electron Helper 
+26664  0.5  Electron Helper 
+6937   0.4  Electron        
+26663  0.0  Electron Helper 
+6941   27.4 Electron Helper 
+6946   6.0  Electron Helper 
+26660  3.7  Electron Helper 
+26664  1.0  Electron Helper 
+6937   0.7  Electron        
+26663  0.0  Electron Helper 
+6941   25.2 Electron Helper 
+6946   5.6  Electron Helper 
+26660  3.5  Electron Helper 
+26664  0.9  Electron Helper 
+6937   0.6  Electron        
+26663  0.0  Electron Helper 
+6941   25.0 Electron Helper 
+6946   5.9  Electron Helper 
+26660  3.6  Electron Helper 
+26664  0.9  Electron Helper 
+6937   0.7  Electron        
+26663  0.0  Electron Helper 
+6941   28.8 Electron Helper 
+6946   6.1  Electron Helper 
+26660  3.9  Electron Helper 
+26664  1.0  Electron Helper 
+6937   0.7  Electron        
+26663  0.0  Electron Helper 
+6941   27.6 Electron Helper 
+6946   5.9  Electron Helper 
+26660  3.8  Electron Helper 
+26664  1.0  Electron Helper 
+6937   0.7  Electron        
+26663  0.0  Electron Helper 
+6941   25.2 Electron Helper 
+6946   5.8  Electron Helper 
+26660  4.0  Electron Helper 
+26664  1.0  Electron Helper 
+6937   0.7  Electron        
+26663  0.0  Electron Helper 
+6941   28.6 Electron Helper 
+6946   5.9  Electron Helper 
+26660  3.9  Electron Helper 
+26664  1.0  Electron Helper 
+6937   0.7  Electron        
+26663  0.0  Electron Helper 
+6941   26.0 Electron Helper 
+6946   6.0  Electron Helper 
+26660  3.9  Electron Helper 
+26664  1.0  Electron Helper 
+6937   0.9  Electron        
+26663  0.0  Electron Helper 
+6941   25.7 Electron Helper 
+6946   5.7  Electron Helper 
+26660  4.0  Electron Helper 
+26664  1.0  Electron Helper 
+6937   0.8  Electron        
+26663  0.0  Electron Helper 
+6941   27.5 Electron Helper 
+6946   6.0  Electron Helper 
+26660  3.8  Electron Helper 
+26664  1.0  Electron Helper 
+6937   0.7  Electron        
+26663  0.0  Electron Helper 

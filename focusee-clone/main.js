@@ -279,11 +279,19 @@ function createMainWindow() {
 // did-finish-load so a page that finishes loading AFTER the showControl
 // signals still gets its state deterministically (first-take flakiness class).
 let lastControlInfo = null;
+// True only between showControl and hideControl/cancel. Gates every camera
+// attach replay: without it, a preview page that loads (or replays) AFTER a
+// take ended would re-open the camera with no take to feed and nothing to
+// stop it — the 45-minute camera hold seen on 2026-11-16.
+let recordingActive = false;
+// Last pushed state of the camera bubble page ({attached, startedAt,
+// tracksLive, at}) — read by the e2e release gates; never polled live.
+let lastPreviewState = null;
 
 function replayControlInfo(win) {
   try {
     if (lastControlInfo) win.webContents.send('control:state', lastControlInfo);
-    if (win === previewWindow && lastControlInfo && lastControlInfo.withCamera) {
+    if (win === previewWindow && recordingActive && lastControlInfo && lastControlInfo.withCamera) {
       win.webContents.send('control:attachCamera');
     }
   } catch (err) {
@@ -669,6 +677,7 @@ function registerIpc() {
 
   ipcMain.handle('capture:showControl', async (_e, info) => {
     lastControlInfo = { ...(info || {}) };
+    recordingActive = true;
     if (!controlWindow) controlWindow = createControlWindow();
     controlWindow.webContents.send('control:state', info);
     controlWindow.showInactive();
@@ -703,18 +712,40 @@ function registerIpc() {
   });
 
   ipcMain.on('capture:cancelRequested', () => {
+    endTakeOnPillPages();
     if (controlWindow && !controlWindow.isDestroyed()) controlWindow.hide();
     if (previewWindow && !previewWindow.isDestroyed()) previewWindow.hide();
     if (mainWindow) mainWindow.webContents.send('record:stopRequested', { mode: 'cancel' });
   });
 
+  /** Deterministic end-of-take for the pill/preview pages: they release their
+   *  own media and forget the take even if they missed the visibilitychange
+   *  that hiding the windows triggers. Clears the replay caches too, so a
+   *  page finishing load AFTER the take can't resurrect it. */
+  function endTakeOnPillPages() {
+    recordingActive = false;
+    lastControlInfo = null;
+    for (const w of [controlWindow, previewWindow]) {
+      try {
+        if (w && !w.isDestroyed()) w.webContents.send('control:state', { takeEnded: true });
+      } catch {}
+    }
+  }
+
   ipcMain.handle('capture:hideControl', async () => {
     // No pill/bubble-page JS from here: those pages stop their own preview
-    // tracks on hide (visibilitychange) — see the note above createControlWindow.
+    // tracks on hide (visibilitychange) — and get an explicit takeEnded so a
+    // missed visibilitychange can never leave a capture running (see
+    // endTakeOnPillPages).
+    endTakeOnPillPages();
     if (controlWindow && !controlWindow.isDestroyed()) controlWindow.hide();
     if (previewWindow && !previewWindow.isDestroyed()) previewWindow.hide();
     if (mainWindow) mainWindow.show();
     return true;
+  });
+
+  ipcMain.on('control:previewState', (_e, s) => {
+    lastPreviewState = { ...(s || {}), at: Date.now() };
   });
 
   // Export ----------------------------------------------------------------
@@ -982,13 +1013,42 @@ async function runE2ERecording(win) {
     report.steps.push({ name, ok, ...(extra !== undefined ? { extra } : {}) });
     console.log('[e2e-rec]', name, ok ? 'ok' : 'FAIL', extra === undefined ? '' : String(extra));
   };
+  const pollFor = async (fn, timeoutMs = 12000, intervalMs = 500) => {
+    const t0 = Date.now();
+    let last = null;
+    while (Date.now() - t0 < timeoutMs) {
+      try { last = await fn(); if (last) return last; } catch {}
+      await wait(intervalMs);
+    }
+    return last;
+  };
+  // Release gates — after a take (save OR cancel) nothing may keep capturing:
+  // ① the editor's bake loop is gone, ② every editor track is 'ended',
+  // ③ the preview bubble reports zero live tracks and STAYS released (a
+  // late attach replay used to re-open the camera after the take).
+  const checkReleaseGates = async (tag) => {
+    const probe = await pollFor(async () => {
+      const p = await evalJs(`window.__focuseeTest?.releaseProbe?.() || null`);
+      return p && p.lastTake ? p : null;
+    });
+    const bakeGone = !!probe && probe.bakeDebug === null;
+    const tracksGone = !!probe && probe.lastTake && probe.lastTake.liveTracks === 0;
+    step(`${tag}:bake-loop-stopped`, bakeGone, `bakeDebug=${probe ? JSON.stringify(probe.bakeDebug) : 'probe-missing'}`);
+    step(`${tag}:tracks-released`, tracksGone, probe ? JSON.stringify(probe.lastTake) : 'no-lastTake');
+    const prevOk = await pollFor(async () =>
+      (lastPreviewState && lastPreviewState.attached === false && lastPreviewState.tracksLive === 0) ? lastPreviewState : null);
+    step(`${tag}:preview-released`, !!prevOk, JSON.stringify(lastPreviewState || 'no-report'));
+    await wait(5000);
+    const stillOk = lastPreviewState && lastPreviewState.attached === false && lastPreviewState.tracksLive === 0;
+    step(`${tag}:preview-still-released`, !!stillOk, JSON.stringify(lastPreviewState || 'no-report'));
+  };
   const artifactDir = path.join(dataRoot(), 'artifacts');
   try {
     await wait(1500);
     // Per-take baseline: the saved-project count BEFORE that take started.
     let baseline = (await listProjects()).filter((p) => p.id !== 'sample').length;
     for (let takeNo = 1; takeNo <= takeCount; takeNo += 1) {
-      const okTake = await runRecordingTake({ win, report, step, wait, evalJs, withCamera, takeNo, baseline, artifactDir, cancel: takeNo === cancelTake });
+      const okTake = await runRecordingTake({ win, report, step, wait, evalJs, withCamera, takeNo, baseline, artifactDir, cancel: takeNo === cancelTake, checkReleaseGates });
       if (!okTake) break;
       baseline = (await listProjects()).filter((p) => p.id !== 'sample').length;
     }
@@ -1012,7 +1072,7 @@ async function runE2ERecording(win) {
   }
 }
 
-async function runRecordingTake({ win, report, step, wait, evalJs, withCamera, takeNo, baseline, artifactDir, cancel = false }) {
+async function runRecordingTake({ win, report, step, wait, evalJs, withCamera, takeNo, baseline, artifactDir, cancel = false, checkReleaseGates }) {
   const tag = `take${takeNo}`;
   // Fresh dialog state each take.
   await evalJs(`document.querySelector('#btn-record').click()`);
@@ -1125,6 +1185,7 @@ async function runRecordingTake({ win, report, step, wait, evalJs, withCamera, t
     const savedNow = (await listProjects()).filter((p) => p.id !== 'sample').length;
     step(`${tag}:cancel-accepted`, !grew && !!toastText && editorBack,
       `projects=${savedNow} baseline=${baseline} toast=${toastText || 'none'} editor=${editorBack}`);
+    await checkReleaseGates(tag);
     return !grew;
   }
   let stopped = 'no-pill';
@@ -1154,6 +1215,7 @@ async function runRecordingTake({ win, report, step, wait, evalJs, withCamera, t
     `projects=${savedCount} baseline=${baseline} saveState=${saveState || 'unknown'} phase=${report[`${tag}StopPhase`] || 'none'}`);
   const rec = (await listProjects()).find((p) => p.id !== 'sample') || null;
   step(`${tag}:project-saved`, savedCount > baseline, rec ? `${rec.name} dur=${rec.duration?.toFixed?.(2)}` : 'none');
+  await checkReleaseGates(tag);
   return savedCount > baseline;
 }
 
