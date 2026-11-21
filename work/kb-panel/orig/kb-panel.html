@@ -1,0 +1,328 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>知识库 · 检索梳理</title>
+<style>
+:root{--bg:#0f1115;--card:#171a21;--card2:#1c2029;--line:#262b36;--fg:#e6e9ef;--dim:#8b93a7;--acc:#7aa2ff;--ok:#5ddba0;--warn:#ffb454}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:13px/1.65 -apple-system,"PingFang SC",system-ui,sans-serif;overflow:hidden}
+header{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);height:44px}
+h1{font-size:14px;margin:0;font-weight:600;white-space:nowrap}
+.pill{font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:1px 8px;white-space:nowrap}
+.pill b{color:var(--fg)}
+#toast{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--ok)}
+main{display:grid;grid-template-columns:1.5fr 1fr;gap:10px;padding:10px;height:calc(100vh - 44px)}
+@media(max-width:980px){main{grid-template-columns:1fr;overflow:auto}}
+.col{display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:0 0 auto}
+.card>h2{font-size:12px;color:var(--dim);font-weight:600;margin:0;padding:8px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
+.bar{display:flex;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line);align-items:center}
+input{flex:1;min-width:0;background:#0b0d12;border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:7px 10px;font:inherit}
+select{background:#0b0d12;border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:6px;font:inherit;max-width:92px}
+button{background:#222839;border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:5px 10px;cursor:pointer;font:inherit;white-space:nowrap}
+button.primary{background:#22304f;border-color:#3a5285}
+button:disabled{opacity:.6;cursor:default}
+.brief{padding:11px 13px;font-size:13px;color:#d6dbe8}
+.stat{display:flex;gap:12px;flex-wrap:wrap;padding:8px 13px;border-top:1px solid var(--line);font-size:11.5px;color:var(--dim)}
+.stat b{color:var(--fg)}
+.point{padding:10px 13px;border-top:1px solid var(--line)}
+.point .n{font-size:10.5px;color:var(--acc)}
+.point .claim{font-size:13px;margin:2px 0 4px;line-height:1.55}
+.point .why,.point .src{font-size:11px;color:var(--dim)}
+.tag{display:inline-block;font-size:10px;border-radius:999px;padding:0 7px;margin-left:6px;border:1px solid}
+.tag.high{color:#a9c0f5;border-color:#2f4a8a;background:#1b2333}
+.tag.mid{color:var(--ok);border-color:#245c43;background:#132a22}
+details{padding:8px 13px;border-top:1px solid var(--line)}
+summary{cursor:pointer;color:var(--dim);font-size:11.5px}
+details .row{font-size:11.5px;color:#b9c2d4;margin:6px 0 0;padding-left:8px;border-left:2px solid #2f4a8a}
+details .row .p{color:var(--dim);font-size:10.5px;display:block}
+.def{display:flex;gap:8px;padding:7px 13px;border-bottom:1px solid var(--line);font-size:12px}
+.def .k{flex:0 0 104px;color:#a9c0f5}
+.def .v{color:#b9c2d4}
+.note{padding:9px 13px;font-size:11.5px;color:var(--dim);line-height:1.7}
+.warnbox{margin:8px 13px 12px;border:1px solid #6b4a1d;background:#2a2010;border-radius:8px;padding:8px 10px;font-size:11.5px;color:#e8c79a}
+.acts{display:flex;gap:6px;padding:7px 10px;border-top:1px solid var(--line)}
+mark{background:#2f4a8a;color:#fff;border-radius:3px;padding:0 2px}
+.muted{color:var(--dim);font-size:11.5px}
+.reading{position:fixed;inset:44px 0 0 0;background:#0f1115;overflow:auto;display:none}
+.rd-wrap{max-width:760px;margin:0 auto;padding:34px 26px 90px}
+.rd-kicker{font-size:11px;letter-spacing:.14em;color:#7aa2ff;text-transform:uppercase}
+.rd-title{font-size:30px;line-height:1.25;margin:10px 0 12px;font-weight:700;letter-spacing:-.01em}
+.rd-lead{font-size:15px;line-height:1.9;color:#c9d1e2;margin:0 0 14px}
+.rd-stat{font-size:11.5px;color:#8b93a7;border-top:1px solid #262b36;border-bottom:1px solid #262b36;padding:9px 0;margin-bottom:26px}
+.rd-sec{margin:0 0 30px}
+.rd-sec h2{font-size:12px;letter-spacing:.1em;color:#8b93a7;font-weight:600;margin:0 0 12px;border-bottom:1px solid #262b36;padding-bottom:7px}
+.rd-item{margin:0 0 20px}
+.rd-item .claim{font-size:17px;line-height:1.65;font-weight:600;color:#eef1f7;margin:0 0 6px}
+.rd-item .why{font-size:14px;line-height:1.85;color:#aeb7c9;margin:0 0 6px}
+.rd-item .src{font-size:11.5px;color:#77809a}
+.rd-quote{border-left:2px solid #3a5285;padding:2px 0 2px 14px;margin:0 0 14px;font-size:13.5px;line-height:1.85;color:#b9c2d4}
+.rd-quote .p{display:block;font-size:11px;color:#77809a;margin-top:3px}
+.rd-table{width:100%;border-collapse:collapse;font-size:12.5px;margin:4px 0 10px}\n.rd-table th,.rd-table td{border:1px solid #262b36;padding:6px 9px;text-align:left;color:#c3cadb}\n.rd-table th{background:#1b2333;color:#a9c0f5;font-weight:600}\n.rd-empty{font-size:13px;color:#8b93a7;line-height:1.9}
+</style></head><body>
+<header>
+  <h1>知识库 × 图谱</h1>
+  <span class="pill">L0 <b id="p0">…</b></span><span class="pill">L1 <b id="p1">…</b></span>
+  <span class="pill">L2 <b id="p2">…</b></span><span class="pill">L3 <b id="p3">…</b></span>
+  <span id="toast"></span>
+  <button id="mode" onclick="toggleMode()" title="在「阅读视图」和「工具视图」之间切换">阅读视图</button>
+</header>
+<main>
+  <div class="col">
+    <div class="card">
+      <div class="bar">
+        <input id="q" placeholder="搜什么？如 PARA / 激活频率 / 知识库怎么搭">
+        <select id="ds"><option value="jianghushu-methodology_b0607c">姜胡说</option><option value="ligongzi_9c54ca">李公子</option></select>
+        <button class="primary" id="go" onclick="run()" title="同时搜 Obsidian 库、ASR 原话和图谱，然后把结果整理成一页">梳理</button>
+      </div>
+      <h2>一句话<span id="srcnote"></span></h2>
+      <div class="brief" id="brief">输入关键词 → 同时在 <b>Obsidian 库</b>、<b>ASR 原话</b>、<b>知识图谱</b> 里找，然后按价值分级排版。</div>
+      <div class="stat" id="stat"></div>
+    </div>
+    <div class="card"><h2>要点<span>主张 + 出处，按价值排序</span></h2><div id="points"><div class="note muted">还没有检索。</div></div></div>
+    <div class="card"><h2>证据明细<span>原话/结论优先，样板默认折叠</span></h2><div id="evid"><div class="note muted">—</div></div></div>
+    <div class="acts"><button onclick="saveMain()">存入选</button><button onclick="copyTxt('points')">复制要点</button></div>
+  </div>
+  <div class="col">
+    <div class="card"><h2>概念卡<span>来自你的目录结构</span></h2><div id="concepts"><div class="note muted">检索后显示 PARA 四个目录的规模。</div></div></div>
+    <div class="card"><h2>图谱状态<span>没有就明说</span></h2><div id="graph"><div class="note muted">检索后自动带出。</div></div></div>
+    <div class="card"><h2>下一步动作<span>这才是重点</span></h2><div id="next"><div class="note muted">—</div></div><div class="acts"><button onclick="saveNext()">存入选</button></div></div>
+  </div>
+</main>
+
+  <div id="reading" class="reading" style="display:none">
+    <div class="rd-wrap">
+      <div class="rd-kicker">知识库检索 · 自动梳理</div>
+      <h1 class="rd-title" id="rd-title">—</h1>
+      <p class="rd-lead" id="rd-lead">输入关键词后，这里会生成一篇可读的梳理页。</p>
+      <div class="rd-stat" id="rd-stat"></div>
+      <div id="rd-body"></div>
+    </div>
+  </div>
+<script>
+var $=function(s){return document.querySelector(s)};
+var st={synth:null,ctx:null,q:''};
+function toast(s,ok){var e=$('#toast');e.textContent=s;e.style.color=(ok===false)?'var(--warn)':'var(--ok)';
+  clearTimeout(window.__tt);window.__tt=setTimeout(function(){e.textContent=''},7000)}
+function esc(s){return String(s==null?'':s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+function hl(t,q){var s=esc(t);(q||'').split(/\s+/).filter(Boolean).forEach(function(w){
+  var r=new RegExp(esc(w).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi');s=s.replace(r,function(m){return '<mark>'+m+'</mark>'})});return s}
+function loadMap(){fetch('/api/map').then(function(r){return r.json()}).then(function(j){
+  var t=j.text||'',m;
+  if((m=t.match(/txt 文件 (\d+)\s+唯一内容\(md5\) (\d+)/)))$('#p0').textContent=m[1]+'/'+m[2];
+  if((m=t.match(/_candidate_quotes\.md: (\d+) 条[\s\S]*?_candidate_methods\.md: (\d+) 条/)))$('#p1').textContent=m[1]+'+'+m[2];
+  if((m=t.match(/evergreen (\d+) 篇/)))$('#p2').textContent=m[1];
+  if((m=t.match(/jianghushu-methodology_b0607c: (\d+) 实体 \/ (\d+) 关系/)))$('#p3').textContent=m[1]+'/'+m[2];
+}).catch(function(){})}
+function run(){
+  var q=$('#q').value.trim(); if(!q)return;
+  st.q=q; var go=$('#go'); go.textContent='检索中…'; go.disabled=true;
+  toast('检索中：Obsidian 库 + ASR 原话 + 图谱…');
+  $('#graph').innerHTML='<div class="note muted">图谱检索中（这一步慢，10–90 秒）…</div>';
+  var ds=$('#ds').value;
+  // 分别渲染：知识库/原话很快出，图谱慢，不互相等
+  fetch('/api/synth?q='+encodeURIComponent(q)).then(function(r){return r.json()}).then(function(s){
+    st.synth=s; renderSynth(s,q);
+    if(MODE==='reading'){ document.getElementById('rd-lead').textContent = (s.brief||'')+'（AI 正在提炼…）'; }
+    fetchSummary(q);
+    go.textContent='梳理'; go.disabled=false;
+    toast('命中 '+((s.stats&&s.stats.hits)||0)+' 条 · 高价值 '+((s.stats&&s.stats.high)||0), true);
+  }).catch(function(e){go.textContent='梳理'; go.disabled=false; toast('整理失败：'+e.message,false)});
+  fetch('/api/ctx?q='+encodeURIComponent(q)+'&ds='+encodeURIComponent(ds)).then(function(r){return r.json()}).then(function(c){
+    st.ctx=c; renderGraph(c,q);
+  }).catch(function(){ $('#graph').innerHTML='<div class="warnbox">图谱检索失败，不影响左边结果。</div>' });
+}
+var MODE='reading';
+function toggleMode(){
+  MODE = (MODE==='reading') ? 'tool' : 'reading';
+  applyMode();
+}
+function applyMode(){
+  var rd=document.getElementById('reading');
+  var main=document.querySelector('main');
+  var btn=document.getElementById('mode');
+  if(MODE==='reading'){ rd.style.display='block'; main.style.display='none'; if(btn)btn.textContent='工具视图'; }
+  else { rd.style.display='none'; main.style.display='grid'; if(btn)btn.textContent='阅读视图'; }
+}
+function claimify(s){
+  s = String(s||'').replace(/\s+/g,' ').trim();
+  var cut = s.search(/[。！？；]/);
+  if(cut > 12 && cut < 70) return s.slice(0, cut+1);
+  if(s.length > 64){ var c = s.slice(0,64); var k = Math.max(c.lastIndexOf('，'), c.lastIndexOf(' ')); if(k>20) c=c.slice(0,k); return c+'…'; }
+  return s;
+}
+function renderReading(s,q){
+  document.getElementById('rd-title').textContent = q;
+  document.getElementById('rd-lead').textContent = s.brief || ('「'+q+'」命中 '+((s.stats&&s.stats.hits)||0)+' 处。');
+  document.getElementById('rd-stat').textContent = '命中 '+((s.stats&&s.stats.hits)||0)+' 处 · 笔记 '+((s.stats&&s.stats.notes)||0)+' 篇 · 高价值 '+((s.stats&&s.stats.high)||0)+' 条 · 样板 '+((s.stats&&s.stats.low)||0)+' 条（已折叠）';
+  var h='';
+  if((s.points||[]).length){
+    h+='<section class="rd-sec"><h2>01　要点</h2>';
+    s.points.forEach(function(pt,i){
+      h+='<div class="rd-item"><div class="claim">'+esc(claimify(pt.claim))+'</div>'
+        +(pt.why?'<div class="why">'+esc(pt.why)+'</div>':'')
+        +'<div class="src">出处：'+esc(pt.source)+'</div></div>';
+    });
+    h+='</section>';
+  }
+  var hi=(s.evidence&&s.evidence.high)||[];
+  if(hi.length){
+    h+='<section class="rd-sec"><h2>02　原话与证据</h2>';
+    hi.slice(0,6).forEach(function(x){
+      h+='<div class="rd-quote">'+esc((x.text||'').slice(0,180))+'<span class="p">'+esc(x.file)+(x.heading?' · § '+esc(x.heading):'')+'</span></div>';
+    });
+    h+='</section>';
+  }
+  var cf=(s.concepts||[]);
+  if(cf.length){
+    h+='<section class="rd-sec"><h2>03　你的目录现状</h2><div class="rd-empty">';
+    h+=cf.map(function(c){return esc(c.k)+'　'+esc(c.v)}).join('　·　');
+    h+='</div></section>';
+  }
+  if((s.next||[]).length){
+    h+='<section class="rd-sec"><h2>04　下一步</h2>';
+    s.next.forEach(function(n){h+='<div class="rd-item"><div class="claim">'+esc(n.claim)+'</div>'+(n.why?'<div class="why">'+esc(n.why)+'</div>':'')+'</div>'});
+    h+='</section>';
+  }
+  document.getElementById('rd-body').innerHTML = h || '<div class="rd-empty">没有可用结果。</div>';
+}
+function fetchSummary(q){
+  fetch('/api/summary?q='+encodeURIComponent(q)).then(function(r){return r.json()}).then(function(d){
+    if(!d.ok || !d.points || !d.points.length) return;
+    if(st.q !== q) return;                      // 已被新的检索取代
+    st.summary = d;
+    $('#brief').textContent = d.summary || ($('#brief').textContent);
+    $('#srcnote').textContent = 'AI 提炼 · 来源限于检索结果';
+    var h='';
+    d.points.forEach(function(p,i){
+      h+='<div class="point"><div class="n">'+String(i+1).padStart(2,'0')+'<span class="tag high">AI 要点</span></div>'
+        +'<div class="claim">'+hl(p.claim,q)+'</div>'
+        +(p.why?'<div class="why">'+esc(p.why)+'</div>':'')
+        +'<div class="src">出处：'+esc(p.source)+'</div></div>';
+    });
+    $('#points').innerHTML=h;
+    renderReadingLlm(d,q);
+    toast('AI 提炼完成（'+d.points.length+' 条要点）', true);
+  }).catch(function(){});
+}
+function flowSvg(fl){
+  var nodes=(fl&&fl.nodes)||[], edges=(fl&&fl.edges)||[];
+  if(nodes.length<2) return '';
+  var W=720, gap=Math.min(150, Math.floor(W/nodes.length)), H=120, y=52;
+  var pos={};
+  nodes.forEach(function(n,i){ pos[n] = {x: gap*i + gap/2 + 20, y: y}; });
+  var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="margin:6px 0 14px">';
+  s+='<defs><marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6" fill="none" stroke="#5b7bbf" stroke-width="1.2"/></marker></defs>';
+  edges.forEach(function(e){
+    var a=pos[e.from], b=pos[e.to];
+    if(!a||!b) return;
+    s+='<line x1="'+(a.x+34)+'" y1="'+a.y+'" x2="'+(b.x-38)+'" y2="'+b.y+'" stroke="#5b7bbf" stroke-width="1.2" marker-end="url(#ar)"/>';
+    if(e.label) s+='<text x="'+((a.x+b.x)/2)+'" y="'+(a.y-10)+'" text-anchor="middle" fill="#8b93a7" font-size="10">'+esc(e.label)+'</text>';
+  });
+  nodes.forEach(function(n){
+    var p=pos[n];
+    s+='<rect x="'+(p.x-36)+'" y="'+(p.y-14)+'" width="72" height="28" rx="8" fill="#1b2333" stroke="#3a5285"/>';
+    s+='<text x="'+p.x+'" y="'+(p.y+4)+'" text-anchor="middle" fill="#dfe5f2" font-size="11">'+esc(n)+'</text>';
+  });
+  return s+'</svg>';
+}
+function renderReadingLlm(d,q){
+  document.getElementById('rd-lead').textContent = d.summary || '';
+  var h='<section class="rd-sec"><h2>01　结论（短句）</h2>';
+  d.points.forEach(function(p,i){
+    h+='<div class="rd-item" data-pt="'+i+'"><div class="claim">'+esc(p.claim)+'</div>'
+      +(p.why?'<div class="why">'+esc(p.why)+'</div>':'')
+      +'<div class="src">出处：'+esc(p.source)+'</div></div>';
+  });
+  h+='</section>';
+  if(d.table && (d.table.columns||[]).length){
+    h+='<section class="rd-sec"><h2>02　对比表</h2>';
+    if(d.table.title) h+='<p class="rd-lead" style="font-size:13.5px;margin-bottom:8px">'+esc(d.table.title)+'</p>';
+    h+='<table class="rd-table"><thead><tr>';
+    d.table.columns.forEach(function(c){h+='<th>'+esc(c)+'</th>'});
+    h+='</tr></thead><tbody>';
+    (d.table.rows||[]).forEach(function(r){h+='<tr>';r.forEach(function(c){h+='<td>'+esc(c)+'</td>'});h+='</tr>'});
+    h+='</tbody></table></section>';
+  }
+  var svg = flowSvg(d.flow);
+  if(svg){ h+='<section class="rd-sec"><h2>03　流程图</h2>'+svg+'</section>' }
+  h+='<section class="rd-sec"><h2>04　交互核对</h2>'
+    +'<div class="rd-item"><div class="why">点按钮切换显示；滑块只影响本页显示条数，不重新检索。</div>'
+    +'<div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
+    +'<button onclick="togEvidence()">显示/隐藏原话证据</button>'
+    +'<label style="font-size:12px;color:#8b93a7">要点条数 <input type="range" min="1" max="'+d.points.length+'" value="'+d.points.length+'" oninput="limitPoints(this.value)"></label>'
+    +'<button onclick="rerun()">重跑检索</button></div></div>';
+  h+='</section>';
+  var old=document.getElementById('rd-body');
+  var tail = old ? (old.innerHTML.match(/<section class="rd-sec"><h2>02　原话与证据[\s\S]*$/)||[''])[0] : '';
+  old.innerHTML = h + tail;
+}
+function togEvidence(){
+  document.querySelectorAll('#rd-body .rd-quote').forEach(function(e){
+    e.style.display = (e.style.display==='none') ? 'block' : 'none';
+  });
+}
+function limitPoints(n){
+  var items=document.querySelectorAll('#rd-body .rd-item[data-pt]');
+  items.forEach(function(e){ e.style.display = (parseInt(e.dataset.pt,10) < parseInt(n,10)) ? 'block' : 'none'; });
+}
+function rerun(){ run(); }
+function renderSynth(s,q){
+  if(!s||!s.ok){$('#brief').textContent='检索失败。';return}
+  var brief = s.brief || ('「'+q+'」命中 '+((s.stats&&s.stats.hits)||0)+' 处，其中高价值 '+((s.stats&&s.stats.high)||0)+' 条。');
+  $('#brief').textContent=brief;
+  $('#srcnote').textContent='规则分级，非 LLM 改写';
+  $('#stat').innerHTML='<span>命中 <b>'+s.stats.hits+'</b> 处</span><span>笔记 <b>'+s.stats.notes+'</b> 篇</span>'
+    +'<span>高价值 <b>'+s.stats.high+'</b></span><span>中等 <b>'+s.stats.mid+'</b></span><span>样板 <b>'+s.stats.low+'</b></span>';
+  var h='';
+  if(!(s.points||[]).length){h='<div class="note muted">没有可用命中。</div>'}
+  (s.points||[]).forEach(function(p,i){
+    h+='<div class="point"><div class="n">'+String(i+1).padStart(2,'0')+'<span class="tag '+p.level+'">'+(p.level==='high'?'高价值':'中等')+'</span></div>'
+      +'<div class="claim">'+hl(p.claim,q)+'</div>'
+      +(p.why?'<div class="why">'+esc(p.why)+'</div>':'')
+      +'<div class="src">出处：'+esc(p.source)+'</div></div>';
+  });
+  $('#points').innerHTML=h;
+  var e='';
+  e+='<details open><summary>原话 / 结论级命中（'+((s.evidence.high||[]).length)+'）</summary>';
+  (s.evidence.high||[]).forEach(function(x){e+='<div class="row">'+hl(x.text,q)+'<span class="p">'+esc(x.file)+(x.heading?' · § '+esc(x.heading):'')+'</span></div>'});
+  e+='</details>';
+  e+='<details><summary>目录 / 模板样板（'+s.evidence.low_count+'）— 折叠</summary>';
+  (s.evidence.low||[]).slice(0,15).forEach(function(x){e+='<div class="row" style="opacity:.6">'+esc(x.text.slice(0,120))+'<span class="p">'+esc(x.file)+'</span></div>'});
+  e+='</details>';
+  $('#evid').innerHTML=e;
+  var cf='';
+  (s.concepts||[]).forEach(function(c){cf+='<div class="def"><div class="k">'+esc(c.k)+'</div><div class="v">'+esc(c.v)+'</div></div>'});
+  cf+='<div class="note">目录规模来自 kb_para 实际统计；定义正文在左侧要点里，两边不重复。</div>';
+  $('#concepts').innerHTML=cf;
+  var nx='';
+  (s.next||[]).forEach(function(n){nx+='<div class="point"><div class="claim">'+esc(n.claim)+'</div><div class="why">'+esc(n.why)+'</div></div>'});
+  $('#next').innerHTML=nx||'<div class="note muted">—</div>';
+  renderReading(s,q);
+}
+function renderGraph(c,q){
+  if(!c||!c.ok){$('#graph').innerHTML='<div class="warnbox">图谱检索失败，不影响左边结果。</div>';return}
+  var ents=c.entities||[],rels=c.relations||[];
+  if(!ents.length&&!rels.length){
+    $('#graph').innerHTML='<div class="warnbox">图谱里没有「'+esc(q)+'」这个实体（本次返回 '
+      +((c.totals&&c.totals.entities)||0)+' 实体 / '+((c.totals&&c.totals.relations)||0)+' 关系 / '+((c.totals&&c.totals.chunks)||0)+' 原文块，均不含该词）。不画图，也不拿泛化实体凑数。</div>';
+    return}
+  var h='';
+  if(ents.length){h+='<div class="note">实体：';ents.slice(0,10).forEach(function(e){h+='<span class="pill" style="margin-right:5px">'+esc(e.name)+'</span>'});h+='</div>'}
+  if((c.chunks||[]).length){h+='<div class="note">原文块：';c.chunks.slice(0,2).forEach(function(x){h+='<div class="row" style="border-left:2px solid #2f4a8a;padding-left:8px;margin:5px 0">'+hl((x.text||'').slice(0,220),q)+'</div>'});h+='</div>'}
+  if(rels.length){h+='<div class="note">关系：';rels.slice(0,8).forEach(function(r){h+='<div>'+esc(r.from)+' → '+esc(r.to)+'：'+esc((r.desc||'').slice(0,40))+'</div>'});h+='</div>'}
+  $('#graph').innerHTML=h;
+}
+function post(title,body,src,kind){
+  fetch('/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:title,body:(body||'').slice(0,6000),source:src,kind:kind})})
+    .then(function(r){return r.json()}).then(function(j){toast(j.ok?('已存入 00-Inbox：'+j.path.split('/').pop()):('保存失败：'+j.text),j.ok)})
+    .catch(function(e){toast('保存失败：'+e.message,false)})}
+function saveMain(){if(!st.synth)return toast('先检索',false);
+  post(st.q+' · 知识库梳理',($('#brief').innerText||'')+'\n\n'+($('#points').innerText||''),'','synth')}
+function saveNext(){if(!st.synth)return toast('先检索',false);
+  post(st.q+' · 下一步动作',($('#next').innerText||''),'','synth')}
+function copyTxt(id){var t=($('#'+id).innerText||'').trim();
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast('已复制')}).catch(fb)}else fb();
+  function fb(){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败',false)}ta.remove()}}
+$('#q').addEventListener('keydown',function(e){if(e.key==='Enter')run()});
+applyMode();
+loadMap();
+(function(){var q=new URLSearchParams(location.search).get('q');if(q){$('#q').value=q;run()}})();
+</script></body></html>

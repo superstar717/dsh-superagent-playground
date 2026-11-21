@@ -1,0 +1,704 @@
+#!/usr/bin/env python3
+"""kb-bridge — 知识库/图谱的本地 HTTP 桥（给工作台的面板用）。
+
+零依赖、只绑 127.0.0.1。三个能力直接复用已有命令：
+  GET /map                 → kb-map --no-graph
+  GET /search?q=词         → kgrep  （退出码 2 = 未发现 ≠ 不存在）
+  GET /ctx?q=问题&ds=数据集 → kgctx  （图谱只检索不生成）
+  GET /                    → 面板 HTML（同目录 ../page/kb-panel.html）
+
+用法: kb-bridge [--port 8790] [--daemon]
+"""
+from __future__ import annotations
+import json, pathlib, re, subprocess, sys, time, urllib.request
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from urllib.parse import urlparse, parse_qs
+
+HOME = Path.home()
+BIN = HOME / ".local" / "bin"
+PANEL = Path(__file__).resolve().parent.parent / "share" / "kb-panel" / "kb-panel.html"
+PANEL_FALLBACK = HOME / ".local" / "share" / "kb-panel" / "kb-panel.html"
+INBOX = HOME / "姜胡说" / "kb_para" / "00-Inbox"
+
+# ---- 数据集注册表：一次「梳理」= 本地检索目录 + 图谱数据集 id（修「梳理不随数据集切换」）----
+# 2026-11-14 核实：李公子 371 篇全量语料只在图谱 ligongzi_9c54ca 的 input 里
+# （~/graphmind-replica/data/ligongzi_9c54ca/input/），~/姜胡说 下只有 dysub 新拉的 10 篇 ASR；
+# kb_para / kb 是姜胡说的笔记库，李公子没有 → graph_first，梳理时明确标注来源。
+DATASETS = {
+    "jianghushu-methodology_b0607c": {
+        "id": "jianghushu-methodology_b0607c",
+        "label": "姜胡说",
+        "vault": [HOME / "姜胡说" / "kb_para", HOME / "姜胡说" / "kb"],
+        "asr_dirs": [HOME / "姜胡说" / "asr"],
+        "graph": "jianghushu-methodology_b0607c",
+        "graph_first": False,
+        "source_note": "来源：本地库 kb_para + ASR（姜胡说）",
+    },
+    "ligongzi_9c54ca": {
+        "id": "ligongzi_9c54ca",
+        "label": "李公子",
+        "vault": [],  # 李公子无 Obsidian 笔记库；kb_para/kb 属姜胡说，不得混搜
+        # 简体版放前面：查询词以简体为主，同名文件优先简体命中（繁体副本按文件名去重让位）
+        "asr_dirs": [HOME / "姜胡说" / "asr_simplified_ligongzi",
+                     HOME / "姜胡说" / "asr_ligongzi"],
+        "graph": "ligongzi_9c54ca",
+        "graph_first": True,
+        "source_note": "来源：知识图谱 ligongzi_9c54ca（371 篇）+ 本地 ASR（仅 10 篇，图谱优先）",
+    },
+}
+DEFAULT_DS = "jianghushu-methodology_b0607c"
+
+
+def resolve_ds(ds: str) -> dict:
+    """ds 参数 → 数据集配置；空/未知 → 姜胡说（兼容旧链接与旧书签）。"""
+    return DATASETS.get((ds or "").strip(), DATASETS[DEFAULT_DS])
+
+
+# ---- 图谱检索（/search/context 只检索不生成）的共享实现：/api/ctx 与 _summary 共用 ----
+GRAPH_API = "http://127.0.0.1:8777/api/datasets/{ds}/search/context"
+GRAPH_ALIAS = {"para": ["pama", "帕拉"], "obsidian": ["奥布斯林", "黑药石"], "notion": ["诺申"]}
+GRAPH_EXPAND = {"PARA": "项目 资产 资源 归档 目录",
+                "OBSIDIAN": "奥布斯林 笔记 工具 markdown",
+                "AI": "人工智能 知识库"}
+
+
+def graph_query_expand(q: str) -> str:
+    """查询词扩音译/上下文（ASR 音译与短缩写单独检索召不回，见 LESSONS E149/E151）。"""
+    exp = GRAPH_EXPAND.get(q.strip().upper(), "")
+    return (q + " " + " ".join(GRAPH_ALIAS.get(q.strip().lower(), [])) + " " + exp).strip()
+
+
+def graph_fetch(q: str, dsid: str, timeout: int = 240) -> str:
+    body = json.dumps({"query": q, "mode": "mix"}).encode()
+    req = urllib.request.Request(GRAPH_API.format(ds=dsid), data=body, method="POST")
+    req.add_header("Content-Type", "application/json")
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return json.loads(resp.read().decode()).get("context") or ""
+
+
+def graph_parse(c: str, q: str, q_eff: str) -> dict:
+    """把 /search/context 的原始文本解析成实体/关系/引用/原文块，并按查询词做相关性过滤。"""
+    ents = [{"name": a, "type": b, "desc": d3} for a, b, d3 in
+            re.findall(r'\{"entity": "(.*?)", "type": "(.*?)", "description": "(.*?)"\}', c, re.S)]
+    rels = [{"from": a, "to": b, "desc": d3} for a, b, d3 in
+            re.findall(r'\{"entity1": "(.*?)", "entity2": "(.*?)", "description": "(.*?)"\}', c, re.S)]
+    refs = [{"id": a, "name": b.strip()} for a, b in re.findall(r"\[(\d+)\]\s*([^\[\]]*?\.txt)", c)]
+    chunks = [{"id": a, "text": b[:1200]} for a, b in
+              re.findall(r'\{"reference_id": "(\d+)", "content": "(.*?)"(?:,|\})', c, re.S)]
+    # 相关性过滤：查询词（含音译变体）出现在名称/描述/原文里才算命中
+    qv = {q.lower()}
+    for k, vs in GRAPH_ALIAS.items():
+        if k in q.lower():
+            qv.update(v.lower() for v in vs)
+
+    def rel(txt):
+        s = (txt or "").lower()
+        return any(v and v in s for v in qv)
+
+    ent_rel = [e for e in ents if rel(e.get("name")) or rel(e.get("desc"))]
+    rel_rel = [r for r in rels if rel(r.get("from") + r.get("to") + r.get("desc"))]
+    ch_rel = [ch for ch in chunks if rel(ch.get("text"))]
+    return {"entities": ent_rel, "relations": rel_rel, "refs": refs,
+            "chunks": ch_rel, "raw_len": len(c),
+            "totals": {"entities": len(ents), "relations": len(rels),
+                       "chunks": len(chunks)},
+            "variants": sorted(qv), "query_effective": q_eff}
+
+
+def run(cmd: list[str], timeout: int = 180) -> dict:
+    try:
+        p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        return {"ok": p.returncode == 0, "code": p.returncode,
+                "text": (p.stdout or "") + (("\n[stderr]\n" + p.stderr) if p.stderr else "")}
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "code": -1, "text": f"超时（>{timeout}s）"}
+    except FileNotFoundError:
+        return {"ok": False, "code": -2, "text": f"未找到命令: {cmd[0]}"}
+
+
+class H(BaseHTTPRequestHandler):
+    def log_message(self, *a):  # 安静
+        pass
+
+    def _send(self, code: int, body: bytes, ctype: str):
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_GET(self):
+        u = urlparse(self.path); qs = parse_qs(u.query)
+        q = (qs.get("q") or [""])[0].strip()
+        ds = (qs.get("ds") or [""])[0].strip()
+        ERR_Q = json.dumps({"ok": False, "text": "缺 q"}, ensure_ascii=False).encode()
+        NOTFOUND = json.dumps({"ok": False, "text": "not found"}, ensure_ascii=False).encode()
+        SHARE = HOME / ".local" / "share" / "kb-panel"
+        if u.path == "/points":
+            self.send_response(302); self.send_header("Location", "/"); self.end_headers(); return
+        pages = {"/": PANEL, "/index.html": PANEL, "/embed": SHARE / "embed.html"}
+        if u.path in pages:
+            f = pages[u.path]
+            if not f.is_file() and u.path in ("/", "/index.html"):
+                f = PANEL_FALLBACK
+            if f.is_file():
+                return self._send(200, f.read_bytes(), "text/html; charset=utf-8")
+            return self._send(404, ("page not found: " + str(f)).encode(), "text/plain; charset=utf-8")
+        if u.path == "/map":
+            return self._send(200, json.dumps(run([str(BIN / "kb-map"), "--no-graph"]), ensure_ascii=False).encode(), "application/json; charset=utf-8")
+        if u.path == "/api/map":
+            r = run([str(BIN / "kb-map")])
+            return self._send(200, json.dumps(r, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+        if u.path == "/api/search":
+            if not q:
+                return self._send(400, ERR_Q, "application/json; charset=utf-8")
+            r = run([str(BIN / "kgrep"), q])
+            out = r["text"]
+            variants = []
+            for line in out.splitlines():
+                if line.startswith("检索变体:"):
+                    variants = line.split(":", 1)[1].split()
+            hits, seen = [], set()
+            for fid in re.findall(r"^\s*•\s*(\S+)\s*$", out, re.M):
+                fid = fid.strip()
+                if fid in seen:
+                    continue
+                seen.add(fid)
+                ex = ""
+                fp = HOME / "姜胡说" / "asr" / f"{fid}.txt"
+                if fp.is_file():
+                    txt = fp.read_text(encoding="utf-8", errors="ignore")
+                    for v in variants:
+                        i = txt.find(v)
+                        if i >= 0:
+                            ex = txt[max(0, i - 40):i + 80].replace("\n", " ").strip()
+                            break
+                hits.append({"id": fid, "excerpt": ex[:200]})
+            return self._send(200, json.dumps({"ok": r["ok"], "code": r["code"], "variants": variants,
+                                               "hits": hits, "text": out}, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+        if u.path == "/api/vault":
+            if not q:
+                return self._send(400, ERR_Q, "application/json; charset=utf-8")
+            return self._send(200, json.dumps(self._vault(q), ensure_ascii=False).encode(),
+                              "application/json; charset=utf-8")
+        if u.path == "/api/llmtest":
+            info = {"home": str(HOME), "env_keys": sorted(self._env().keys())[:8],
+                    "has_zhipu": bool(self._env().get("ZHIPUAI_API_KEY"))}
+            out = self._llm('只回四个字：能听见吗')
+            info["llm"] = out[:200] if out else None
+            return self._send(200, json.dumps(info, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+        if u.path == "/api/summary":
+            if not q:
+                return self._send(400, ERR_Q, "application/json; charset=utf-8")
+            return self._send(200, json.dumps(self._summary(q, ds), ensure_ascii=False).encode(),
+                              "application/json; charset=utf-8")
+        if u.path == "/api/synth":
+            if not q:
+                return self._send(400, ERR_Q, "application/json; charset=utf-8")
+            return self._send(200, json.dumps(self._synth(q, ds), ensure_ascii=False).encode(),
+                              "application/json; charset=utf-8")
+        if u.path == "/api/ctx":
+            if not q:
+                return self._send(400, ERR_Q, "application/json; charset=utf-8")
+            dsid = resolve_ds(ds)["graph"]
+            try:
+                q_eff = graph_query_expand(q)
+                c = graph_fetch(q_eff, dsid)
+            except Exception as e:
+                return self._send(502, json.dumps({"ok": False, "error": str(e)[:200]}, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+            out = graph_parse(c, q, q_eff)
+            return self._send(200, json.dumps({"ok": True, "dataset": dsid, "query": q, **out},
+                                              ensure_ascii=False).encode(),
+                              "application/json; charset=utf-8")
+        if u.path == "/search":
+            if not q:
+                return self._send(400, ERR_Q, "application/json; charset=utf-8")
+            return self._send(200, json.dumps(run([str(BIN / "kgrep"), q]), ensure_ascii=False).encode(), "application/json; charset=utf-8")
+        if u.path == "/ctx":
+            if not q:
+                return self._send(400, ERR_Q, "application/json; charset=utf-8")
+            cmd = [str(BIN / "kgctx"), q] + ([ds] if ds else [])
+            return self._send(200, json.dumps(run(cmd, timeout=240), ensure_ascii=False).encode(), "application/json; charset=utf-8")
+        return self._send(404, NOTFOUND, "application/json; charset=utf-8")
+
+    _VAULT_CACHE = {}
+
+    def _vault(self, q, limit=25, dirs=None):
+        """在指定 Obsidian 库目录里搜，返回 文件 / 所在标题 / 命中行。dirs 为空=该数据集无笔记库。"""
+        if dirs is None:
+            dirs = [HOME / "姜胡说" / "kb_para", HOME / "姜胡说" / "kb"]
+        key = tuple(str(d) for d in dirs)
+        if key not in self._VAULT_CACHE:
+            self._VAULT_CACHE[key] = [d for d in dirs if d.is_dir()]
+        dirs = self._VAULT_CACHE[key]
+        hits = []
+        import subprocess as sp
+        for d in dirs:
+            try:
+                r = sp.run(["rg", "-n", "--no-heading", "--color", "never",
+                            "--glob", "!**/node_modules/**", "--glob", "!**/.git/**", "--glob", "!*.bak*", "--glob", "!*.bak-*",
+                            "-m", "4", "--max-columns", "400", "--", q, str(d)],
+                           capture_output=True, text=True, timeout=25)
+            except Exception:
+                continue
+            by_file = {}
+            for line in (r.stdout or "").splitlines():
+                parts = line.split(":", 2)
+                if len(parts) < 3:
+                    continue
+                fp, ln, text = parts[0], parts[1], parts[2]
+                if not ln.isdigit():
+                    continue
+                by_file.setdefault(fp, []).append((int(ln), text.strip()))
+            for fp, rows in by_file.items():
+                rows.sort()
+                ln, text = rows[0]
+                heading = ""
+                try:
+                    lines = pathlib.Path(fp).read_text(encoding="utf-8", errors="ignore").splitlines()
+                    for i in range(ln - 1, 0, -1):
+                        if lines[i - 1].lstrip().startswith("#"):
+                            heading = lines[i - 1].strip("# ").strip()[:80]
+                            break
+                except Exception:
+                    pass
+                hits.append({"file": str(pathlib.Path(fp).relative_to(HOME / "姜胡说")),
+                             "heading": heading, "line": ln, "text": text[:220],
+                             "more": len(rows) - 1})
+        hits.sort(key=lambda h: (0 if h["file"].startswith("kb_para") else 1, h["file"]))
+        return {"ok": True, "query": q, "count": len(hits),
+                "dirs": [str(d.relative_to(HOME / "姜胡说")) for d in dirs],
+                "hits": hits[:limit]}
+
+    BOILER = ("启动入口", "分类：", "本文件", "模板", "用法", "示例", "---")
+
+    @staticmethod
+    def _env():
+        """从 superagent.env 读模型 key（launchd 启动时没有 shell 环境）。"""
+        env = {}
+        fp = HOME / ".dsh" / "state" / "superagent.env"
+        try:
+            for line in fp.read_text(encoding="utf-8", errors="ignore").splitlines():
+                m = re.match(r"\s*export\s+([A-Z0-9_]+)=(.*)", line)
+                if m:
+                    v = m.group(2).strip().strip('"').strip("'")
+                    env[m.group(1)] = v
+        except Exception:
+            pass
+        return env
+
+    def _llm(self, prompt, timeout=90):
+        """先试本机代理（anthropic 协议），失败改用智谱 OpenAI 协议（glm-4-flash）。"""
+        # 1) 本机代理
+        try:
+            body = json.dumps({"model": "glm-5.3-flash", "max_tokens": 3000,
+                               "thinking": {"type": "disabled"},
+                               "messages": [{"role": "user", "content": prompt}]}).encode()
+            req = urllib.request.Request("http://127.0.0.1:15721/v1/messages", data=body, method="POST")
+            req.add_header("content-type", "application/json")
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                data = json.loads(resp.read().decode())
+            txt = "".join(c.get("text", "") for c in data.get("content", []) if c.get("type") == "text").strip()
+            if txt:
+                return txt
+        except Exception:
+            pass
+        # 2) 智谱直连
+        key = self._env().get("ZHIPUAI_API_KEY", "")
+        if key:
+            try:
+                body = json.dumps({"model": "glm-4-flash", "temperature": 0.2,
+                                   "messages": [{"role": "user", "content": prompt}]}).encode()
+                req = urllib.request.Request("https://open.bigmodel.cn/api/paas/v4/chat/completions",
+                                             data=body, method="POST")
+                req.add_header("content-type", "application/json")
+                req.add_header("authorization", "Bearer " + key)
+                with urllib.request.urlopen(req, timeout=timeout) as resp:
+                    data = json.loads(resp.read().decode())
+                return (data["choices"][0]["message"]["content"] or "").strip() or None
+            except Exception:
+                return None
+        return None
+
+    @staticmethod
+    def _json_from(text):
+        """从模型输出里抠出 JSON（容忍 ```json 包裹与前后废话）。"""
+        if not text:
+            return None
+        s = text.strip()
+        s = re.sub(r"^```[a-zA-Z]*\s*", "", s)
+        s = re.sub(r"\s*```$", "", s)
+        i, j = s.find("{"), s.rfind("}")
+        if i < 0 or j <= i:
+            return None
+        try:
+            return json.loads(s[i:j+1])
+        except Exception:
+            return None
+
+    @staticmethod
+    def _script_variants(q):
+        """繁简互转变体（与 kgrep 同一逻辑）；opencc 不可导入就不加，不影响主流程。"""
+        out = []
+        try:
+            import sys as _sys
+            _sys.path.insert(0, str(HOME / ".local" / "lib" / "opencc_pkg"))
+            from opencc import OpenCC
+            for v in (OpenCC("t2s").convert(q), OpenCC("s2t").convert(q)):
+                if v and v != q and v not in out:
+                    out.append(v)
+        except Exception:
+            pass
+        return out
+
+    def _summary(self, q, ds=""):
+        """把检索结果交给本机模型提炼成「一句话 + 要点」，来源限定在检索到的材料里。
+
+        graph_first 数据集（李公子）：本地语料极少，图谱原文块优先入池，要点标注图谱来源；
+        图谱检索失败时如实降级为「仅本地」，不假装检索过图谱。
+        """
+        dsc = resolve_ds(ds)
+        base = self._synth(q, ds)
+        pool = (base.get("evidence", {}).get("high") or [])[:10]
+        graph_note = ""
+        graph_chunks_used = 0
+        if dsc["graph_first"]:
+            ref_by_id = {}
+            try:
+                q_eff = graph_query_expand(q)
+                parsed = graph_parse(graph_fetch(q_eff, dsc["graph"]), q, q_eff)
+                ref_by_id = {r["id"]: r["name"] for r in parsed["refs"]}
+                have = {x.get("file") for x in pool}
+                for ch in parsed["chunks"][:8]:
+                    src = "图谱·" + ref_by_id.get(ch["id"], "原文块#" + str(ch["id"]))
+                    if src in have:
+                        continue
+                    pool.append({"file": src, "text": ch["text"]})
+                    graph_chunks_used += 1
+            except Exception as e:
+                graph_note = "（图谱检索失败：" + str(e)[:60] + "，本次仅本地 ASR）"
+        if len(pool) < 2:
+            return {"ok": False, "error": "可用材料不足", "llm": False,
+                    "dataset": dsc["id"], "dataset_label": dsc["label"],
+                    "source_note": dsc["source_note"] + graph_note}
+        lines = []
+        for i, x in enumerate(pool, 1):
+            lines.append("%d. [%s] %s" % (i, x.get("file"), (x.get("text") or "")[:140]))
+        prompt = (
+            "把下面的检索材料整理成一页「降噪」展示。查询词：%s\n\n材料：\n%s\n\n"
+            "只输出 JSON（不要代码块、不要解释）。格式：\n"
+            '{"summary":"≤60字，短句，说清这词是什么",'
+            '"points":[{"claim":"≤24字短句结论","why":"≤40字依据，短句，少术语","source":"原样取自方括号出处"}],'
+            '"table":{"title":"对比表标题","columns":["列1","列2","列3"],"rows":[["…","…","…"]]},'
+            '"flow":{"nodes":["节点A","节点B","节点C"],"edges":[{"from":"节点A","to":"节点B","label":"动作"}]}}\n'
+            "要求：①句子短、术语少，能一眼看懂；②points 3-5 条；③table 2-4 列、2-5 行，"
+            "把材料里的分类/差异/边界条件放进去，没有就留空数组；④flow 3-5 个节点描述顺序或因果，"
+            "没有就留空数组；⑤只能依据材料，不得编造；材料不足就在 summary 里直说。"
+            % (q, "\n".join(lines))
+        )
+        raw = self._llm(prompt)
+        got = self._json_from(raw)
+        if not got or not got.get("points"):
+            try:
+                pathlib.Path("/tmp/kb-summary-last.txt").write_text((raw or "")[:4000], encoding="utf-8")
+            except Exception:
+                pass
+            return {"ok": False, "error": "模型输出无法解析", "llm": False, "raw_len": len(raw or ""),
+                    "dataset": dsc["id"], "dataset_label": dsc["label"],
+                    "source_note": dsc["source_note"] + graph_note}
+        allowed = {x.get("file") for x in pool}
+        by_file = {x.get("file"): (x.get("text") or "") for x in pool}
+
+        def overlap(a, b):
+            """claim 与出处正文的最长公共子串长度（粗糙但够用）。"""
+            best = 0
+            for i in range(len(a)):
+                for j in range(i + best + 1, min(len(a), i + 12) + 1):
+                    if a[i:j] in b:
+                        best = j - i
+                    else:
+                        break
+            return best
+
+        pts = []
+        for g in got["points"][:5]:
+            claim = str(g.get("claim") or "")[:120]
+            src = str(g.get("source") or "").strip()
+            if src not in allowed or overlap(claim, by_file.get(src, "")) < 4:
+                # 出处对不上就按文本重合度重挑一个
+                cand = max(allowed, key=lambda f: overlap(claim, by_file.get(f, "")))
+                if overlap(claim, by_file.get(cand, "")) >= 4:
+                    src = cand
+            pts.append({"claim": claim,
+                        "why": str(g.get("why") or "")[:160],
+                        "source": src})
+        tb = got.get("table") or {}
+        fl = got.get("flow") or {}
+        if dsc["graph_first"] and graph_chunks_used:
+            note = "AI 提炼 · 来源：知识图谱 %s（图谱优先）+ 本地 ASR%s" % (dsc["graph"], graph_note)
+        elif dsc["graph_first"]:
+            note = "AI 提炼 · 图谱没有相关原文块，本次要点仅来自本地 ASR（%s本地语料很少）%s" % (dsc["label"], graph_note)
+        else:
+            note = "AI 提炼 · 来源限于本地检索结果"
+        return {"ok": True, "llm": True, "query": q,
+                "dataset": dsc["id"], "dataset_label": dsc["label"], "source_note": note,
+                "summary": str(got.get("summary") or "")[:400], "points": pts,
+                "table": {"title": str(tb.get("title") or "")[:60],
+                          "columns": [str(c)[:24] for c in (tb.get("columns") or [])][:4],
+                          "rows": [[str(c)[:60] for c in row][:4] for row in (tb.get("rows") or [])][:5]},
+                "flow": {"nodes": [str(n)[:20] for n in (fl.get("nodes") or [])][:5],
+                         "edges": [{"from": str(e.get("from"))[:20], "to": str(e.get("to"))[:20],
+                                    "label": str(e.get("label") or "")[:16]}
+                                   for e in (fl.get("edges") or [])][:5]}}
+
+    def _synth(self, q, ds="", use_llm=False):
+        """检索 + 取舍：把命中按价值分级，给出 一句话 / 要点 / 证据 / 概念 / 下一步。
+
+        按数据集取本地目录：姜胡说 = kb_para+kb+asr；李公子 = 仅本地 ASR（graph_first，
+        无笔记库），页面来源标注由 source_note 说明，不假装搜过本地笔记库。
+        """
+        dsc = resolve_ds(ds)
+        v = self._vault(q, limit=200, dirs=dsc["vault"])
+        hits = v.get("hits", [])
+        # 原话层：本数据集的 ASR 语料里也搜一遍（含音译/繁简变体）。rg 对超长行只回 [Omitted]，所以先定位文件再读原文截取
+        import subprocess as sp
+        variants = [q]
+        for k, vs in {"para": ["pama", "帕拉"], "obsidian": ["奥布斯林", "黑药石"]}.items():
+            if k in q.lower():
+                variants += vs
+        variants += self._script_variants(q)
+        asr_added = set()
+        for asr_dir in (d for d in dsc["asr_dirs"] if d.is_dir()):
+            for vv in variants:
+                try:
+                    r = sp.run(["rg", "-l", "--color", "never", "-m", "1", "--", vv, str(asr_dir)],
+                               capture_output=True, text=True, timeout=20)
+                except Exception:
+                    continue
+                for fp in (r.stdout or "").splitlines()[:1]:
+                    fname = pathlib.Path(fp).name
+                    if fname in asr_added:   # 同名文件跨繁简两目录只取先命中的那份
+                        continue
+                    try:
+                        body = pathlib.Path(fp).read_text(encoding="utf-8", errors="ignore")
+                    except Exception:
+                        continue
+                    i = body.find(vv)
+                    if i < 0:
+                        continue
+                    snippet = body[max(0, i - 60): i + 120].replace("\n", " ").strip()
+                    asr_added.add(fname)
+                    # 只靠音译命中时，再用上下文词判定是否真相关（如 PARA 的 项目/资产/资源/归档）
+                    alias_hit = vv.lower() != q.lower()
+                    ctx_terms = [x for x in {"PARA": ["项目", "资产", "资源", "归档", "目录"],
+                                             "OBSIDIAN": ["笔记", "工具", "马克当"]}.get(q.strip().upper(), [])]
+                    if alias_hit and ctx_terms and any(x in snippet for x in ctx_terms):
+                        alias_hit = False
+                    hits.append({"file": asr_dir.name + "/" + fname, "heading": "原话",
+                                 "line": 0, "text": snippet, "more": 0,
+                                 "alias_only": alias_hit})
+
+        def clean(s):
+            s = re.sub(r"^[>\s\-\*#]+", "", s or "")
+            return s.strip()[:160]
+
+        def usable(s):
+            """过滤 frontmatter / 链接 / 标题 / 过短行，只留像句子的。"""
+            s = (s or "").strip()
+            if len(s) < 22:
+                return False
+            if re.match(r"^(tags|related|created|source|status|title|aliases|date|up|down|author)\s*[:：]", s, re.I):
+                return False
+            if "[[" in s or "]]" in s:
+                return False
+            if s.startswith("|") or s.count("|") >= 2:
+                return False
+            if s[0] in "├└│┌┐┘─":
+                return False
+            if re.match(r"^\d+\s*个", s):
+                return False
+            if not re.search(r"[\u4e00-\u9fff]", s):
+                return False
+            if re.match(r"^[-=]{3,}$", s):
+                return False
+            return True
+        def weight(path, text):
+            w = 5
+            if path.startswith("asr"):  # asr/ 与 asr_simplified_ligongzi/ 等各数据集 ASR 目录同权
+                w = 10
+            elif "50-Evergreen-Notes" in path: w = 9
+            elif "70-道层笔记全集" in path or "80-Content-Outputs" in path: w = 8
+            elif "raw-asr" in path or "_asr_index" in path: w = 7
+            elif path.endswith("README.md"): w = 2
+            elif "40-Archives" in path: w = 4
+            if any(b in text for b in self.BOILER): w -= 3
+            if len(text) < 18: w -= 1
+            return max(1, w)
+
+        scored, seen = [], set()
+        for h in hits:
+            if not usable(h["text"]):
+                continue
+            if h.get("alias_only"):
+                h["score_hint"] = 4
+            key = re.sub(r"\s+", "", h["text"])[:24]
+            if key in seen:
+                continue
+            seen.add(key)
+            sc = h.get("score_hint") or weight(h["file"], h["text"])
+            scored.append({**h, "score": sc, "level": "high" if sc >= 8 else ("mid" if sc >= 5 else "low")})
+        scored.sort(key=lambda x: -x["score"])
+
+        high = [x for x in scored if x["level"] == "high"]
+        mid = [x for x in scored if x["level"] == "mid"]
+        low = [x for x in scored if x["level"] == "low"]
+
+
+        points = []
+        for x in (high + mid)[:6]:
+            points.append({"claim": clean(x["text"]),
+                           "why": ("章节：" + x["heading"]) if x.get("heading") else "",
+                           "source": x["file"], "level": x["level"]})
+
+        notes = {}
+        for x in scored:
+            notes.setdefault(x["file"], 0)
+            notes[x["file"]] += 1
+
+        brief = ""
+        if scored:
+            top = scored[0]
+            if dsc["graph_first"]:
+                brief = ("「%s」在%s本地 ASR 命中 %d 处（本地语料很少，完整语料在知识图谱 %s，"
+                         "要点以图谱原文为主）。最相关本地原话是 %s%s。"
+                         % (q, dsc["label"], len(notes), dsc["graph"], top["file"],
+                            ("（" + top["heading"] + "）") if top.get("heading") else ""))
+            else:
+                brief = ("「%s」在你的库里有 %d 篇笔记提到；最相关的是 %s%s。"
+                         % (q, len(notes), top["file"].replace("kb_para/", ""),
+                            ("（" + top["heading"] + "）") if top.get("heading") else ""))
+            if high:
+                brief += " 其中 " + str(len(high)) + " 条是方法论/结论级的内容，其余多为目录与模板样板。"
+        else:
+            if dsc["graph_first"]:
+                brief = ("%s本地语料没有命中「%s」。他的内容主要在知识图谱 %s 里——"
+                         "看下方图谱卡与 AI 提炼要点，不要只信本地检索。"
+                         % (dsc["label"], q, dsc["graph"]))
+            else:
+                brief = "库里没有命中「%s」。换个说法，或用它的英文/音译写法再试。" % q
+
+        # 概念卡（PARA 目录规模）只对有笔记库的数据集有意义（姜胡说专用）
+        para = []
+        concepts_note = None
+        if dsc["vault"]:
+            for d, label in (("10-Projects", "项目 Projects"), ("20-Areas", "领域/资产 Areas"),
+                             ("30-Resources", "资源 Resources"), ("40-Archives", "归档 Archives")):
+                n = len(list((HOME / "姜胡说" / "kb_para" / d).rglob("*.md"))) if (HOME / "姜胡说" / "kb_para" / d).is_dir() else 0
+                para.append({"k": label, "v": str(n) + " 篇"})
+        elif dsc["graph_first"]:
+            concepts_note = ("%s无本地笔记库（kb_para 属姜胡说专用）；他的语料以知识图谱 %s 为主。"
+                             % (dsc["label"], dsc["graph"]))
+
+        nxt = []
+        if scored:
+            worst = max(para, key=lambda z: int(z["v"].split()[0])) if para else None
+            nxt.append({"claim": "把这条写进你的下一期选题",
+                        "why": "最高价值命中来自 " + scored[0]["file"].split("/")[-1] + "，可直接改写成 3 分钟口播。"})
+            if worst:
+                nxt.append({"claim": "PARA 分流：归档/目录堆积最多的是「" + worst["k"] + "」（" + worst["v"] + "）",
+                            "why": "说明进来的东西大多直接堆进归档，没有走 项目/领域/资源 的分流。"})
+
+        # ---- 让模型把命中提取成「一句话 + 要点」，来源必须取自给定清单 ----
+        llm_used = False
+        if use_llm and (len(high) + len(mid)) >= 2:
+            pool = (high + mid)[:10]
+            lines = []
+            for k, x in enumerate(pool, 1):
+                lines.append("%d. [%s] %s" % (k, x["file"], clean(x["text"])[:140]))
+            prompt = (
+                "你在帮用户把知识库检索结果整理成一页要点。查询词：%s\n\n"
+                "下面是检索到的原文片段（编号. [出处] 内容）：\n%s\n\n"
+                "请输出严格 JSON（不要 markdown 代码块），格式：\n"
+                '{"summary": "两句以内说清这个词在材料里是什么", '
+                '"points": [{"claim": "一句话结论，不超过40字", "why": "依据/解释，不超过60字", "source": "取自上面的出处字符串"}]}\n'
+                "要求：points 3-5 条；只依据上面的材料，不得编造；source 必须原样取自上面方括号里的出处；"
+                "如果材料互相矛盾或不足以回答，就在 summary 里说明。" % (q, "\n".join(lines))
+            )
+            got = self._json_from(self._llm(prompt))
+            if got and got.get("points"):
+                pts = []
+                allowed = {x["file"] for x in pool}
+                for g in got["points"][:5]:
+                    src = str(g.get("source") or "").strip()
+                    if src not in allowed:
+                        src = pool[0]["file"]
+                    pts.append({"claim": str(g.get("claim") or "")[:120],
+                                "why": str(g.get("why") or "")[:160],
+                                "source": src, "level": "high"})
+                if pts:
+                    points = pts
+                    if got.get("summary"):
+                        brief = str(got["summary"])[:400]
+                    llm_used = True
+
+        return {"ok": True, "llm": llm_used, "query": q, "brief": brief,
+                "dataset": dsc["id"], "dataset_label": dsc["label"],
+                "source_note": dsc["source_note"], "graph_first": dsc["graph_first"],
+                "stats": {"hits": len(scored), "notes": len(notes), "high": len(high),
+                          "mid": len(mid), "low": len(low)},
+                "points": points,
+                "evidence": {"high": [{"text": clean(x["text"]), "file": x["file"], "heading": x["heading"]} for x in (high + mid)[:12]],
+                             "low": [{"text": clean(x["text"]), "file": x["file"]} for x in low[:40]],
+                             "low_count": len(low)},
+                "concepts": para, "concepts_note": concepts_note,
+                "next": nxt, "dirs": v.get("dirs", [])}
+
+    def do_POST(self):
+        if urlparse(self.path).path == "/save":
+            return self._save()
+        return self._send(404, json.dumps({"ok": False, "text": "not found"}, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+
+    # ---------- 写入：检索/取证结果回流知识库 ----------
+    def _save(self):
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+            data = json.loads(self.rfile.read(n).decode("utf-8") or "{}")
+        except Exception as e:
+            return self._send(400, json.dumps({"ok": False, "text": f"解析失败: {e}"}, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+        title = str(data.get("title") or "未命名").strip()[:60]
+        body = str(data.get("body") or "").strip()
+        source = str(data.get("source") or "").strip()[:300]
+        kind = str(data.get("kind") or "note").strip()[:20]
+        if not body:
+            return self._send(400, json.dumps({"ok": False, "text": "body 为空"}, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+        inbox = INBOX
+        inbox.mkdir(parents=True, exist_ok=True)
+        safe = re.sub(r"[^0-9A-Za-z\u4e00-\u9fff_-]+", "-", title).strip("-") or "note"
+        stamp = time.strftime("%Y-%m-%d")
+        base = f"{stamp}-{safe[:40]}"
+        path = inbox / f"{base}.md"
+        i = 2
+        while path.exists():
+            path = inbox / f"{base}-{i}.md"; i += 1
+        md = (f"---\ntags: [inbox, kb-panel, {kind}]\n"
+              f"source: {source or '（未记录）'}\n"
+              f"created: {time.strftime('%Y-%m-%d %H:%M')}\n"
+              f"status: draft\n---\n\n"
+              f"# {title}\n\n{body}\n\n## 我可以怎么用（待填）\n\n- \n")
+        path.write_text(md, encoding="utf-8")
+        return self._send(200, json.dumps({"ok": True, "text": f"已写入 {path}", "path": str(path)}, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+
+
+def main():
+    port = 8790
+    if "--port" in sys.argv:
+        port = int(sys.argv[sys.argv.index("--port") + 1])
+    srv = ThreadingHTTPServer(("127.0.0.1", port), H)
+    print(f"kb-bridge listening http://127.0.0.1:{port}  (Ctrl-C 退出)", flush=True)
+    srv.serve_forever()
+
+
+if __name__ == "__main__":
+    main()
