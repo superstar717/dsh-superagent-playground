@@ -7,9 +7,9 @@ const path = require('node:path');
 const src = fs.readFileSync(path.join(__dirname, '..', 'renderer', 'zoom.js'), 'utf8');
 const stripped = src.replace(/^export (const|function|let)\b/gm, '$1');
 const exportNames = [
-  'clamp', 'lerp', 'smoothstep', 'ASPECTS', 'detectActions', 'buildZooms',
-  'zoomAt', 'sourceRectAt', 'fitRect', 'contentRect', 'mapPointToCanvas',
-  'formatTime', 'normaliseCursor', 'cursorAt',
+  'clamp', 'lerp', 'smoothstep', 'ASPECTS', 'detectActions', 'clicksToActions',
+  'buildZooms', 'zoomAt', 'sourceRectAt', 'fitRect', 'contentRect',
+  'mapPointToCanvas', 'formatTime', 'normaliseCursor', 'cursorAt',
   'CAMERA_LAYOUTS', 'computeCameraRect', 'tiltSlices', 'activeCameraSettings', 'pipRectAt',
 ];
 const tail = `\nmodule.exports = {\n${exportNames.map((n) => `  ${n}`).join(',\n')},\n};\n`;

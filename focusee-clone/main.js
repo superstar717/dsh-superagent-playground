@@ -130,6 +130,137 @@ function stopCursorSampling() {
 }
 
 // ---------------------------------------------------------------------------
+// Recording: real system clicks (plan A, ticket 0cdd8d5c7d18).
+//
+// A tiny listen-only CGEventTap helper (native/click-tap/main.swift, Swift,
+// built by scripts/build-click-helper.sh) reports every global mouse DOWN/UP
+// as JSON lines on stdout. Running it as a child process means a helper hang
+// can never take the recorder down, and the macOS accessibility (AX) grant is
+// checked against the signed app bundle (the responsible process), not
+// against Electron's generic identities. When the helper is missing or the
+// grant is absent, recording continues exactly as before and auto zoom falls
+// back to the (improved) dwell heuristic — clickSource in the project tells
+// the editor which source produced the actions.
+// ---------------------------------------------------------------------------
+
+const CLICK_EVENT_KIND = 'leftMouseDown'; // FocuSee zooms on primary-button clicks
+
+let clickTapProc = null;
+let clickSamples = [];
+let clickCaptureStatus = null; // { ok, ax, reason } from the helper's status line
+let clickTapBuf = '';
+
+/** Where the helper binary lives: build/ in dev, Resources/app/build packaged. */
+function clickHelperPath() {
+  const candidates = [
+    path.join(__dirname, 'build', 'focusee-click-tap'),
+    process.resourcesPath ? path.join(process.resourcesPath, 'app', 'build', 'focusee-click-tap') : null,
+  ];
+  for (const p of candidates) {
+    try {
+      if (p && fs.existsSync(p)) return p;
+    } catch {}
+  }
+  return null;
+}
+
+/** One-shot probe for the permission badge: no long-lived process. */
+async function probeClickCapture() {
+  const helper = clickHelperPath();
+  if (!helper) return { available: false, reason: 'helper-missing' };
+  return new Promise((resolve) => {
+    let child;
+    try {
+      child = spawn(helper, ['--probe'], { stdio: ['ignore', 'pipe', 'ignore'] });
+    } catch {
+      return resolve({ available: false, reason: 'spawn-failed' });
+    }
+    let buf = '';
+    const finish = (result) => {
+      try { child.kill('SIGTERM'); } catch {}
+      resolve(result);
+    };
+    const timer = setTimeout(() => finish({ available: false, reason: 'probe-timeout' }), 3000);
+    child.stdout.on('data', (d) => {
+      buf += d.toString();
+      const nl = buf.indexOf('\n');
+      if (nl < 0) return;
+      try {
+        const msg = JSON.parse(buf.slice(0, nl));
+        clearTimeout(timer);
+        finish({
+          available: Boolean(msg.ok),
+          ax: Boolean(msg.ax),
+          reason: msg.ok ? 'granted' : (msg.reason || 'tap-failed'),
+        });
+      } catch {}
+    });
+    child.on('error', () => {
+      clearTimeout(timer);
+      finish({ available: false, reason: 'spawn-failed' });
+    });
+    child.on('close', () => clearTimeout(timer));
+  });
+}
+
+function startClickTap() {
+  stopClickTap();
+  clickSamples = [];
+  clickCaptureStatus = { ok: false, ax: false, reason: 'starting' };
+  const helper = clickHelperPath();
+  if (!helper) {
+    clickCaptureStatus = { ok: false, ax: false, reason: 'helper-missing' };
+    return;
+  }
+  try {
+    clickTapProc = spawn(helper, [], { stdio: ['pipe', 'pipe', 'ignore'] });
+  } catch {
+    clickCaptureStatus = { ok: false, ax: false, reason: 'spawn-failed' };
+    return;
+  }
+  clickTapBuf = '';
+  clickTapProc.stdout.on('data', (d) => {
+    clickTapBuf += d.toString();
+    let nl;
+    while ((nl = clickTapBuf.indexOf('\n')) >= 0) {
+      const line = clickTapBuf.slice(0, nl).trim();
+      clickTapBuf = clickTapBuf.slice(nl + 1);
+      if (!line) continue;
+      let msg;
+      try {
+        msg = JSON.parse(line);
+      } catch {
+        continue;
+      }
+      if (msg.type === 'status') {
+        clickCaptureStatus = { ok: Boolean(msg.ok), ax: Boolean(msg.ax), reason: String(msg.reason || '') };
+      } else if (msg.type === 'event' && msg.kind === CLICK_EVENT_KIND) {
+        // ts is the helper's wall-clock ms — the same Date.now clock the
+        // cursor sampler uses, so t lands on the recording timeline.
+        clickSamples.push({
+          t: Math.max(0, (Number(msg.ts) - cursorStartedAt) / 1000),
+          x: Number(msg.x),
+          y: Number(msg.y),
+          button: 0,
+          kind: CLICK_EVENT_KIND,
+        });
+      }
+    }
+  });
+  clickTapProc.on('error', () => {
+    if (!clickCaptureStatus?.ok) clickCaptureStatus = { ok: false, ax: false, reason: 'spawn-failed' };
+  });
+}
+
+function stopClickTap() {
+  if (clickTapProc) {
+    try { clickTapProc.kill('SIGTERM'); } catch {}
+  }
+  clickTapProc = null;
+  return { samples: clickSamples, status: clickCaptureStatus };
+}
+
+// ---------------------------------------------------------------------------
 // ffmpeg
 // ---------------------------------------------------------------------------
 
@@ -666,6 +797,7 @@ function registerIpc() {
 
   ipcMain.handle('capture:begin', async () => {
     startCursorSampling();
+    startClickTap();
     const display = screen.getPrimaryDisplay();
     return {
       startedAt: Date.now(),
@@ -673,7 +805,27 @@ function registerIpc() {
     };
   });
 
-  ipcMain.handle('capture:end', async () => stopCursorSampling());
+  ipcMain.handle('capture:end', async () => {
+    const tap = stopClickTap();
+    return {
+      cursor: stopCursorSampling(),
+      clicks: tap.samples,
+      clickCapture: tap.status,
+    };
+  });
+
+  // Permission badge for the record tab: can the app listen to real clicks?
+  ipcMain.handle('capture:clickProbe', async () => probeClickCapture());
+
+  // Deep link into the accessibility pane (used by the badge's fix-it button).
+  ipcMain.handle('system:openAccessibility', async () => {
+    try {
+      await shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility');
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  });
 
   ipcMain.handle('capture:showControl', async (_e, info) => {
     lastControlInfo = { ...(info || {}) };
@@ -929,6 +1081,10 @@ async function runE2E(win) {
   await evalJs(`window.__focuseeTest.selectTab('cursor')`);
   await wait(400);
   await shot('04-cursor');
+  // Zoom tab shows the click-source row (real clicks vs dwell fallback).
+  await evalJs(`window.__focuseeTest.selectTab('zoom')`);
+  await wait(400);
+  await shot('04b-zoom-source');
   await evalJs(`window.__focuseeTest.previewZoom(2.4)`);
   await wait(600);
   await shot('05-zoomed-canvas');
@@ -1232,6 +1388,12 @@ protocol.registerSchemesAsPrivileged([
 
 // One instance at a time: a second `npm start` must focus the existing window
 // instead of spawning a competing recorder.
+// The lock is keyed on the userData path, so e2e/smoke runs isolate userData
+// first — otherwise a packaged app the user has open (a normal state) makes
+// every `--e2e` launch exit 0 instantly and silently, with no artifacts.
+if (isE2E || isSmoke) {
+  app.setPath('userData', path.join(os.tmpdir(), 'focusee-clone-e2e'));
+}
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
 if (!gotSingleInstanceLock) {
   app.quit();
@@ -1302,4 +1464,5 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   stopCursorSampling();
+  stopClickTap();
 });

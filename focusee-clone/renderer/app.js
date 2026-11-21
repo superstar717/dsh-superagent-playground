@@ -1,7 +1,7 @@
 'use strict';
 
 import {
-  ASPECTS, buildZooms, clamp, detectActions, formatTime, normaliseCursor, zoomAt, pipRectAt,
+  ASPECTS, buildZooms, clamp, clicksToActions, detectActions, formatTime, normaliseCursor, zoomAt, pipRectAt,
 } from './zoom.js';
 import {
   BACKGROUNDS, backgroundById, backgroundCss, drawFrame, loadVideoElement, outputSize,
@@ -339,7 +339,7 @@ const TABS = {
   style: { title: '样式', sub: '画布比例、留白与边框。改动即时呈现在左侧画布。' },
   background: { title: '背景', sub: 'FocuSee 的背景预设换成了自绘渐变，可另行调配色。' },
   cursor: { title: '光标', sub: '录制已包含系统光标；这里控制点击强调效果。' },
-  zoom: { title: '缩放', sub: '自动缩放由光标停留点生成，也可以手动补一段。' },
+  zoom: { title: '缩放', sub: '自动缩放优先用系统真实点击；无辅助功能权限时按光标停留判定兜底。' },
   captions: { title: '字幕', sub: 'AI 字幕未实现；可手动添加一条字幕验证渲染链路。' },
   audio: { title: '音频', sub: '音频增强/降噪未实现。' },
   layout: { title: '布局', sub: '摄像头画中画、镜头布局、布局片段、背景移除、3D 动效与提词器。' },
@@ -454,10 +454,17 @@ function inspectorZoom(p) {
         <span class="t">×${Number(z.scale).toFixed(1)}</span>
         <button data-del-zoom="${z.id}" title="删除">✕</button>
       </div>`).join('')
-    : '<p class="placeholder">还没有缩放片段。点「自动缩放」按光标停留点生成，或把播放头移到目标位置后点「＋ 缩放」。</p>';
+    : '<p class="placeholder">还没有缩放片段。点「自动缩放」按点击/停留点生成，或把播放头移到目标位置后点「＋ 缩放」。</p>';
+  const clickCount = (p.clicks || []).length;
+  const source = p.clickSource === 'real'
+    ? `<div class="click-source ok">点击源：系统真实点击（辅助功能已授权）· ${clickCount} 个</div>`
+    : `<div class="click-source warn">点击源：光标停留判定（兜底）· ${clickCount} 个
+        <button class="btn xs" data-action="open-accessibility" title="录制真实点击需要辅助功能权限">如何用真实点击？</button>
+      </div>`;
   return `
     <div class="insp-section">
       <h4>自动缩放</h4>
+      ${source}
       ${sliderRow('autoScale', '缩放强度', 13, 30, Math.round((p.auto?.scale ?? AUTO_DEFAULTS.scale) * 10))}
       ${sliderRow('autoHold', '停留时长', 8, 35, Math.round((p.auto?.hold ?? AUTO_DEFAULTS.hold) * 10))}
       <div class="switch-row"><span>固定缩放区域</span><button class="switch ${p.fixedZoom ? 'on' : ''}" data-toggle="fixedZoom"></button></div>
@@ -613,6 +620,11 @@ function bindInspector(host) {
   host.querySelector('[data-tab-jump]')?.addEventListener('click', (e) => selectTab(e.target.dataset.tabJump));
   host.querySelector('[data-action="reanalyze"]')?.addEventListener('click', () => applyAutoZooms({ announce: true }));
   host.querySelector('[data-action="add-zoom"]')?.addEventListener('click', addManualZoom);
+  host.querySelector('[data-action="open-accessibility"]')?.addEventListener('click', async () => {
+    const res = await window.focusee.system.openAccessibility();
+    if (res && res.ok === false) toast(`无法打开系统设置：${res.error}`);
+    else toast('在「隐私与安全性 → 辅助功能」中允许本应用，重新录制即用真实点击。');
+  });
   host.querySelector('[data-action="add-caption"]')?.addEventListener('click', addCaption);
   host.querySelectorAll('[data-del-zoom]').forEach((el) => el.addEventListener('click', () => {
     p.zooms = p.zooms.filter((z) => z.id !== el.dataset.delZoom);
@@ -753,20 +765,41 @@ function pause() {
 function applyAutoZooms({ announce = false, silent = false } = {}) {
   const p = S.project;
   if (!p) return;
-  if (!p.cursor?.length) {
-    if (!silent) toast('这个项目没有光标轨迹，无法自动识别（例如导入的视频）。');
-    return;
+  // Full-screen captures are recorded at display size, so videoSize gives the
+  // pixel geometry the fallback heuristic needs (circular radius, px/s gate).
+  const display = p.videoSize && p.videoSize.width ? p.videoSize : null;
+  const aspect = display ? display.height / display.width : 1;
+  const real = p.clickSource === 'real' && p.clicks?.length > 0;
+  let actions;
+  if (real) {
+    // Plan A: zooms come from the system's real click events — exact times,
+    // exact positions. `p.clicks` is already persisted; reuse it as-is.
+    actions = p.clicks.map((c) => ({ ...c, dwell: 0, real: true }));
+  } else {
+    if (!p.cursor?.length) {
+      if (!silent) toast('这个项目没有光标轨迹，无法自动识别（例如导入的视频）。');
+      return;
+    }
+    // Fallback: dwell clusters with a circular radius and a speed gate so a
+    // slowly crawling pointer is no longer mistaken for a pause.
+    actions = detectActions(p.cursor, {
+      radius: 0.012,
+      minDwell: 0.3,
+      minGap: 0.55,
+      aspect,
+      displayWidth: display ? display.width : 0,
+    });
+    p.clicks = actions.map((a) => ({ t: a.t, nx: a.nx, ny: a.ny }));
   }
-  const actions = detectActions(p.cursor, { radius: 0.012, minDwell: 0.42, minGap: 0.55 });
   const auto = { ...AUTO_DEFAULTS, ...(p.auto || {}) };
-  p.clicks = actions.map((a) => ({ t: a.t, nx: a.nx, ny: a.ny }));
   const manual = (p.zooms || []).filter((z) => !z.auto);
   const generated = buildZooms(actions, S.duration, auto);
   p.zooms = [...manual, ...generated].sort((a, b) => a.start - b.start);
   renderTimeline();
   renderInspector();
   S.dirty = true;
-  if (announce) toast(`已生成 ${generated.length} 段自动缩放（${actions.length} 个停留点）`);
+  const src = real ? `真实点击 ${actions.length} 个` : `停留判定 ${actions.length} 个`;
+  if (announce) toast(`已生成 ${generated.length} 段自动缩放（${src}）`);
 }
 
 function addManualZoom() {
@@ -920,6 +953,14 @@ async function openRecordDialog() {
     };
     const el = $('#perm-status');
     if (el) el.innerHTML = badge('摄像头', st.cameraStatus || 'unknown') + badge('麦克风', st.micStatus || 'unknown');
+    // Real-click capture (accessibility tap): probed here so the person sees
+    // BEFORE recording whether zooms will land on true clicks or on the
+    // dwell fallback.
+    if (el && window.focusee.capture.clickProbe) {
+      const cp = await window.focusee.capture.clickProbe();
+      const ok = cp && cp.available;
+      el.innerHTML += `<span class="perm-badge ${ok ? 'ok' : 'warn'}">真实点击：${ok ? '可用' : '不可用 · 用停留判定兜底'}</span>`;
+    }
   } catch {}
 }
 
@@ -1335,13 +1376,22 @@ async function saveRecordingFrom(rec) {
   window.__saveState = 'saving';
   const blob = new Blob(rec.chunks, { type: rec.recorder.mimeType || 'video/webm' });
   const data = new Uint8Array(await blob.arrayBuffer());
-  const rawCursor = await window.focusee.capture.end();
+  const capture = await window.focusee.capture.end();
+  const rawCursor = capture.cursor || [];
+  const rawClicks = capture.clicks || [];
+  if (capture.clickCapture && capture.clickCapture.ok === false && rawClicks.length === 0) {
+    console.warn('[clicks] tap unavailable, dwell fallback applies:', capture.clickCapture.reason);
+  }
   const display = rec.display;
   const video = rec.stream.getVideoTracks()[0]?.getSettings?.() || {};
   // Global cursor coordinates only line up with a full-screen capture. For a
   // single window the mapping needs the window's origin, which the prototype
   // does not track, so it keeps the samples out of the zoom analysis.
   const cursor = rec.source.kind === 'screen' ? normaliseCursor(rawCursor, display) : [];
+  // Real clicks share the same global coordinate space; same window caveat.
+  const clicks = rec.source.kind === 'screen' && rawClicks.length
+    ? clicksToActions(rawClicks, display)
+    : [];
   const project = {
     name: defaultProjectName(),
     videoFile: 'recording.webm',
@@ -1351,7 +1401,8 @@ async function saveRecordingFrom(rec) {
     style: { ...DEFAULT_STYLE },
     zooms: [],
     cursor,
-    clicks: [],
+    clicks,
+    clickSource: clicks.length ? 'real' : 'dwell',
     captions: [],
     cursorFx: { enabled: true, highlight: false, color: '#ffd166' },
     data,
@@ -1394,7 +1445,7 @@ async function saveRecordingFrom(rec) {
     renderTimeline();
   }
   window.__saveState = 'done';
-  toast(`录制完成：${cursor.length} 个光标采样点`);
+  toast(`录制完成：${cursor.length} 个光标采样点${clicks.length ? ` · ${clicks.length} 个真实点击` : ' · 无真实点击（停留判定兜底）'}`);
 }
 
 function defaultProjectName() {
