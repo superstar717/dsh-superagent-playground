@@ -1,0 +1,31 @@
+name: deck-ship selftest
+
+# 交付门禁回归（2026-11-14，工单 deck-ship-enforce）：
+# deck-ship 是 deck-lint / cite-check 的唯一下发入口，"该拦时真拦"的负路径不能被后续改动无声改坏。
+# 事故背景：检查工具建成后没有接到交付路径上，下一轮会话可以直接 cp 绕过（LESSONS E135–E137）。
+
+on:
+  pull_request:
+    paths:
+      - 'work/deck-ship/**'
+      - '.github/workflows/deck-ship-selftest.yml'
+  push:
+    branches:
+      - main
+      - 'agent/**'
+    paths:
+      - 'work/deck-ship/**'
+      - '.github/workflows/deck-ship-selftest.yml'
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install python-pptx
+        run: python3 -m pip install --quiet python-pptx
+      - name: Run deck-ship selftest (positive + negative paths)
+        run: python3 work/deck-ship/selftest.py
