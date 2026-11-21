@@ -27,7 +27,10 @@ irm http://100.66.36.4:8000/setup.ps1 | iex
 `C:\ProgramData\ssh\administrators_authorized_keys`）、修 ACL、打印 `whoami`。
 之后我就能用 SSH 接管，不需要密码。
 
-> 打不开 `http://100.66.36.4:8000/` 时（Tailscale ACL/防火墙拦截），把下面这段直接粘进管理员 PowerShell 也行：
+> 两个备选入口（任一可用即可）：
+> 1. GitHub raw（不依赖我这台 Mac 在线）：
+>    `irm https://raw.githubusercontent.com/superstar717/dsh-superagent-playground/51bae352459be77ee5a031ef6d3b735ea1d7ab22/work/linger-pc-setup/setup-access.ps1 | iex`
+> 2. 直接把下面这段粘进管理员 PowerShell：
 >
 > ```powershell
 > $k='ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB6VFxQwzU/oa+5OazDXuGEQViGarvVhXN53uJClq+SP pc-agent@macbook-pro-3'
@@ -86,4 +89,6 @@ irm http://100.66.36.4:8000/setup.ps1 | iex
 ## 脚本说明
 
 - `setup-access.ps1`：只装公钥 + 打印身份，可重复执行；不做其它改动。
-- `prep.ps1`：默认**只体检**；加 `-Apply` 才改电源/长路径/建目录（管理员运行）。输出 `F:\AI\logs\prep.json` 供我读取。
+- `prep.ps1`：默认**只体检**；加 `-Apply` 才改电源/长路径/建目录（管理员运行）。输出 `F:\AI\logs\prep-<时间>.json` 供我读取。
+- `bench.ps1`：装好模型后量端到端 tok/s（短提示 3 次 + 8k token 长提示 1 次），报告写 `F:\AI\logs\bench-*.json`。
+- `pc-bootstrap.sh`（Mac 侧）：`./pc-bootstrap.sh -u <Windows用户名> --apply`，一条命令完成 SSH 连通检查、上传脚本、只读体检、UAC 提权跑底座、拉回 JSON。
