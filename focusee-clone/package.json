@@ -9,7 +9,8 @@
     "test": "node scripts/build-zoom-cjs.js && node --test \"test/*.test.mjs\"",
     "sample": "node scripts/make-sample.js",
     "e2e": "electron . --e2e",
-    "build:cjs": "node scripts/build-zoom-cjs.js"
+    "build:cjs": "node scripts/build-zoom-cjs.js",
+    "build:helper": "bash scripts/build-click-helper.sh"
   },
   "license": "MIT",
   "devDependencies": {

@@ -62,6 +62,8 @@ contextBridge.exposeInMainWorld('focusee', {
     begin: () => ipcRenderer.invoke('capture:begin'),
     setDisplaySource: (id) => ipcRenderer.send('capture:setDisplaySource', id),
     end: () => ipcRenderer.invoke('capture:end'),
+    // Real-click availability for the record tab badge ({available, ax, reason}).
+    clickProbe: () => ipcRenderer.invoke('capture:clickProbe'),
     showControl: (info) => ipcRenderer.invoke('capture:showControl', info),
     updateControl: (info) => ipcRenderer.invoke('capture:updateControl', info),
     hideControl: () => ipcRenderer.invoke('capture:hideControl'),
@@ -124,6 +126,10 @@ contextBridge.exposeInMainWorld('focusee', {
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),
     set: (patch) => ipcRenderer.invoke('settings:set', patch),
+  },
+
+  system: {
+    openAccessibility: () => ipcRenderer.invoke('system:openAccessibility'),
   },
 
   teleprompter: {

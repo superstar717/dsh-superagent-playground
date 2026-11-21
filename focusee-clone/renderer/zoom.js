@@ -19,27 +19,42 @@ export const ASPECTS = {
   '9:16': 9 / 16,
 };
 
-function dist(a, b) {
+function dist(a, b, aspect = 1) {
   const dx = a.nx - b.nx;
-  const dy = a.ny - b.ny;
+  const dy = (a.ny - b.ny) * aspect;
   return Math.hypot(dx, dy);
 }
 
 /**
- * Find "actions" in a cursor track: moments where the pointer stayed inside a
- * small radius long enough to be a meaningful pause (a click, typing pause, or
- * the human aiming at a control). FocuSee zooms on real clicks; without an OS
- * event tap this prototype uses dwell clusters, which is documented as a
- * behavioural difference.
+ * Find "actions" in a cursor track — the DWELL-CLUSTER FALLBACK used when the
+ * system click tap is unavailable (no accessibility grant, helper missing, or
+ * a platform without a helper). When real click events exist the app uses
+ * clicksToActions() instead and never runs this heuristic.
+ *
+ * Behaviour (fixed per ticket 0cdd8d5c7d18 — the three dwell defects):
+ *  1. The radius is circular in PIXEL space: `radius` is a fraction of the
+ *     display WIDTH and `aspect` (= height/width) scales dy before comparing,
+ *     so 1920x1080 no longer means ~23px horizontal but ~13px vertical.
+ *  2. A speed gate rejects slow crawling: the median per-step speed inside a
+ *     cluster must stay under `maxSpeed` px/s, so a pointer drifting at
+ *     ~24px/s no longer accumulates into a "pause". Needs `displayWidth`;
+ *     without it the gate is skipped (plain legacy dwell).
+ *  3. The action moment is the END of the cluster (where the pointer settles,
+ *     the best estimate of the would-be click) at the pointer's resting
+ *     position — not the midpoint of the pause.
  *
  * @param {{t:number,nx:number,ny:number}[]} samples normalised cursor track
- * @param {{radius?:number,minDwell?:number,minGap?:number}} [opts]
+ * @param {{radius?:number,minDwell?:number,minGap?:number,
+ *          aspect?:number,displayWidth?:number,maxSpeed?:number}} [opts]
  * @returns {{t:number,nx:number,ny:number,dwell:number}[]}
  */
 export function detectActions(samples, opts = {}) {
   const radius = opts.radius ?? 0.012;
-  const minDwell = opts.minDwell ?? 0.45;
-  const minGap = opts.minGap ?? 0.6;
+  const minDwell = opts.minDwell ?? 0.3;
+  const minGap = opts.minGap ?? 0.55;
+  const aspect = Number(opts.aspect) > 0 ? Number(opts.aspect) : 1;
+  const displayWidth = Number(opts.displayWidth) > 0 ? Number(opts.displayWidth) : 0;
+  const maxSpeed = Number(opts.maxSpeed) > 0 ? Number(opts.maxSpeed) : 12; // px/s
   if (!Array.isArray(samples) || samples.length < 3) return [];
 
   const actions = [];
@@ -47,17 +62,17 @@ export function detectActions(samples, opts = {}) {
   while (i < samples.length) {
     const anchor = samples[i];
     let j = i;
-    while (j + 1 < samples.length && dist(samples[j + 1], anchor) <= radius) j += 1;
+    while (j + 1 < samples.length && dist(samples[j + 1], anchor, aspect) <= radius) j += 1;
     const span = samples[j].t - samples[i].t;
-    if (span >= minDwell) {
-      const mid = samples[Math.floor((i + j) / 2)];
-      const t = (samples[i].t + samples[j].t) / 2;
+    if (span >= minDwell && isCalmCluster(samples, i, j, { aspect, displayWidth, maxSpeed })) {
+      const rest = samples[j];
+      const t = samples[j].t;
       const last = actions[actions.length - 1];
       if (!last || t - last.t > minGap) {
         actions.push({
           t: Number(t.toFixed(3)),
-          nx: Number(mid.nx.toFixed(5)),
-          ny: Number(mid.ny.toFixed(5)),
+          nx: Number(rest.nx.toFixed(5)),
+          ny: Number(rest.ny.toFixed(5)),
           dwell: Number(span.toFixed(3)),
         });
       }
@@ -65,6 +80,64 @@ export function detectActions(samples, opts = {}) {
     i = j + 1;
   }
   return actions;
+}
+
+/** Median per-step speed of the samples[i..j] cluster, in px/s. */
+function clusterMedianSpeed(samples, i, j, aspect, displayWidth) {
+  const speeds = [];
+  for (let k = i + 1; k <= j; k += 1) {
+    const dt = samples[k].t - samples[k - 1].t;
+    if (dt > 0) {
+      speeds.push((dist(samples[k], samples[k - 1], aspect) * displayWidth) / dt);
+    }
+  }
+  if (!speeds.length) return 0;
+  const sorted = [...speeds].sort((a, b) => a - b);
+  const mid = sorted.length >> 1;
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+function isCalmCluster(samples, i, j, { aspect, displayWidth, maxSpeed }) {
+  // The gate only makes sense in pixel space; without a displayWidth callers
+  // get the legacy (gate-free) behaviour.
+  if (!displayWidth) return true;
+  return clusterMedianSpeed(samples, i, j, aspect, displayWidth) <= maxSpeed;
+}
+
+/**
+ * Normalize real system click events into zoom actions. This is the PRIMARY
+ * action source (plan A): timestamps come from the OS event tap, so the zoom
+ * lands exactly on the click, and these same actions feed the click ripples
+ * (`project.clicks`) — one data source, two accurate features.
+ *
+ * @param {{t:number,x:number,y:number,kind?:string,button?:number}[]} clicks
+ *        raw click samples, t in seconds since recording start, x/y in
+ *        global display pixels (top-left origin)
+ * @param {{width:number,height:number}} display recorded display size
+ * @param {{minGap?:number}} [opts]
+ * @returns {{t:number,nx:number,ny:number,dwell:number,real:boolean}[]}
+ */
+export function clicksToActions(clicks, display, opts = {}) {
+  const w = Math.max(1, display?.width || 1);
+  const h = Math.max(1, display?.height || 1);
+  const minGap = opts.minGap ?? 0.09; // swallow OS double-click duplicates
+  return (clicks || [])
+    .filter((c) => c
+      && Number.isFinite(c.t) && Number.isFinite(c.x) && Number.isFinite(c.y)
+      && (c.kind ? c.kind === 'leftMouseDown' : (c.button ?? 0) === 0))
+    .sort((a, b) => a.t - b.t)
+    .reduce((acc, c) => {
+      const action = {
+        t: Number(Math.max(0, c.t).toFixed(3)),
+        nx: Number(clamp(c.x / w, 0, 1).toFixed(5)),
+        ny: Number(clamp(c.y / h, 0, 1).toFixed(5)),
+        dwell: 0,
+        real: true,
+      };
+      const prev = acc[acc.length - 1];
+      if (!prev || action.t - prev.t > minGap) acc.push(action);
+      return acc;
+    }, []);
 }
 
 /**
@@ -97,6 +170,7 @@ export function buildZooms(actions, duration, opts = {}) {
         scale,
         auto: true,
         dwell: a.dwell ?? 0,
+        real: Boolean(a.real),
       };
     })
     .filter((z) => z.end - z.start >= easyMin(ease));
@@ -107,10 +181,15 @@ export function buildZooms(actions, duration, opts = {}) {
     // Merge only when the two envelopes truly overlap. A gap (even a small
     // one) means the viewer gets a moment back at scale 1 between zooms.
     if (prev && prev.end >= z.start) {
-      if ((z.dwell || 0) > (prev.dwell || 0)) {
+      // A real click beats any dwell estimate for the focus point; among
+      // equals, the longer pause wins.
+      const zScore = (z.real ? 1e6 : 0) + (z.dwell || 0);
+      const pScore = (prev.real ? 1e6 : 0) + (prev.dwell || 0);
+      if (zScore > pScore) {
         prev.nx = z.nx;
         prev.ny = z.ny;
         prev.dwell = z.dwell;
+        prev.real = Boolean(z.real) || Boolean(prev.real);
       }
       prev.end = Math.max(prev.end, z.end);
       prev.scale = Math.max(prev.scale, z.scale);
@@ -120,7 +199,7 @@ export function buildZooms(actions, duration, opts = {}) {
   }
 
   return merged.slice(0, maxZooms).map((z, idx) => {
-    const { dwell, ...rest } = z;
+    const { dwell, real, ...rest } = z;
     return { id: `az-${idx + 1}`, ...rest };
   });
 }

@@ -49,6 +49,18 @@ cp "$ROOT/node_modules/@mediapipe/tasks-vision/package.json" "$APP_RES/node_modu
 cp "$ROOT/node_modules/@mediapipe/tasks-vision/vision_bundle.cjs" "$APP_RES/node_modules/@mediapipe/tasks-vision/" 2>/dev/null || true
 cp -R "$ROOT/node_modules/@mediapipe/tasks-vision/wasm" "$APP_RES/node_modules/@mediapipe/tasks-vision/wasm" 2>/dev/null || true
 
+# ③b 全局点击监听 helper（真实点击缩放的信号源，见 native/click-tap/）。
+# 编译失败不阻塞打包：没有 helper 时应用照常工作，只是退回停留判定。
+echo "③b 构建点击监听 helper…"
+HELPER_SIGNED=0
+if bash "$ROOT/scripts/build-click-helper.sh" >/tmp/focusee-helper-build.log 2>&1; then
+  mkdir -p "$APP_RES/build"
+  cp "$ROOT/build/focusee-click-tap" "$APP_RES/build/focusee-click-tap"
+  HELPER_SIGNED=1
+else
+  echo "  ⚠ helper 构建失败（详见 /tmp/focusee-helper-build.log）：真实点击不可用，自动退回停留判定。"
+fi
+
 # ④ 签名：默认用自签证书 "FocuSee Clone Dev"（Keychain 已信任）。
 # TCC 授权（屏幕录制/摄像头/麦克风）按「签名身份」记忆：ad-hoc 签名每次重打包
 # 都是全新身份，授权必掉；自签证书身份固定，重打包后授权保持不变。
@@ -65,6 +77,10 @@ else
     exit 1
   fi
   echo "④ 签名（自签证书 \"$SIGN_IDENTITY\"，TCC 授权跨重打包稳定）…"
+  # helper 先用同一身份签名；app 的 --deep 会校验嵌套代码的 seal。
+  if [ "$HELPER_SIGNED" = 1 ]; then
+    codesign --force --sign "$SIGN_IDENTITY" "$APP_RES/build/focusee-click-tap"
+  fi
   codesign --force --deep --sign "$SIGN_IDENTITY" "$APP"
   codesign --verify --deep --strict "$APP" || { echo "错误：签名校验失败，打包中止" >&2; exit 1; }
 fi

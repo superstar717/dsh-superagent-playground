@@ -4,8 +4,8 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const {
-  buildZooms, contentRect, cursorAt, detectActions, fitRect, formatTime,
-  mapPointToCanvas, normaliseCursor, sourceRectAt, zoomAt,
+  buildZooms, clicksToActions, contentRect, cursorAt, detectActions, fitRect,
+  formatTime, mapPointToCanvas, normaliseCursor, sourceRectAt, zoomAt,
 } = require('../renderer/zoom.cjs');
 
 function track(points, step = 0.04) {
@@ -35,14 +35,115 @@ test('detectActions finds each dwell, not the moving stretches', () => {
   ]);
   const actions = detectActions(t, { radius: 0.012, minDwell: 0.45, minGap: 0.5 });
   assert.equal(actions.length, 3);
-  assert.ok(Math.abs(actions[0].t - 0.4) < 0.15);
-  assert.ok(Math.abs(actions[1].t - 2.0) < 0.15);
-  assert.ok(Math.abs(actions[2].t - 3.6) < 0.15);
+  // The action moment is the END of each cluster (where the pointer settles,
+  // the best estimate of the would-be click instant) — not the pause midpoint.
+  assert.ok(Math.abs(actions[0].t - 0.8) < 0.1, `expected ~0.8, got ${actions[0].t}`);
+  assert.ok(Math.abs(actions[1].t - 2.4) < 0.1, `expected ~2.4, got ${actions[1].t}`);
+  assert.ok(Math.abs(actions[2].t - 4.0) < 0.1, `expected ~4.0, got ${actions[2].t}`);
+  // The focus point is the resting position (cluster's last sample).
+  assert.equal(actions[0].nx, 0.25);
 });
 
 test('detectActions returns nothing for a cursor that never rests', () => {
   const t = track([[0, 0.1, 0.1], [4, 0.9, 0.9]]);
   assert.deepEqual(detectActions(t, { minDwell: 0.45 }), []);
+});
+
+test('detectActions radius is circular in pixel space (1920x1080)', () => {
+  // 18px offsets on a 1920x1080 display: horizontal 18/1920 = 0.009375 of the
+  // width (inside the 0.012 radius both before and after the fix); vertical
+  // 18/1080 = 0.016667 — outside the OLD square-normalised vertical radius
+  // (13px), inside the fixed circular one (23px). Same gesture, same verdict.
+  const displayWidth = 1920;
+  const aspect = 1080 / 1920;
+  const base = (drift, key) => {
+    const pts = [];
+    for (let k = 0; k <= 12; k += 1) {
+      const s = { t: k * 0.04, nx: 0.5, ny: 0.5 };
+      if (k === 6) s[key] += drift;
+      pts.push(s);
+    }
+    return pts;
+  };
+  const horizontal = detectActions(base(18 / 1920, 'nx'), {
+    radius: 0.012, minDwell: 0.3, aspect, displayWidth,
+  });
+  const vertical = detectActions(base(18 / 1080, 'ny'), {
+    radius: 0.012, minDwell: 0.3, aspect, displayWidth,
+  });
+  assert.equal(horizontal.length, 1, 'horizontal 18px jitter must stay one dwell');
+  assert.equal(vertical.length, 1, 'vertical 18px jitter must stay one dwell (circular radius)');
+});
+
+test('detectActions rejects slow crawling once the speed gate is on', () => {
+  // ~25px/s crawl on a 1920-wide display: every 0.04s sample advances 1px, so
+  // the pointer stays inside a 23px anchor radius for ~0.9s. The OLD logic
+  // accumulated that into a "dwell"; the speed gate must reject it.
+  const crawl = [];
+  for (let k = 0; k < 24; k += 1) {
+    crawl.push({ t: k * 0.04, nx: 0.3 + (k * 1) / 1920, ny: 0.4 });
+  }
+  const gated = detectActions(crawl, {
+    radius: 0.012, minDwell: 0.3, aspect: 1080 / 1920, displayWidth: 1920,
+  });
+  assert.deepEqual(gated, [], '24px/s crawl must not count as a dwell');
+  // Gate off (no displayWidth): legacy behaviour — the cluster is still found,
+  // which documents that the gate is what closes defect #3.
+  const ungated = detectActions(crawl, { radius: 0.012, minDwell: 0.3 });
+  assert.equal(ungated.length, 1);
+});
+
+test('detectActions keeps a real pause that a fast pointer flies into', () => {
+  // Fly in at high speed, then rest. The median per-step speed of the rest
+  // cluster is ~0, so the pause must survive the gate.
+  const pts = [
+    { t: 0, nx: 0.1, ny: 0.1 },
+    { t: 0.08, nx: 0.35, ny: 0.3 },
+    { t: 0.16, nx: 0.48, ny: 0.42 },
+  ];
+  for (let k = 0; k < 12; k += 1) {
+    pts.push({ t: 0.24 + k * 0.04, nx: 0.5, ny: 0.5 });
+  }
+  const actions = detectActions(pts, {
+    radius: 0.012, minDwell: 0.3, aspect: 1080 / 1920, displayWidth: 1920,
+  });
+  assert.equal(actions.length, 1);
+  assert.ok(Math.abs(actions[0].t - 0.68) < 0.02, `action at settle time, got ${actions[0].t}`);
+  assert.equal(actions[0].nx, 0.5);
+});
+
+test('clicksToActions: only primary-button downs, normalised and deduped', () => {
+  const clicks = [
+    { t: 0.5, x: 960, y: 540, kind: 'leftMouseDown', button: 0 },
+    { t: 0.56, x: 960, y: 540, kind: 'leftMouseUp', button: 0 },
+    { t: 0.62, x: 960, y: 540, kind: 'leftMouseDown', button: 0 }, // double-click: 120ms later, kept
+    { t: 1.2, x: 500, y: 300, kind: 'rightMouseDown', button: 2 }, // filtered out
+    { t: 2.0, x: -5, y: 2000, kind: 'leftMouseDown', button: 0 },  // clamped into frame
+    { t: 2.02, x: 30, y: 30, kind: 'leftMouseDown', button: 0 },   // 20ms later: swallowed
+  ];
+  const actions = clicksToActions(clicks, { width: 1920, height: 1080 });
+  assert.equal(actions.length, 3);
+  assert.equal(actions[0].t, 0.5);
+  assert.equal(actions[1].t, 0.62);
+  assert.equal(actions[2].nx, 0);
+  assert.equal(actions[2].ny, 1);
+  assert.ok(actions.every((a) => a.real === true));
+});
+
+test('buildZooms: a real click wins the focus point over an overlapping dwell', () => {
+  const actions = [
+    { t: 1.0, nx: 0.3, ny: 0.3, dwell: 1.2 },            // long pause estimate
+    { t: 1.3, nx: 0.75, ny: 0.6, dwell: 0, real: true }, // real click inside the same envelope
+  ];
+  const zooms = buildZooms(actions, 6, { scale: 2, hold: 1, lead: 0.4, ease: 0.3 });
+  assert.equal(zooms.length, 1);
+  assert.equal(zooms[0].nx, 0.75);
+  assert.equal(zooms[0].ny, 0.6);
+  assert.equal(zooms[0].real, undefined, 'internal flags must not leak into persisted zooms');
+  // Zoom completes right at the click: full scale is reached `ease` after the
+  // lead-in starts and holds through the click moment.
+  const at = zoomAt(zooms, 1.3);
+  assert.ok(at.scale > 1.99, `expected full zoom at the click instant, got ${at.scale}`);
 });
 
 test('buildZooms clamps to the clip and merges overlapping envelopes', () => {
