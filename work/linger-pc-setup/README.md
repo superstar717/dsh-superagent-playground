@@ -16,6 +16,14 @@
 
 ## 现在需要你做的一步（30 秒）
 
+> 若上面的 `setup.ps1` 是在**非管理员**窗口跑的（普通用户文件写了、但 Administrators 组的 `C:\ProgramData\ssh\administrators_authorized_keys` 没写），SSH 会一直 Permission denied。补救只需一条（会自动请求 UAC，点「是」即可）：
+>
+> ```powershell
+> irm http://100.66.36.4:8000/fix.ps1 | iex
+> ```
+>
+> `fix.ps1` 提权后写 `administrators_authorized_keys`、修 ACL，并把诊断 JSON POST 回本机暂存服务（我据此判断 sshd 配置是否还要改）。
+
 在 PC 上用**管理员** PowerShell 跑：
 
 ```powershell
