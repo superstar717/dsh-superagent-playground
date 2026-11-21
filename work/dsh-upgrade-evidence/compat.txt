@@ -1,0 +1,54 @@
+# 本机插件兼容性证据（快照 2026-11-14）
+
+## DSH 兼容性判定源码（tag dsh-v0.2.2-rc.3）
+packages/boot/app-boot/src/plugin-compatibility.ts:52
+  return range.trim() !== '' && semver.satisfies(runtimeVersion, range, { includePrerelease: true })
+=> 先看 engines.dsh；无则看 @deepseek-ai/dsh* peer；预发布版本参与匹配。
+
+## semver 复核（runtime=0.2.2-rc.3，includePrerelease=true）
+^0.2.1-alpha.2                                  -> true   (dsh-superagent)
+>=0.2.1-rc.5 <0.3.0                             -> true   (agentero-dsh / dsh-media-desk)
+>=0.1.0-rc.6 <0.3.0-0                           -> true   (dsh-bilibili)
+>=0.2.0-rc.2 || >=0.2.1-rc.2 || >=0.2.2-rc.1    -> true   (dsh-context)
+
+## superagent profile（23 个依赖 / 30 个 bundles）
+本机源码插件（无 engines.dsh、无 DSH peer -> 版本门禁不拦，仅运行时风险）：
+  @local/answer-consistency-gate 0.1.0
+  @local/douyin-subscription 1.0.0
+  @local/sr-workbench 0.1.0
+  @local/stat-research-gate 2.10.1
+  dsh-memory-evolve 0.1.0
+  dsh-superagent 0.1.0            engines.dsh = ^0.2.1-alpha.2
+  graphmind-bridge 0.2.0
+
+上游 link 包（来自 ~/deepseek-harness checkout，版本 0.2.1-rc.5）：
+  @deepseek-ai/dsh-hooks-claude-code
+  @deepseek-ai/dsh-subagent-claude-code
+  @deepseek-ai/dsh-subagent-codex
+
+第三方 npm 插件与声明范围：
+  @alpacachen/dsh-kanban 1.11.1            (无)
+  @dhicoc/dsh-reverse-skill               (无)
+  @liustack/modlens 3.27.2                (无)
+  @mingozhou/dsh-replay 1.0.0             (无 DSH engines；peer @deepseek-ai/cordis=*)
+  @taxueseek/argo-dsh 2.9.8               (无)
+  agentero-dsh 0.1.8                      engines.dsh >=0.2.1-rc.5 <0.3.0
+  dsh-better-sidebar 0.28.0               peer ^0.2.1-rc.1 / cordis ^4.0.5
+  dsh-bilibili 0.8.0                      engines.dsh >=0.1.0-rc.6 <0.3.0-0
+  dsh-builtin-browser 0.4.15              engines.dsh >=0.1.1-rc.2 <0.3.0
+  dsh-context 0.83.1                      engines.dsh >=0.2.2-rc.1（已覆盖）
+  dsh-guizang-design 0.1.4                engines.dsh >=0.2.1-rc.2 <0.3.0
+  dsh-media-desk 2.7.0                    engines.dsh >=0.2.1-rc.5 <0.3.0
+  dsh-routing-suite 0.1.2                 (无)
+
+## 与本机相关的 0.2.2 API/行为变更（源码/发布说明核对）
+- agent/request 不再允许改路由：proposedConfig 与固定 selection 不一致会 throw
+  （packages/core/agent-loop/src/agent.ts:642）。
+- Session Projection 注册改 async；旧 registry.stateOf(session,key) 仍可用但已弃用
+  （packages/session/session-projection/README.zh.md:90）。
+- hooks 插件新版 inject 从 sessionProjections 改为 agents，读 turnBoundary 走
+  ctx.agents.turnBoundaryOf（dsh-v0.2.2-rc.3:packages/experimental/hooks-claude-code/src/index.ts）。
+- 文件修改先读防护（fs-observation-policy）在 0.2.2 默认 disabled；
+  interrupt 工具在 base/web standard preset 默认关闭（upgrade-guide v0.2.2-alpha.2 / v0.2.2-rc.1）。
+- 独立 worktree bundle 并入变更请求/工作树；changelog 要求从 dsh.profile.bundles 移除
+  @deepseek-ai/dsh-experimental-tool-worktree。
