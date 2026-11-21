@@ -1,0 +1,161 @@
+{
+ "take1": {
+  "editor_renderer": {
+   "n": 18,
+   "mean": 14.5,
+   "p50": 2.2,
+   "max": 52.3
+  },
+  "gpu": {
+   "n": 6,
+   "mean": 27.7,
+   "p50": 28.8,
+   "max": 39.2
+  },
+  "video_capture": {
+   "n": 6,
+   "mean": 4.5,
+   "p50": 4.3,
+   "max": 6.2
+  },
+  "pill_preview_pages": {
+   "n": 12,
+   "mean": 1.7,
+   "p50": 1.9,
+   "max": 2.5
+  },
+  "main": {
+   "n": 6,
+   "mean": 6.9,
+   "p50": 8.9,
+   "max": 13.4
+  },
+  "frames": 6
+ },
+ "between": {
+  "editor_renderer": {
+   "n": 18,
+   "mean": 8.3,
+   "p50": 2.3,
+   "max": 64.0
+  },
+  "gpu": {
+   "n": 6,
+   "mean": 18.7,
+   "p50": 16.8,
+   "max": 46.3
+  },
+  "video_capture": {
+   "n": 6,
+   "mean": 4.4,
+   "p50": 4.3,
+   "max": 5.2
+  },
+  "pill_preview_pages": {
+   "n": 12,
+   "mean": 1.2,
+   "p50": 1.0,
+   "max": 2.8
+  },
+  "main": {
+   "n": 6,
+   "mean": 8.7,
+   "p50": 6.9,
+   "max": 28.9
+  },
+  "frames": 6
+ },
+ "take2": {
+  "editor_renderer": {
+   "n": 15,
+   "mean": 12.8,
+   "p50": 2.9,
+   "max": 49.1
+  },
+  "gpu": {
+   "n": 5,
+   "mean": 24.2,
+   "p50": 32.4,
+   "max": 35.0
+  },
+  "video_capture": {
+   "n": 5,
+   "mean": 3.0,
+   "p50": 4.2,
+   "max": 4.4
+  },
+  "pill_preview_pages": {
+   "n": 10,
+   "mean": 1.9,
+   "p50": 2.3,
+   "max": 4.0
+  },
+  "main": {
+   "n": 5,
+   "mean": 5.0,
+   "p50": 5.2,
+   "max": 7.8
+  },
+  "frames": 5
+ },
+ "idle": {
+  "editor_renderer": {
+   "n": 51,
+   "mean": 0.9,
+   "p50": 0.0,
+   "max": 2.8
+  },
+  "gpu": {
+   "n": 17,
+   "mean": 1.6,
+   "p50": 1.6,
+   "max": 1.8
+  },
+  "video_capture": {
+   "n": 17,
+   "mean": 0.0,
+   "p50": 0.0,
+   "max": 0.1
+  },
+  "pill_preview_pages": {
+   "n": 34,
+   "mean": 0.0,
+   "p50": 0.0,
+   "max": 0.0
+  },
+  "main": {
+   "n": 17,
+   "mean": 0.1,
+   "p50": 0.1,
+   "max": 0.3
+  },
+  "frames": 17
+ },
+ "pids": {
+  "MAIN": [
+   9361
+  ],
+  "GPU": [
+   9694
+  ],
+  "RENDERER": [
+   9726,
+   9950,
+   9951
+  ],
+  "VCAM": [
+   9801
+  ],
+  "PILLPAGES": [
+   9950,
+   9951
+  ]
+ },
+ "marks": {
+  "take1:control-pill-live": 1795279660,
+  "take1:stop-signalled": 1795279672,
+  "take2:control-pill-live": 1795279683,
+  "take2:stop-signalled": 1795279693,
+  "ALL_OK": 1795279699
+ }
+}

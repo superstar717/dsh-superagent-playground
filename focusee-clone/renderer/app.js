@@ -1152,9 +1152,13 @@ async function startRecording() {
         } catch {}
       };
       drawBakedFrame();
-      bakeTimer = setInterval(drawBakedFrame, 1000 / 30);
+      // Bake at 15fps (user-approved 2026-11-22): the composite is the
+      // single largest cost of a camera take — halving the frame rate halves
+      // the drawImage + encode-feed load at negligible visible cost for
+      // screen content (measured in work/perf/FINDINGS.md §6–7).
+      bakeTimer = setInterval(drawBakedFrame, 1000 / 15);
       bakeEls = { screenVideoEl, camVideoEl, bakeCanvas };
-      recordSource = bakeCanvas.captureStream(30);
+      recordSource = bakeCanvas.captureStream(15);
       if (micStream) for (const t of micStream.getAudioTracks()) recordSource.addTrack(t);
     }
     const recorder = new MediaRecorder(recordSource, {
