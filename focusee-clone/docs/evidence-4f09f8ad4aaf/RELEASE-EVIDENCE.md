@@ -85,7 +85,19 @@ macOS 26.x，Electron 45.2.2。本目录全部数据由 `work/perf/measure-two-t
 - 数据：`baseline-pre-fix2/`（修复前，含修复前采样器口径问题的第一轮
   baseline-pre-fix 仅留档）、`after-fix/`、`after-fix2/`（最终代码确认轮）。
 
-## 5. 局限（如实）
+## 5. 用户侧最终验证（修复包装入 /Applications 并重启应用，00:35 采样）
+
+| 指标（应用空闲、窗口可见） | 修复前实例（00:08） | 修复后实例（00:35） |
+| --- | --- | --- |
+| GPU 进程 | 23.8% 均值 | **1.3% 均值** |
+| 编辑器渲染进程 | 5.2% | 2.3% |
+| video_capture 服务 | 3.3%（相机被占） | **无此进程** |
+| 空闲合计 | ≈0.32 核 | **≈0.04 核** |
+
+样本：`live-instance/gpu-after-fix-relaunch.txt`（15 帧 top，两轮一致）。
+旧包备份：`/tmp/FocuSee Clone-prev-20261122.app`。
+
+## 6. 局限（如实）
 
 - AFTER 主表（after-fix 轮）运行的包比最终提交少两行语义等价改动（pagehide 包装、
   getUserMedia 后二次校验）——该两行不影响本轮测得的 bake 泄漏数字；最终代码的
@@ -95,7 +107,7 @@ macOS 26.x，Electron 45.2.2。本目录全部数据由 `work/perf/measure-two-t
 - 单核百分比对整机的影响按 8 线程折算：0.33 核常烧 ≈ 系统可用算力的 ~4%，但集中在
   GPU/渲染路径，与录制负载叠加时表现为可感知的卡顿。
 
-## 6. 复现
+## 7. 复现
 
 ```sh
 cd focusee-clone && ./scripts/package-app.sh

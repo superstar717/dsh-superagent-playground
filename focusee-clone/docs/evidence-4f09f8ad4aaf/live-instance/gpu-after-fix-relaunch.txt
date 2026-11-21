@@ -1,0 +1,3 @@
+pid 95816 mean 1.3% n=15
+pid 95819 mean 0.0% n=15
+pid 95853 mean 2.3% n=15
