@@ -1,0 +1,10 @@
+15:09:32 server: openmotion 0.0.1
+15:09:32 tools: openmotion_assets_use, openmotion_assets, openmotion_project_archive, openmotion_manage_project, openmotion_media_use, openmotion_list_templates, openmotion_get_template, openmotion_list_skills, openmotion_get_skill, openmotion_create_project, openmotion_open_preview, openmotion_import_assets, openmotion_get_project, openmotion_edit_project, openmotion_export_request, openmotion_list_versions, openmotion_restore_version, openmotion_export_cancel
+15:09:35 catalog source= repository total= 291 indexPath= /Users/huweixing/src/openmotion-check-269d25eb51a2/work/openmotion/data/template-cache/18272bb0f7f8eb15/templates.4990c05c218a9fa0.index.jsonl
+15:09:35 rows parsed: 291
+15:09:35 picked row: {"templateId":"product-promo","name":"Product Promo","summary":"从图标开场到多人协作，查看多场景动画与字幕编排。","category":"产品宣传 · Hyperframes","tags":["产品宣传"],"durationSeconds":20,"kind":"builtin"}
+15:09:35 get_template workflowGuide: {"workflow":"template","section":"start","status":"ready"}
+15:09:40 project: 9cf27ee1-dda7-4458-9d1f-d8a279a4c053 revision= ebb4b9f4db205820132e16930a8e3145a1f80b9fd7121d3329585253705695eb version= f2a9ac1d-185e-4a88-9c8f-3d610cb28e50 dir= 
+15:09:40 detail revision= ebb4b9f4db205820132e16930a8e3145a1f80b9fd7121d3329585253705695eb versionId= f2a9ac1d-185e-4a88-9c8f-3d610cb28e50 files= 0
+15:09:46 export jobId: undefined state= undefined
+DRIVE_FAILED no jobId: {"projectId":"9cf27ee1-dda7-4458-9d1f-d8a279a4c053","job":{"phase1":true,"versionId":"f2a9ac1d-185e-4a88-9c8f-3d610cb28e50","requestId":"om-recheck-export-001","id":"c5f861af-8964-484c-a250-e40c3e8d6aec","projectId":"9cf27ee1-dda7-4458-9d1f-d8a279a4c053","revision":"ebb4b9f4db205820132e16930a8e3145a1f80b9fd7121d3329585253705695eb","state":"pending","stage":"queued","createdAt":1795360180802,"acceptedAt":1795360180802,"deadlineAt":1795361980802,"expiresAt":1795361980802,"outputName":"OpenMotion 复核渲染 11-22.mp4","expected":{"width":1920,"height":1080,"fps":30,"duration":20,"audio":"silent"}},"technicalVerification":"automatic_after_render","contentReview":"pending"}
