@@ -11,9 +11,10 @@
 
 ## 项目现状（2026-11-22 收尾）
 
-- 代码完成，单元测试 20/20；真实 ZCode 小任务、headless 宿主 E2E、审批 fail-closed、线上 HMR 注册均已验证，证据见 `VERIFICATION-2026-11-22.md`。
-- 线上配置：`requireApproval: true`（每次调用经 DSH 审批）、默认 `guarded`、默认超时 10 分钟、上限 30 分钟。
-- 未验证：线上 GUI 实际点审批；superagent 冷启动；`plan/build/edit/yolo` 等模式真实任务；`attach/resume` 真实调用。改动后按 `VERIFICATION-2026-11-22.md` 的层级补测。
+- 代码完成，单元测试 20/20；真实 ZCode 小任务、headless 宿主 E2E、审批 fail-closed（`APPROVAL_UNAVAILABLE`）、线上 HMR 注册、线上 GUI「ask→allowed-once→真实执行」（⑥）、会话策略 `never` 自动拒绝（`APPROVAL_REJECTED`，ZCode 未启动，⑦）均已验证，证据见 `VERIFICATION-2026-11-22.md`。
+- 线上配置：插件默认 `requireApproval: true`，但 **superagent 线上已由 profile patch 关掉逐次审批**（`requireApproval: false`，2026-11-22 22:11 生效，见 VERIFICATION ⑧，备份 `cordis.patch.yml.bak-zcode-approvaloff-20261122-221030`）——该 profile 内 `zcode_run` 不再人工确认；会话策略 `never` 只影响仍要求审批的工具。默认 `guarded`、默认超时 10 分钟、上限 30 分钟。
+- 我（Agent）在验证冷启动时的教训：**不要用 `launchctl submit` 承载任何非幂等动作（尤其重启/杀宿主）**——submit 作业是**无条件保活**（2026-11-22 23:41 实测：`exit 0` 的脚本 46 s 内被重拉 5 次；`launchctl print` 显示 `properties = keepalive`），本次因此 45.7 分钟重启宿主 32 次。再验冷启动一律前台跑，见 VERIFICATION ⑨ 与 LESSONS E212。
+- 未验证：审批「人工点击 vs 自动应答器」不可区分；`plan/build/edit/yolo` 等模式真实任务；`attach/resume` 真实调用；真实长任务超时。改动后按 `VERIFICATION-2026-11-22.md` 的层级补测。（**冷启动已由 ⑨ 关闭**）
 
 ## 硬约束（改代码前先看）
 

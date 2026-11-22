@@ -126,10 +126,69 @@ const names = root.get('tools').schemas().map(schema => schema.name)
 
 ---
 
+## ⑥ 线上 GUI 真实调用 + 审批放行（2026-11-22 22:04 追加）
+
+在**真实 superagent 宿主**（非临时 headless profile）的 GUI 会话 `session-5a27dc07-6031-4453-9928-4655d7ef74d6` 中由模型调用 `zcode_run`：
+
+- 参数：`task=只回复两个字：正常，不要调用任何工具`、`cwd=/tmp`、`mode=guarded`、`timeout_ms=180000`；
+- 审批链（该会话 `session.v4.jsonl.zstd` 事件）：`approval/policy=ask`（seq 2）→ `approval/asked`（seq 22，toolName=`zcode_run`，reason 含 mode/cwd/task 摘要）→ `approval/decided`（seq 23，outcome=`allowed-once`，距 asked 4.58 s）；
+- 执行结果：`ok`、exit=0、71.0 s、`response=正常`、`sessionId=sess_3e379a15-d56c-405b-9862-35ced9fb53d8`、usage input 91,122 / output 3；
+- 意义：**线上 GUI 首次走通「ask → 放行 → 真实执行」全链路**（此前审批证据只有单测 + headless fail-closed 拒绝）；同时证明 HMR 加载后的 live 宿主可直接执行，且 `cwd` 指向工作区外（`/tmp`）可行。
+- 未证实边界：事件只能证明「存在审批决定且 outcome=allowed-once」，**无法区分是人工点击还是配置的自动应答器**；要 100% 确认点击路径，需人工在弹窗里点一次并当场观察。
+
+---
+
+## ⑦ 审批策略 = `never` 时的线上 fail-closed（2026-11-22 22:09 追加）
+
+把会话审批策略从 `ask` 切成 `never`（`approval/policy` seq 157）后，在同一 live 会话、同参数再调一次 `zcode_run`：
+
+- 事件链：`approval/asked`（seq 191）→ `approval/decided`（seq 192，`outcome=rejected`）；
+- 工具结果：`isError=true`、`error.name=ApprovalError`、`error.code=APPROVAL_REJECTED`，正文 `Error: the user rejected tool "zcode_run"`；
+- 副作用核查：`pgrep -fl "zcode.cjs"` 无进程 → **ZCode 未启动、零配额消耗**；
+- 结论：**「never ask」≠ 自动放行，等价于自动拒绝**。与 ④ 的 headless 拒绝是两条不同错误码：
+
+| 场景 | error.code |
+|---|---|
+| 无审批通道（headless，`requireApproval: true`） | `APPROVAL_UNAVAILABLE` |
+| 通道存在但策略=`never`（自动拒绝） | `APPROVAL_REJECTED` |
+
+- 运维含义：superagent profile 默认 `requireApproval: true`，故会话策略为 `never` 时 `zcode_run` 永久不可用。要用需二选一：①策略回 `ask` 并人工点允许一次；②在 profile patch 把 `zcode-tool.config.requireApproval` 置 `false`（等于放弃逐次审批，只适合受信部署/headless，如 ③ 的冒烟 profile）。→ **已按 ② 落地，实际生效验证见 ⑧（2026-11-22 22:11）。**
+
+---
+
+## ⑧ 关闭逐次审批（`requireApproval: false`）线上生效（2026-11-22 22:11 追加）
+
+背景：会话审批策略为 `never` 时 `zcode_run` 被自动拒绝（⑦）。用户选择方案②，在 live profile patch 显式关掉逐次审批：
+
+- 变更：`~/.dsh/profiles/superagent/cordis.patch.yml` 追加
+  ```yaml
+  - id: zcode-tool
+    config:
+      requireApproval: false
+  ```
+  备份 `cordis.patch.yml.bak-zcode-approvaloff-20261122-221030`；写入前用 pyyaml 解析校验（12 条 entry、该 entry 可解析），再以 `mv` 原子替换（权限 0600）。
+- 组合确认：`dsh --profile superagent --dump-config` 输出
+  `# == @local/zcode-tool, patched by .../cordis.patch.yml` + `config: {requireApproval: false}`。
+- 线上生效（**未重启宿主**）：22:11 再调 `zcode_run`（同参数）→ `ok`、exit=0、**35.6 s**、`response=正常`；该会话事件中**没有新增 `approval/asked`**（最后一条审批事件仍是 seq 192 的拒绝），证明 `tools/pre-execute` 不再返回 `{kind:'ask'}`，patch 被 live reconcile 立即采纳。
+- 代价（用户已知情接受）：该 profile 内所有 `zcode_run` 调用不再经人工确认；`mode=guarded` 仍约束 ZCode 自身权限提示，但已无 DSH 层逐次审批。
+- 回滚：还原上述备份，或删除该 entry（`mv` 原子替换后无需重启）。
+
+---
+
+## ⑨ 冷启动验证（意外完成）与验证方式的事故（2026-11-22 22:14–23:08）
+
+- 事实：22:14–23:00 有 **33 轮**「延迟重启 → 探针 → 写日志」脚本被执行（`~/.dsh/state/coldstart-zcode.log`），其中 **30 轮** `verify-live.mjs` 输出 PASS：`126 tools, zcode_run found`，且每轮 `dump-config` 均为 `requireApproval: false`。
+- 结论：**superagent 冷启动后插件仍加载、profile patch 仍生效**（30 次独立重启的证据）——原「未验证 #2 冷启动」关闭。
+- 代价（必须一起记）：该脚本是用 `launchctl submit` 挂的，submit 作业**无条件保活**（2026-11-22 23:41 独立复现：`exit 0` 的 3 秒脚本 46 s 内被重拉 5 次，`launchctl print` 显示 `properties = keepalive`；`man launchctl` 的 "in the event of failure" 措辞有误导性），导致宿主在 **45.7 分钟内被 SIGKILL 重启 32 次**；作业在会话结束后仍跑了 45 分钟（详见 `work/项目复盘-zcode-plugin-2026-11-22.md` 第八节、LESSONS E212）。
+- 现行状态：作业 `com.zcode.coldstart-verify` 已 `bootout`；脚本已替换为空转版（`exit 1`，**勿 `bootstrap` 回去**）；原脚本忠实备份 `~/.dsh/state/coldstart-verify-zcode.sh.bak-loop-20261122`（sha256 `f746fde2…`，从会话 `tool/call` seq 562 原始 heredoc 重建）。
+- 复跑规则：**再验冷启动一律前台跑**，不要 `launchctl submit`；跑完确认 `launchctl list | grep coldstart` 为空。
+
+---
+
 ## 未验证 / 已知限制（不当作已验证）
 
-1. **线上 GUI 的审批点击路径**未实际点过：审批 ask 的注册由单元测试 + headless fail-closed 证明；线上有 approval 服务，预期弹窗。
-2. **superagent profile 冷启动**未重启验证：headless 临时 profile 是真实冷启动加载测，但 superagent 的完整组合未重启；`--dump-config` 已证明组合，下一次正常重启会加载它。
+1. ~~**线上 GUI 的审批点击路径**未实际点过~~ → **已由 ⑥ 补上「ask→allowed-once→真实执行」证据**；残留不确定性仅为「人工点击 vs 自动应答器」不可从事件区分。
+2. ~~**superagent profile 冷启动**未重启验证~~ → **已由 ⑨ 关闭**：33 轮重启中 30 轮探针 PASS（`126 tools, zcode_run found`），patch 亦在每轮 `dump-config` 中保持 `requireApproval: false`。
 3. `mode` 的 `plan/build/edit/yolo` 未逐个跑真实任务；仅验证 `guarded` 与参数构造/白名单。
 4. `attach` / `resume` 未对真实 ZCode 跑通（仅 argv 构造与单测；ZCode 文档确认参数面）。
 5. 超时/取消的真实 ZCode 长任务未构造（`runProcess` 层已用 fake 长任务验证杀进程组）。
