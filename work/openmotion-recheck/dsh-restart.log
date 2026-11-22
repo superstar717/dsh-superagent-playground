@@ -1,0 +1,8 @@
+
+> openmotion-dsh-integration@0.1.0 start
+> node start.ts
+
+DSH state: /Users/huweixing/.openmotion-dsh
+Configure your model in DSH. Press Ctrl+C to stop DSH; the shared OpenMotion editor remains available.
+OpenMotion shares usage data and coarse region. Disable in Studio Privacy settings or set OPENMOTION_TELEMETRY=0.
+dsh web: http://127.0.0.1:3080/?token=<redacted>

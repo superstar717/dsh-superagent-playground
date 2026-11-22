@@ -1,0 +1,9 @@
+15:10:47 server: openmotion 0.0.1
+15:10:47 tools: openmotion_assets_use, openmotion_assets, openmotion_project_archive, openmotion_manage_project, openmotion_media_use, openmotion_list_templates, openmotion_get_template, openmotion_list_skills, openmotion_get_skill, openmotion_create_project, openmotion_open_preview, openmotion_import_assets, openmotion_get_project, openmotion_edit_project, openmotion_export_request, openmotion_list_versions, openmotion_restore_version, openmotion_export_cancel
+15:10:57 catalog source= repository total= 291 indexPath= /Users/huweixing/src/openmotion-check-269d25eb51a2/work/openmotion/data/template-cache/18272bb0f7f8eb15/templates.4990c05c218a9fa0.index.jsonl
+15:10:57 rows parsed: 291
+15:10:57 picked row: {"templateId":"product-promo","name":"Product Promo","summary":"从图标开场到多人协作，查看多场景动画与字幕编排。","category":"产品宣传 · Hyperframes","tags":["产品宣传"],"durationSeconds":20,"kind":"builtin"}
+15:10:57 get_template workflowGuide: {"workflow":"template","section":"start","status":"ready"}
+15:11:05 project: 1972b25b-0141-4643-8092-2ab3c41c96e4 revision= ba7d42662e1e31f5e69bc71f49f8213955a5806aa9fac7bb20d5338edc52465a version= bbef5fcb-55c1-42b7-964f-656d697ce6f4 dir= 
+15:11:06 detail revision= ba7d42662e1e31f5e69bc71f49f8213955a5806aa9fac7bb20d5338edc52465a versionId= bbef5fcb-55c1-42b7-964f-656d697ce6f4 files= 0
+DRIVE_FAILED export_request failed: [{"type":"text","text":"EXPORT_BUSY: 已有导出任务正在等待或运行"}]
