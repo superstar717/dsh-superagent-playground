@@ -1,0 +1,30 @@
+{
+  "name": "@local/zcode-tool",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DSH tool plugin: run one non-interactive ZCode CLI prompt (zcode_run)",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "README.md",
+    "AGENTS.md",
+    "VERIFICATION-2026-11-22.md",
+    "scripts",
+    "test"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "verify": "node scripts/verify-live.mjs",
+    "verify:real": "node scripts/verify-live.mjs --real"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

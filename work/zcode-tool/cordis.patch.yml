@@ -1,0 +1,10 @@
+# zcode-tool bundle layer: insert the zcode_run tool row.
+# requireApproval=true routes every zcode_run call through DSH approval.
+# Headless deployments may set it to false explicitly.
+- insert:
+    - id: zcode-tool
+      name: '@local/zcode-tool'
+      config:
+        requireApproval: true
+        defaultTimeoutMs: 600000
+        maxTimeoutMs: 1800000
