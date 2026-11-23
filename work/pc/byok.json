@@ -1,0 +1,1 @@
+{"schema": "localmodels.byok-credentials/v2", "protocol": "openai-chat", "base_url": "http://127.0.0.1:8080", "path": "/v1", "endpoint": "/chat/completions", "api_key": "local-any-key", "model_id": "qwen3.8-flash-next-q2_0", "context_window": 32768, "key_saved": true}

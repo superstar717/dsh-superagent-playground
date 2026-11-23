@@ -1,0 +1,106 @@
+{
+ "$schema": "https://www.getbifrost.ai/schema",
+ "source_of_truth": "config.json",
+ "client": {
+  "enable_logging": true,
+  "disable_content_logging": true,
+  "allow_per_request_content_storage_override": false,
+  "allow_per_request_raw_override": false,
+  "dump_errors_in_console_logs": false,
+  "enforce_auth_on_inference": false,
+  "max_request_body_size_mb": 32
+ },
+ "config_store": {
+  "enabled": true,
+  "type": "sqlite",
+  "config": {
+   "path": "C:\\Users\\Administrator\\.local\\share\\localmodels\\bifrost\\config.db"
+  }
+ },
+ "logs_store": {
+  "enabled": true,
+  "type": "sqlite",
+  "config": {
+   "path": "C:\\Users\\Administrator\\.local\\share\\localmodels\\bifrost\\logs.db"
+  },
+  "writer": {
+   "batch_interval": "250ms"
+  }
+ },
+ "providers": {
+  "localmodels-byok": {
+   "keys": [
+    {
+     "id": "localmodels-byok",
+     "name": "localmodels-byok",
+     "value": "local-any-key",
+     "models": [
+      "qwen36-ud-q2_k_xl",
+      "localmodels-byok"
+     ],
+     "weight": 1,
+     "aliases": {
+      "localmodels-byok": "qwen36-ud-q2_k_xl"
+     }
+    }
+   ],
+   "network_config": {
+    "base_url": "http://127.0.0.1:8080",
+    "allow_private_network": true,
+    "max_retries": 2,
+    "default_request_timeout_in_seconds": 600,
+    "stream_idle_timeout_in_seconds": 600,
+    "retry_backoff_initial": 100,
+    "retry_backoff_max": 500,
+    "keep_alive_timeout_in_seconds": 2,
+    "extra_headers": {
+     "Connection": "close"
+    }
+   },
+   "custom_provider_config": {
+    "base_provider_type": "openai",
+    "allowed_requests": {
+     "chat_completion": true,
+     "chat_completion_stream": true,
+     "list_models": true
+    },
+    "request_path_overrides": {
+     "chat_completion": "http://127.0.0.1:8080/v1/chat/completions",
+     "chat_completion_stream": "http://127.0.0.1:8080/v1/chat/completions",
+     "list_models": "http://127.0.0.1:8080/v1/models"
+    }
+   }
+  }
+ },
+ "governance": {
+  "auth_config": {
+   "is_enabled": true,
+   "admin_username": "localmodels",
+   "admin_password": "Mcjhme4QqEoiDYFw6b3G1tdAXqhx3GiF",
+   "disable_auth_on_inference": true
+  },
+  "routing_rules": [
+   {
+    "id": "localmodels-byok-route",
+    "name": "localmodels-byok-route",
+    "description": "agent turns routed to the BYOK upstream model",
+    "cel_expression": "model == 'localmodels-byok'",
+    "targets": [
+     {
+      "provider": "localmodels-byok",
+      "model": "qwen36-ud-q2_k_xl",
+      "weight": 1
+     }
+    ],
+    "priority": 1
+   }
+  ]
+ },
+ "framework": {
+  "pricing": {
+   "pricing_url": "file:./datasheet.json",
+   "model_parameters_url": "file:./model-parameters.json",
+   "mcp_library_sync_interval": 0
+  }
+ }
+}

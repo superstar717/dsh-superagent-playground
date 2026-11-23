@@ -1,0 +1,16 @@
+2026/11/23 21:59:48 maxprocs: Leaving GOMAXPROCS=12: CPU quota undefined
+flag provided but not defined: -config
+Usage of C:\Users\Administrator\.local\share\localmodels\tools\bifrost-v2.3.0-localmodels.6\bifrost-http.exe:
+  -app-dir string
+    	Application data directory (contains config.json and logs)
+  -host string
+    	Host to bind the server to (default: localhost, override with BIFROST_HOST env var) (default "localhost")
+  -log-level string
+    	Logger level (debug, info, warn, error). Default is info. (default "info")
+  -log-style string
+    	Logger output type (json or pretty). Default is JSON. (default "json")
+  -port string
+    	Port to run the server on (default "8080")
+  -testify.m string
+    	regular expression to select tests of the testify suite to run
+BIFROST_EXIT=2 

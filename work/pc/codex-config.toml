@@ -1,0 +1,9 @@
+model = "localmodels-byok"
+model_provider = "localmodels"
+model_catalog_json = "C:\\Users\\Administrator\\.simplexai\\runtime\\localmodels\\state\\byok-home\\.codex\\localmodels-models.json"
+
+[model_providers.localmodels]
+name = "localmodels (Bifrost BYOK)"
+base_url = "http://127.0.0.1:18480/v1"
+wire_api = "responses"
+requires_openai_auth = false

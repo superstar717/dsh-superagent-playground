@@ -33,5 +33,6 @@
  ],
  "port": 8080,
  "gpu": 0,
- "gpus_asked": true
+ "gpus_asked": true,
+  "fit_max_tokens": true
 }
