@@ -1,0 +1,65 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 544
+PlayResY: 960
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Microsoft Ya Hei,34,&H00FFFFFF,&H00FFFFFF,&H00101010,&H00000000,0,0,0,0,100,100,0,0,1,2,0,2,20,20,230,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.36,0:00:03.29,Default,,0,0,0,,录一个视频分享一下我是怎么做视频
+Dialogue: 0,0:00:03.34,0:00:07.45,Default,,0,0,0,,封面的事情是这样的我本来是要做一
+Dialogue: 0,0:00:07.50,0:00:11.59,Default,,0,0,0,,期知识库的视频就是知识库如何搭建
+Dialogue: 0,0:00:11.64,0:00:14.77,Default,,0,0,0,,用什么工具什么提示词然后手机端
+Dialogue: 0,0:00:14.82,0:00:19.05,Default,,0,0,0,,如何操作这个知识库去用在我们平时
+Dialogue: 0,0:00:19.10,0:00:21.59,Default,,0,0,0,,的工作或生活中然后录完视频之后
+Dialogue: 0,0:00:21.64,0:00:23.55,Default,,0,0,0,,需要做一个封面需要做一个封面我就
+Dialogue: 0,0:00:23.60,0:00:27.91,Default,,0,0,0,,先用Workbody和Zcode
+Dialogue: 0,0:00:27.96,0:00:29.37,Default,,0,0,0,,的先用Workbody和Z
+Dialogue: 0,0:00:29.42,0:00:31.39,Default,,0,0,0,,code的然后做两张图片做完两张
+Dialogue: 0,0:00:31.44,0:00:35.19,Default,,0,0,0,,图片我就在想因为我有一台12G显
+Dialogue: 0,0:00:35.24,0:00:37.77,Default,,0,0,0,,存的PC机在两年前我用这个PC
+Dialogue: 0,0:00:37.82,0:00:43.11,Default,,0,0,0,,A机安装过ComfyUI然后去做安装过
+Dialogue: 0,0:00:43.16,0:00:45.48,Default,,0,0,0,,ComfyUI然后去做视频的生成
+Dialogue: 0,0:00:46.52,0:00:50.48,Default,,0,0,0,,视频生成去做图片的生成去做图片的
+Dialogue: 0,0:00:50.53,0:00:56.54,Default,,0,0,0,,生成然后因为当时的整个的AI技术
+Dialogue: 0,0:00:56.59,0:01:00.56,Default,,0,0,0,,还不成熟然后所有的工作流还有模型
+Dialogue: 0,0:01:00.61,0:01:03.24,Default,,0,0,0,,都需要自己去下载自己去配自己去写
+Dialogue: 0,0:01:03.29,0:01:05.14,Default,,0,0,0,,关键词自己调坛数等等这些东西都
+Dialogue: 0,0:01:05.19,0:01:07.98,Default,,0,0,0,,需要自己弄所以当时也没做什么成绩
+Dialogue: 0,0:01:08.03,0:01:10.22,Default,,0,0,0,,就扔那了扔那之后因为现在国内的
+Dialogue: 0,0:01:10.27,0:01:12.40,Default,,0,0,0,,这个AI模型也好还有国内的这些
+Dialogue: 0,0:01:12.45,0:01:14.48,Default,,0,0,0,,AI工具也好都特别成熟我就有想到
+Dialogue: 0,0:01:14.53,0:01:17.46,Default,,0,0,0,,这个事了我说能不能用我本地的本地
+Dialogue: 0,0:01:17.51,0:01:21.50,Default,,0,0,0,,的电脑去生成这个封面封面就是视频
+Dialogue: 0,0:01:21.55,0:01:24.13,Default,,0,0,0,,的封面然后我就用我的
+Dialogue: 0,0:01:25.05,0:01:27.20,Default,,0,0,0,,因为我两台的那么一个笔本然后一个
+Dialogue: 0,0:01:27.25,0:01:31.24,Default,,0,0,0,,笔记本一个台式机然后我就用我的笔
+Dialogue: 0,0:01:31.29,0:01:33.18,Default,,0,0,0,,记本远程连上我的台式机然后就告诉
+Dialogue: 0,0:01:33.23,0:01:34.03,Default,,0,0,0,,他
+Dialogue: 0,0:01:34.14,0:01:36.51,Default,,0,0,0,,然后在我本地的这个AI工具上就
+Dialogue: 0,0:01:36.56,0:01:39.33,Default,,0,0,0,,告诉他说我想要生成一个关于这是库
+Dialogue: 0,0:01:39.38,0:01:42.87,Default,,0,0,0,,的一个视频封面然后你帮我在这个瓶
+Dialogue: 0,0:01:42.92,0:01:45.73,Default,,0,0,0,,子机上安装了一套安装部署Coff
+Dialogue: 0,0:01:45.78,0:01:48.19,Default,,0,0,0,,eeLine然后并且你帮我生成五
+Dialogue: 0,0:01:48.24,0:01:50.99,Default,,0,0,0,,张图最后的效果就特别好所以我就
+Dialogue: 0,0:01:51.04,0:01:53.99,Default,,0,0,0,,分享大家给大家看一眼然后其实第一
+Dialogue: 0,0:01:54.04,0:01:58.01,Default,,0,0,0,,次生成了这三张图效果不好我可以给
+Dialogue: 0,0:01:58.06,0:01:58.86,Default,,0,0,0,,大家瞅一眼
+Dialogue: 0,0:01:59.61,0:02:02.42,Default,,0,0,0,,就是这样的这个效果就特别差就是
+Dialogue: 0,0:02:02.47,0:02:06.16,Default,,0,0,0,,完全就不当个事随便生成的然后后来
+Dialogue: 0,0:02:06.21,0:02:10.80,Default,,0,0,0,,我就用了阿里的阿里的这个模型也没
+Dialogue: 0,0:02:10.85,0:02:14.14,Default,,0,0,0,,你模型没想到生出来的效果就让我很
+Dialogue: 0,0:02:14.19,0:02:16.94,Default,,0,0,0,,意外这个效果已经很像样了然后这是
+Dialogue: 0,0:02:16.99,0:02:17.78,Default,,0,0,0,,第一张
+Dialogue: 0,0:02:17.83,0:02:21.56,Default,,0,0,0,,然后第二张这个效果就让我一下就就
+Dialogue: 0,0:02:21.61,0:02:24.76,Default,,0,0,0,,惊到我了所以我就把这个分享给大家
+Dialogue: 0,0:02:24.81,0:02:29.00,Default,,0,0,0,,如果大家手上有这种电脑资源就是
+Dialogue: 0,0:02:29.05,0:02:31.56,Default,,0,0,0,,其实要求也不高我们一个12G的显
+Dialogue: 0,0:02:31.61,0:02:36.61,Default,,0,0,0,,卡然后我现在电脑是16G显存
+Dialogue: 0,0:02:37.55,0:02:40.64,Default,,0,0,0,,不是16G内存然后你看它这生成的
+Dialogue: 0,0:02:40.69,0:02:44.06,Default,,0,0,0,,效果生成的效果就让我已经就我感觉
+Dialogue: 0,0:02:44.11,0:02:45.53,Default,,0,0,0,,已经很很不错了

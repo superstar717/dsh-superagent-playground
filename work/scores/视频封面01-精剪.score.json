@@ -1,0 +1,129 @@
+{
+  "schema": "edit-score/v1",
+  "meta": {
+    "title": "视频封面01 · 口播精剪（冷开场钩子+整词删除+停顿收紧+花字+推拉+音效）",
+    "source": "/Users/huweixing/project/封面/视频封面01.mp4",
+    "source_duration": 180.094,
+    "width": 544,
+    "height": 960,
+    "fps": 28,
+    "delivered_ref": "成片/视频封面01_精剪成片字幕版.mp4（= PC final2.mp4，由 plan2.json+effects.json+final2.ass 产出）",
+    "ground_truth": "work/groundtruth/（transcript.json / plan2.json / effects.json / final2.ass / silence.log）",
+    "score_version": "v1.0",
+    "created": "2026-11-24",
+    "principle": "谱=声明式决策（what&why），执行器=通用实现（how）。同一执行器照谱可复现本片成片，换片只换谱。"
+  },
+  "beats": [
+    {"id": "b1", "role": "context",  "src": [0.65, 21.17],   "note": "背景：本来要做一期知识库视频"},
+    {"id": "b2", "role": "inciting", "src": [21.17, 33.31],  "note": "事件：录完视频要做封面，先用 Workbody+Zcode 做两张图"},
+    {"id": "b3", "role": "backstory","src": [33.31, 70.21],  "note": "旧线：两年前 12G PC 装过 ComfyUI，AI 不成熟、全要自己弄，没成绩扔了"},
+    {"id": "b4", "role": "turn",     "src": [70.21, 82.35],  "note": "转机：现在 AI 成熟 → 能不能用本地电脑生成封面"},
+    {"id": "b5", "role": "action",   "src": [82.35, 111.86], "note": "行动：笔记本远程台式机，让 AI 装 ComfyUI 并生成 5 张图，效果特别好"},
+    {"id": "b6", "role": "conflict", "src": [111.86, 131.64],"note": "挫折：第一次生成的三张图效果特别差（给大家瞅一眼）"},
+    {"id": "b7", "role": "reversal", "src": [131.64, 141.22],"note": "反转：换阿里模型，第一张效果让我很意外"},
+    {"id": "b8", "role": "payoff",   "src": [145.96, 152.94],"note": "高潮：第二张「一下就惊到我了」← 冷开场钩子素材源"},
+    {"id": "b9", "role": "close",    "src": [152.94, 174.36],"note": "收尾：要求不高，12G 显卡就够，效果已经很不错"}
+  ],
+  "keep": [
+    {"src": [147.16, 150.7],   "beats": ["b8"],       "note": "冷开场钩子（teaser，正文 b8 还会出现一次，刻意的）"},
+    {"src": [0.65, 23.09],     "beats": ["b1", "b2"], "note": "背景铺垫+要做封面"},
+    {"src": [24.01, 28.89],    "beats": ["b2"],       "note": ""},
+    {"src": [30.43, 41.23],    "beats": ["b3"],       "note": "想起 12G PC 两年前装过 ComfyUI"},
+    {"src": [44.23, 46.486],   "beats": ["b3"],       "note": ""},
+    {"src": [49.02, 50.73],    "beats": ["b3"],       "note": ""},
+    {"src": [52.27, 81.59],    "beats": ["b3", "b4"], "note": "旧尝试失败 → 现在 AI 成熟，想到本地生成"},
+    {"src": [82.35, 114.333],  "beats": ["b5"],       "note": "行动段（人脸→屏幕录屏在此段内）"},
+    {"src": [115.27, 121.673], "beats": ["b6"],       "note": "第一次三张图效果不好"},
+    {"src": [123.069, 141.584],"beats": ["b6", "b7"], "note": "效果特别差 → 换模型 → 第一张很意外"},
+    {"src": [145.945, 174.6],  "beats": ["b8", "b9"], "note": "第二张惊到我了 + 收尾"}
+  ],
+  "edits": [
+    {"type": "lead_in",      "src": [0, 0.65],           "note": "片头起幅：首词 1.01s，留 0.65s 静头"},
+    {"type": "repeat",       "src": [23.09, 24.01],      "note": "重复：需要做一个封面",       "rule": "词边界整词删除"},
+    {"type": "repeat",       "src": [28.89, 30.43],      "note": "重复：先用Workbody和Zcode的","rule": "词边界整词删除"},
+    {"type": "repeat",       "src": [41.23, 44.23],      "note": "重复：然后去做安装过ComfyUI","rule": "词边界整词删除"},
+    {"type": "restart",      "src": [46.49, 49.02],      "note": "重启：视频生成（与 1.39s 停顿合并切）", "rule": "词边界整词删除"},
+    {"type": "repeat",       "src": [50.73, 52.27],      "note": "重复：去做图片的生成",       "rule": "词边界整词删除"},
+    {"type": "restart",      "src": [81.59, 82.35],      "note": "重启：孤立『封面』",         "rule": "词边界整词删除"},
+    {"type": "pause_tighten","src": [114.333, 115.27],   "note": "1.54s 停顿收紧",  "rule": "静音≥1.0s 且 pe<173：删 [ps+0.25, pe-0.35]"},
+    {"type": "pause_tighten","src": [121.673, 123.069],  "note": "2.00s 停顿收紧",  "rule": "同上"},
+    {"type": "pause_tighten","src": [141.584, 145.945],  "note": "4.96s 停顿收紧（翻图间隙）", "rule": "同上"},
+    {"type": "tail",         "src": [174.6, 180.094],    "note": "尾部死气（尾静音 6.23s，末词 173.66 结束后留 0.94s 气口）"}
+  ],
+  "effects": {
+    "zoom": {
+      "factor": 1.07,
+      "items": [
+        {"src": [147.18, 150.4],  "note": "钩子：惊到我了"},
+        {"src": [135.38, 138.36], "note": "效果意外"},
+        {"src": [171.36, 173.66], "note": "结尾：已经很不错了"}
+      ],
+      "expected_out": [[0.02, 3.24], [125.64, 128.62], [157.26, 159.56]]
+    },
+    "callouts": [
+      {"text": "12G显存的PC",          "src": [33.83, 37.55],  "expected_out": [34.26, 37.98],  "note": "资产点题"},
+      {"text": "AI工具已经很成熟",      "src": [72.99, 75.23],  "expected_out": [66.35, 68.59],  "note": "转机依据"},
+      {"text": "让AI装ComfyUI出5张图", "src": [102.5, 110.04], "expected_out": [95.1, 102.64],  "note": "行动概括"},
+      {"text": "效果特别差",            "src": [124.54, 128.24],"expected_out": [114.8, 118.5],  "note": "挫折强化"},
+      {"text": "效果让我很意外",        "src": [135.38, 140.38],"expected_out": [125.64, 130.64],"note": "反转强化"},
+      {"text": "直接惊到我了",          "src": [147.18, 150.4], "expected_out": [0.02, 3.24],    "note": "钩子强化"},
+      {"text": "12G显卡就够",          "src": [158.68, 161.1], "expected_out": [144.58, 147.0], "note": "收尾点题"}
+    ],
+    "whoosh_joins": [
+      {"out": 3.54,   "note": "钩子→正片接点"},
+      {"out": 106.93, "note": "人脸→屏幕录屏转场"},
+      {"out": 131.85, "note": "第一张→第二张封面"}
+    ],
+    "fades": {"video_in": 0.25, "video_out": 0.45, "audio_out": 0.4}
+  },
+  "subtitle": {
+    "playres": [544, 960],
+    "font_stack": ["Microsoft Ya Hei", "PingFang SC"],
+    "styles": {
+      "default": {"font": "$FONT_STACK[0]", "size": 34, "spacing": 0, "primary": "&H00FFFFFF", "outline": "&H00101010", "outline_w": 2, "shadow": 0, "border_style": 1, "alignment": 2, "margin_v": 230},
+      "callout": {"font": "$FONT_STACK[0]", "size": 52, "spacing": 1, "primary": "&H0000FFFF", "outline": "&H00202020", "outline_w": 3, "shadow": 1, "bold": true, "border_style": 1, "alignment": 8, "margin_v": 170, "animation": "\\fad(140,120)\\fscx30\\fscy30\\t(0,160,\\fscx100\\fscy100)", "max_show_s": 3.5, "min_show_s": 1.5}
+    },
+    "line_rules": {"max_len": 16, "max_gap": 0.7, "min_dur": 0.8, "break_on_join": true, "edge_tolerance": 0.08, "overlap_guard": 0.05},
+    "fixes": [
+      ["康佛UI", "ComfyUI"], ["CoffeeLine", "ComfyUI"], ["康佛 UI", "ComfyUI"],
+      ["PCA机", "PC机"], ["PCA 机", "PC机"], ["瓶子机", "台式机"], ["这是库的", "知识库的"]
+    ],
+    "open_questions": [
+      "「Workbody和Zcode」（源 24.01–30.43s）写法存疑，未改",
+      "「也没你模型」（源 134.34–135.38s，疑为「美图模型/某模型」）写法存疑，未改"
+    ]
+  },
+  "audio": {
+    "join_crossfade_s": 0.008,
+    "whoosh_recipe": "anoisesrc d=0.5 c=brown a=0.9 | lowpass=f=900,highpass=f=180 | afade in 0.18/out st=0.22 d=0.28 | volume=0.5；置于 join 前 150ms（adelay t*1000-150）",
+    "bgm": {"status": "pending_user_file", "recipe": "aloop 全曲 → atrim=0:时长 → volume≈0.14 → afade in 1.5/out st=时长-2 d=2 → amix normalize=0；视频流 copy 只混音（HANDOFF T2，不要用合成音乐凑数）"}
+  },
+  "render": {
+    "video": {"codec": "libx264", "crf": 18, "preset": "medium", "pix_fmt": "yuv420p"},
+    "audio": {"codec": "aac", "bitrate": "160k"},
+    "mux": "movflags +faststart",
+    "zoom_crop": {"cw": 508, "ch": 898, "note": "1.07x 中心裁切（偶数），再 scale 回 544x960"}
+  },
+  "rhythm_stats": {
+    "join_out_times": [3.54, 25.98, 30.86, 41.66, 43.92, 45.63, 74.95, 106.93, 113.33, 131.85],
+    "segment_lengths_s": [3.54, 22.44, 4.88, 10.8, 2.26, 1.71, 29.32, 31.98, 6.4, 18.52, 28.66],
+    "cut_interval_mean_s": 16.05,
+    "note": "口播不碎切（宁少切不碎切）：删除只发生在重复句/停顿/尾段，信息段保持原语流"
+  },
+  "acceptance": {
+    "expected_duration": 160.502,
+    "duration_tolerance_s": 0.5,
+    "checks": [
+      "时长对账：成片时长 vs expected_duration 差 <0.5s",
+      "拼接点证据：逐 join 前后帧目检 + silencedetect 全片扫描无声音空洞",
+      "字幕抽检 3-5 帧：同步、花字不遮脸、切点附近不丢字",
+      "谱保真：执行器产出的 plan/effects/ass 与已交付真值逐一比对；重渲染与已交付成片逐抽帧比对"
+    ],
+    "open_items": [
+      "T1 拼接点人工听感（3.54/25.98/30.86/41.66/43.92/45.63/74.95 ±1s，需用户听）",
+      "T2 BGM（等用户提供音乐文件）",
+      "T3 花字文案 7 条待用户过目",
+      "T6 存疑字幕词 2 处待用户确认"
+    ]
+  }
+}
