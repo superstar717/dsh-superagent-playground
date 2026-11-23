@@ -253,14 +253,25 @@ def render(score, work, source, ass_name, base_name, out_name, segs, dur):
         fc += "[%s][zz%d]overlay=enable='between(t,%.2f,%.2f)'[%s];" % (prev, i, t[0], t[1], outl)
         prev = outl
     fd = score["effects"]["fades"]
-    fc += "[%s]fade=t=in:st=0:d=%.2f,fade=t=out:st=%.2f:d=%.2f,ass=filename=%s[v];" % (
-        prev, fd["video_in"], dur - fd["video_out"] - 0.05, fd["video_out"], ass_name)
+    # subtitle.burn（可选，默认 true）：源片已带烧录字幕时，渲染不二次压字（ASS 产物仍照常生成供比对）
+    burn = score["subtitle"].get("burn", True)
+    # 时长 0 的淡入淡出必须跳过：实测 fade d=0 会把首帧涂黑（非 no-op），留空链条接 null
+    vchain = []
+    if fd.get("video_in", 0) > 0:
+        vchain.append("fade=t=in:st=0:d=%.2f" % fd["video_in"])
+    if fd.get("video_out", 0) > 0:
+        vchain.append("fade=t=out:st=%.2f:d=%.2f" % (dur - fd["video_out"] - 0.05, fd["video_out"]))
+    if burn:
+        vchain.append("ass=filename=%s" % ass_name)
+    fc += "[%s]%s[v];" % (prev, ",".join(vchain) if vchain else "null")
     a_in = "[0:a]"
     for i, t in enumerate(wj):
         fc += "[%d:a]adelay=%d:all=1[w%d];" % (1 + i, int(t * 1000) - 150, i)
         a_in += "[w%d]" % i
-    fc += "%samix=inputs=%d:normalize=0,afade=t=out:st=%.2f:d=%.2f[a]" % (
-        a_in, 1 + len(wj), dur - fd["audio_out"] - 0.05, fd["audio_out"])
+    achain = "amix=inputs=%d:normalize=0" % (1 + len(wj))
+    if fd.get("audio_out", 0) > 0:
+        achain += ",afade=t=out:st=%.2f:d=%.2f" % (dur - fd["audio_out"] - 0.05, fd["audio_out"])
+    fc += "%s%s[a]" % (a_in, achain)
 
     args = ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", os.path.join(work, base_name)]
     for _ in wj:
@@ -280,8 +291,11 @@ def verify(work, out_name, dur, score):
     out_dur = float(p.stdout.strip())
     print("output=%.2fs expected=%.2fs diff=%.2fs" % (out_dur, dur, out_dur - dur))
     tol = score["acceptance"]["duration_tolerance_s"]
-    for name, t in (("hook", 1.6), ("callout", 35.5), ("zoom", 126.8),
-                    ("callout2", 116.0), ("end", 159.8)):
+    # QC 抽帧时刻可由谱指定（长片默认时刻无意义时用）；缺省回退到样本默认，向后兼容
+    qc = score["acceptance"].get("qc_frames",
+                                 [["hook", 1.6], ["callout", 35.5], ["zoom", 126.8],
+                                  ["callout2", 116.0], ["end", 159.8]])
+    for name, t in qc:
         sh(["ffmpeg", "-y", "-loglevel", "error", "-ss", "%.1f" % t, "-i", os.path.join(work, out_name),
             "-frames:v", "1", os.path.join(work, "score_%s.png" % name)])
         print("frame score_%s" % name)
@@ -315,6 +329,7 @@ def main():
     ap.add_argument("--compare", default=None, help="与已交付成片整片 PSNR 比对")
     a = ap.parse_args()
 
+    a.work = os.path.abspath(a.work)  # pass2 会切 cwd 到 work：相对路径在此会错位
     os.makedirs(a.work, exist_ok=True)
     score = load_score(a.score)
     tr = json.load(open(a.transcript, encoding="utf-8"))
