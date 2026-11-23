@@ -1,0 +1,1 @@
+{"baseUrl":"http://127.0.0.1:8080","path":"/v1","endpoint":"/chat/completions","protocol":"openai-chat","apiKey":"local-any-key","modelId":"qwen3.8-flash-next-q2_0","contextWindow":32768}
