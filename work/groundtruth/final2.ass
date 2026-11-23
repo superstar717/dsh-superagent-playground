@@ -1,0 +1,72 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 544
+PlayResY: 960
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Microsoft Ya Hei,34,&H00FFFFFF,&H00FFFFFF,&H00101010,&H00000000,0,0,0,0,100,100,0,0,1,2,0,2,20,20,230,1
+Style: Callout,Microsoft Ya Hei,52,&H0000FFFF,&H0000FFFF,&H00202020,&H00000000,-1,0,0,0,100,100,1,0,1,3,1,8,16,16,170,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:03.90,0:00:06.83,Default,,0,0,0,,录一个视频分享一下我是怎么做视频
+Dialogue: 0,0:00:06.88,0:00:10.99,Default,,0,0,0,,封面的事情是这样的我本来是要做一
+Dialogue: 0,0:00:11.04,0:00:15.13,Default,,0,0,0,,期知识库的视频就是知识库如何搭建
+Dialogue: 0,0:00:15.18,0:00:18.31,Default,,0,0,0,,用什么工具什么提示词然后手机端
+Dialogue: 0,0:00:18.36,0:00:22.59,Default,,0,0,0,,如何操作这个知识库去用在我们平时
+Dialogue: 0,0:00:22.64,0:00:25.13,Default,,0,0,0,,的工作或生活中然后录完视频之后
+Dialogue: 0,0:00:25.18,0:00:27.81,Default,,0,0,0,,需要做一个封面我就先用Work
+Dialogue: 0,0:00:27.86,0:00:31.55,Default,,0,0,0,,body和Zcode的然后做两张
+Dialogue: 0,0:00:31.60,0:00:34.73,Default,,0,0,0,,图片做完两张图片我就在想因为我
+Dialogue: 0,0:00:34.78,0:00:37.77,Default,,0,0,0,,有一台12G显存的PC机在两
+Dialogue: 0,0:00:37.82,0:00:41.37,Default,,0,0,0,,年前我用这个PC机安装过康佛
+Dialogue: 0,0:00:41.42,0:00:43.56,Default,,0,0,0,,UI然后去做视频的生成
+Dialogue: 0,0:00:43.92,0:00:45.58,Default,,0,0,0,,去做图片的生成
+Dialogue: 0,0:00:45.63,0:00:51.60,Default,,0,0,0,,然后因为当时的整个的AI技术还不
+Dialogue: 0,0:00:51.65,0:00:55.52,Default,,0,0,0,,成熟然后所有的工作流还有模型都
+Dialogue: 0,0:00:55.57,0:00:58.24,Default,,0,0,0,,需要自己去下载自己去配自己去写关
+Dialogue: 0,0:00:58.29,0:01:00.08,Default,,0,0,0,,键词自己调坛数等等这些东西都需要
+Dialogue: 0,0:01:00.13,0:01:03.20,Default,,0,0,0,,自己弄所以当时也没做什么成绩就扔
+Dialogue: 0,0:01:03.25,0:01:05.24,Default,,0,0,0,,那了扔那之后因为现在国内的这个
+Dialogue: 0,0:01:05.29,0:01:07.54,Default,,0,0,0,,AI模型也好还有国内的这些AI工
+Dialogue: 0,0:01:07.59,0:01:09.52,Default,,0,0,0,,具也好都特别成熟我就有想到这个事
+Dialogue: 0,0:01:09.57,0:01:12.68,Default,,0,0,0,,了我说能不能用我本地的本地的电脑
+Dialogue: 0,0:01:12.73,0:01:16.70,Default,,0,0,0,,去生成这个封面就是视频的封面然后
+Dialogue: 0,0:01:16.75,0:01:18.17,Default,,0,0,0,,我就用我的
+Dialogue: 0,0:01:19.09,0:01:21.24,Default,,0,0,0,,因为我两台的那么一个笔本然后一个
+Dialogue: 0,0:01:21.29,0:01:25.28,Default,,0,0,0,,笔记本一个台式机然后我就用我的笔
+Dialogue: 0,0:01:25.33,0:01:27.22,Default,,0,0,0,,记本远程连上我的台式机然后就告诉
+Dialogue: 0,0:01:27.27,0:01:28.07,Default,,0,0,0,,他
+Dialogue: 0,0:01:28.18,0:01:30.55,Default,,0,0,0,,然后在我本地的这个AI工具上就
+Dialogue: 0,0:01:30.60,0:01:33.37,Default,,0,0,0,,告诉他说我想要生成一个关于这是库
+Dialogue: 0,0:01:33.42,0:01:36.91,Default,,0,0,0,,的一个视频封面然后你帮我在这个瓶
+Dialogue: 0,0:01:36.96,0:01:39.77,Default,,0,0,0,,子机上安装了一套安装部署Coff
+Dialogue: 0,0:01:39.82,0:01:42.23,Default,,0,0,0,,eeLine然后并且你帮我生成五
+Dialogue: 0,0:01:42.28,0:01:45.03,Default,,0,0,0,,张图最后的效果就特别好所以我就
+Dialogue: 0,0:01:45.08,0:01:48.03,Default,,0,0,0,,分享大家给大家看一眼然后其实第一
+Dialogue: 0,0:01:48.08,0:01:52.05,Default,,0,0,0,,次生成了这三张图效果不好我可以给
+Dialogue: 0,0:01:52.10,0:01:52.90,Default,,0,0,0,,大家瞅一眼
+Dialogue: 0,0:01:53.64,0:01:56.45,Default,,0,0,0,,就是这样的这个效果就特别差就是
+Dialogue: 0,0:01:56.50,0:02:00.19,Default,,0,0,0,,完全就不当个事随便生成的然后后来
+Dialogue: 0,0:02:00.24,0:02:04.83,Default,,0,0,0,,我就用了阿里的阿里的这个模型也没
+Dialogue: 0,0:02:04.88,0:02:08.17,Default,,0,0,0,,你模型没想到生出来的效果就让我很
+Dialogue: 0,0:02:08.22,0:02:10.97,Default,,0,0,0,,意外这个效果已经很像样了然后这是
+Dialogue: 0,0:02:11.02,0:02:11.81,Default,,0,0,0,,第一张
+Dialogue: 0,0:02:11.86,0:02:12.26,Default,,0,0,0,,然后第二张这个效果就让我一下就就
+Dialogue: 0,0:00:02.58,0:00:03.38,Default,,0,0,0,,惊到我了
+Dialogue: 0,0:02:16.90,0:02:20.11,Default,,0,0,0,,所以我就把这个分享给大家如果大家
+Dialogue: 0,0:02:20.16,0:02:24.27,Default,,0,0,0,,手上有这种电脑资源就是其实要求也
+Dialogue: 0,0:02:24.32,0:02:28.01,Default,,0,0,0,,不高我们一个12G的显卡然后我
+Dialogue: 0,0:02:28.06,0:02:30.64,Default,,0,0,0,,现在电脑是16G显存
+Dialogue: 0,0:02:31.58,0:02:34.67,Default,,0,0,0,,不是16G内存然后你看它这生成的
+Dialogue: 0,0:02:34.72,0:02:38.09,Default,,0,0,0,,效果生成的效果就让我已经就我感觉
+Dialogue: 0,0:02:38.14,0:02:39.56,Default,,0,0,0,,已经很很不错了
+Dialogue: 1,0:00:34.26,0:00:37.76,Callout,,0,0,0,,{\fad(140,120)\fscx30\fscy30\t(0,160,\fscx100\fscy100)}12G显存的PC
+Dialogue: 1,0:01:06.35,0:01:08.59,Callout,,0,0,0,,{\fad(140,120)\fscx30\fscy30\t(0,160,\fscx100\fscy100)}AI工具已经很成熟
+Dialogue: 1,0:01:35.10,0:01:38.60,Callout,,0,0,0,,{\fad(140,120)\fscx30\fscy30\t(0,160,\fscx100\fscy100)}让AI装ComfyUI出5张图
+Dialogue: 1,0:01:54.80,0:01:58.30,Callout,,0,0,0,,{\fad(140,120)\fscx30\fscy30\t(0,160,\fscx100\fscy100)}效果特别差
+Dialogue: 1,0:02:05.64,0:02:09.14,Callout,,0,0,0,,{\fad(140,120)\fscx30\fscy30\t(0,160,\fscx100\fscy100)}效果让我很意外
+Dialogue: 1,0:00:00.02,0:00:03.24,Callout,,0,0,0,,{\fad(140,120)\fscx30\fscy30\t(0,160,\fscx100\fscy100)}直接惊到我了
+Dialogue: 1,0:02:24.58,0:02:27.00,Callout,,0,0,0,,{\fad(140,120)\fscx30\fscy30\t(0,160,\fscx100\fscy100)}12G显卡就够

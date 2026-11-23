@@ -1,0 +1,62 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 544
+PlayResY: 960
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Microsoft Ya Hei,31,&H00FFFFFF,&H00FFFFFF,&H00101010,&H00000000,0,0,0,0,100,100,0,0,1,1.2,0,2,10,10,216,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.36,0:00:03.29,Default,,0,0,0,,录一个视频分享一下我是怎么做视频
+Dialogue: 0,0:00:03.34,0:00:07.45,Default,,0,0,0,,封面的事情是这样的我本来是要做一
+Dialogue: 0,0:00:07.50,0:00:11.59,Default,,0,0,0,,期知识库的视频就是知识库如何搭建
+Dialogue: 0,0:00:11.64,0:00:14.77,Default,,0,0,0,,用什么工具什么提示词然后手机端
+Dialogue: 0,0:00:14.82,0:00:19.05,Default,,0,0,0,,如何操作这个知识库去用在我们平时
+Dialogue: 0,0:00:19.10,0:00:21.59,Default,,0,0,0,,的工作或生活中然后录完视频之后
+Dialogue: 0,0:00:21.64,0:00:24.27,Default,,0,0,0,,需要做一个封面我就先用Work
+Dialogue: 0,0:00:24.32,0:00:28.01,Default,,0,0,0,,body和Zcode的然后做两张
+Dialogue: 0,0:00:28.06,0:00:31.19,Default,,0,0,0,,图片做完两张图片我就在想因为我
+Dialogue: 0,0:00:31.24,0:00:34.23,Default,,0,0,0,,有一台12G显存的PC机在两
+Dialogue: 0,0:00:34.28,0:00:37.83,Default,,0,0,0,,年前我用这个PC机安装过
+Dialogue: 0,0:00:37.88,0:00:40.02,Default,,0,0,0,,ComfyUI然后去做视频的生成
+Dialogue: 0,0:00:40.38,0:00:42.04,Default,,0,0,0,,去做图片的生成
+Dialogue: 0,0:00:42.09,0:00:48.06,Default,,0,0,0,,然后因为当时的整个的AI技术还不
+Dialogue: 0,0:00:48.11,0:00:51.98,Default,,0,0,0,,成熟然后所有的工作流还有模型都
+Dialogue: 0,0:00:52.03,0:00:54.70,Default,,0,0,0,,需要自己去下载自己去配自己去写关
+Dialogue: 0,0:00:54.75,0:00:56.54,Default,,0,0,0,,键词自己调坛数等等这些东西都需要
+Dialogue: 0,0:00:56.59,0:00:59.66,Default,,0,0,0,,自己弄所以当时也没做什么成绩就扔
+Dialogue: 0,0:00:59.71,0:01:01.70,Default,,0,0,0,,那了扔那之后因为现在国内的这个
+Dialogue: 0,0:01:01.75,0:01:04.00,Default,,0,0,0,,AI模型也好还有国内的这些AI工
+Dialogue: 0,0:01:04.05,0:01:05.98,Default,,0,0,0,,具也好都特别成熟我就有想到这个事
+Dialogue: 0,0:01:06.03,0:01:09.14,Default,,0,0,0,,了我说能不能用我本地的本地的电脑
+Dialogue: 0,0:01:09.19,0:01:13.16,Default,,0,0,0,,去生成这个封面就是视频的封面然后
+Dialogue: 0,0:01:13.21,0:01:14.63,Default,,0,0,0,,我就用我的
+Dialogue: 0,0:01:15.55,0:01:17.70,Default,,0,0,0,,因为我两台的那么一个笔本然后一个
+Dialogue: 0,0:01:17.75,0:01:21.74,Default,,0,0,0,,笔记本一个台式机然后我就用我的笔
+Dialogue: 0,0:01:21.79,0:01:23.93,Default,,0,0,0,,记本远程连上我的台式机然后就告诉他
+Dialogue: 0,0:01:24.64,0:01:27.01,Default,,0,0,0,,然后在我本地的这个AI工具上就
+Dialogue: 0,0:01:27.06,0:01:29.83,Default,,0,0,0,,告诉他说我想要生成一个关于知识库
+Dialogue: 0,0:01:29.88,0:01:33.37,Default,,0,0,0,,的一个视频封面然后你帮我在这个
+Dialogue: 0,0:01:33.42,0:01:36.23,Default,,0,0,0,,台式机上安装了一套安装部署
+Dialogue: 0,0:01:36.28,0:01:38.69,Default,,0,0,0,,ComfyUI然后并且你帮我生成五
+Dialogue: 0,0:01:38.74,0:01:41.49,Default,,0,0,0,,张图最后的效果就特别好所以我就
+Dialogue: 0,0:01:41.54,0:01:44.49,Default,,0,0,0,,分享大家给大家看一眼然后其实第一
+Dialogue: 0,0:01:44.54,0:01:48.51,Default,,0,0,0,,次生成了这三张图效果不好我可以给
+Dialogue: 0,0:01:48.56,0:01:49.36,Default,,0,0,0,,大家瞅一眼
+Dialogue: 0,0:01:50.10,0:01:52.91,Default,,0,0,0,,就是这样的这个效果就特别差就是
+Dialogue: 0,0:01:52.96,0:01:56.65,Default,,0,0,0,,完全就不当个事随便生成的然后后来
+Dialogue: 0,0:01:56.70,0:02:01.29,Default,,0,0,0,,我就用了阿里的阿里的这个模型也没
+Dialogue: 0,0:02:01.34,0:02:04.63,Default,,0,0,0,,你模型没想到生出来的效果就让我很
+Dialogue: 0,0:02:04.68,0:02:07.43,Default,,0,0,0,,意外这个效果已经很像样了然后这是
+Dialogue: 0,0:02:07.48,0:02:08.27,Default,,0,0,0,,第一张
+Dialogue: 0,0:02:08.32,0:02:12.05,Default,,0,0,0,,然后第二张这个效果就让我一下就就
+Dialogue: 0,0:02:12.10,0:02:15.25,Default,,0,0,0,,惊到我了所以我就把这个分享给大家
+Dialogue: 0,0:02:15.30,0:02:19.49,Default,,0,0,0,,如果大家手上有这种电脑资源就是
+Dialogue: 0,0:02:19.54,0:02:22.05,Default,,0,0,0,,其实要求也不高我们一个12G的显
+Dialogue: 0,0:02:22.10,0:02:27.10,Default,,0,0,0,,卡然后我现在电脑是16G显存
+Dialogue: 0,0:02:28.04,0:02:31.13,Default,,0,0,0,,不是16G内存然后你看它这生成的
+Dialogue: 0,0:02:31.18,0:02:34.55,Default,,0,0,0,,效果生成的效果就让我已经就我感觉
+Dialogue: 0,0:02:34.60,0:02:36.02,Default,,0,0,0,,已经很很不错了
