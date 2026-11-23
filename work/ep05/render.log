@@ -1,0 +1,13 @@
+VALID=OK
+subs=178 callouts=0 joins=[]
+pass1 ...
+pass2 ...
+output=451.39s expected=451.39s diff=0.00s
+frame score_section_card
+frame score_broll_recordly
+frame score_agents_screen
+frame score_black_transition
+frame score_tail
+VERIFY-OK
+ref=ref.mp4 dur=451.392
+[Parsed_psnr_0 @ 0x7fe05500f700] PSNR y:23.863052 u:42.004113 v:41.695287 average:25.589558 min:6.273040 max:76.356508

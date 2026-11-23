@@ -1,0 +1,131 @@
+{
+  "schema": "edit-score/v1",
+  "meta": {
+    "title": "拆解一只桌子 EP05（AjfDaXtmPW）· 正向产谱试验：对词→beat→谱→执行器复现",
+    "source": "/Users/huweixing/.local/share/wechat-sph/exports/AjfDaXtmPW/AjfDaXtmPW_video.mp4",
+    "source_duration": 451.392,
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "delivered_ref": "原片即作者已交付成片（Remotion 动画+录屏混编，非本管线产物）；本次试验以原片为比对基准",
+    "genre": "AI 工具教程/Motion Graphics 讲解（非口播出镜，无原始素材带）",
+    "protocol": "正向产谱：谱的全部时刻来自①whisper 词级时间戳（transcript_whisper.json）②ffmpeg silencedetect 停顿表 ③scene 检测+抽帧读画（frames/scene*）；作者字幕卡时间轴（groundtruth_author.json cards）与知识库 §5 模块表（kb_modules）仅在比对阶段使用，不进入产谱输入。fixes 为专名写法修正，不含时间信息。",
+    "ground_truth": "work/ep05/groundtruth_author.json（作者字幕卡 ±1s 229 张 + KB §5 模块表 12 段，来自 2026-11-18 ingest 工单 1fps 逐帧拆解）",
+    "score_version": "v1.0-forward",
+    "created": "2026-11-24",
+    "principle": "谱=声明式决策（what&why），执行器=通用实现（how）。本谱验证：换体裁（教程片/横屏/无切点）只换谱不改执行器，且决策可由对词正向生成。"
+  },
+  "beats": [
+    {"id": "b1", "role": "hook",     "src": [0, 17.35],      "note": "开场钩子：全流程承诺+SOP开源背书（词级证据：末词『道』止于16.74，1.22s停顿后『首先』起于17.96）。画面：封面墙3D排开→Table-VideoSOP GitHub卡（约10s）"},
+    {"id": "b2", "role": "context",  "src": [17.35, 61.46],  "note": "工具选择：FFmpeg底层→ChatCut/HyperFrames/Remotion三选一→ChatCut只拿剪配音出字幕→录屏Recordly。画面：章节卡（15s）、工具三卡（25s）、ChatCut时间线录屏（45–55s）、Recordly UI（scene 56.6/58.1）"},
+    {"id": "b3", "role": "context",  "src": [61.46, 83.2],   "note": "AGENTS.md 规则文档：项目路由+注意点（记动作时间戳便精确卡点）。画面：AGENTS.md 代码编辑器录屏（60–63s）。边界=转折词『但是』前（83.03→83.39）"},
+    {"id": "b4", "role": "action",   "src": [83.2, 155.8],   "note": "设计规则必须自己做：静态测试（83.39–110.15：颜色/倒角/字体/IP协调）→动态测试（110.15–148：迪士尼12原则当提示词词汇）→写成DESIGN.md（151.4–153.3）。内部小边界110.15（『第二是动态测试』）；章节卡scene 92.04"},
+    {"id": "b5", "role": "backstory","src": [155.8, 187.5],  "note": "文件分工（SOP写顺序/规则管路由/设计管画面）+文案最难（去AI味Skill无用）+稿子自己读。边界=1.51s停顿（186.79–188.30）后『接下来』"},
+    {"id": "b6", "role": "turn",     "src": [187.5, 216.4],  "note": "拆分段三问（全片方法论核心）：声音说了什么/画面补充什么/屏幕留下什么；画面增强配音而非复述，否则=PPT。边界=转折词『这里拆完任务后』前（216.14→216.72）"},
+    {"id": "b7", "role": "action",   "src": [216.4, 259.7],  "note": "生图生视频分工：Agent筛段→生图ChatGPT Chat端（质量+省Codex）→生视频Google Flow（省钱）→IP段落最该自己改。画面：生视频经验doc截图（scene 247.5）、IP猫画架（247.6/271.4帧）"},
+    {"id": "b8", "role": "conflict", "src": [259.7, 326.5],  "note": "并行制作与开场：分段目录+开工提示词→不让Agent直接跑整段（TOKEN顶不住，词287–290）→样片测试（scene 292.0）→开场单独做：Chat思考强度拉Pro（scene 305.9/306.6）→黑场过渡（scene 312.08 score=1.0）→第一版否掉PUA（313–318）。conflict=约束（TOKEN/大改风险）与应对"},
+    {"id": "b9", "role": "action",   "src": [326.5, 361.7],  "note": "组装拼接→音效（预记动作时间戳精确卡点，词334–337）→BGM→字幕自查挡画面→封面（两张参考图：画风+构图，352–361）。画面：多轨时间线录屏（330–355s多帧）"},
+    {"id": "b10", "role": "payoff",  "src": [361.7, 385.2],  "note": "经验沉淀（方法闭环）：返工点/它没做点/你没注意点让Agent梳理回写工作流。画面：经验沉淀doc+自媒体截图（scene 379.0）。payoff=『越做越顺』机制成立"},
+    {"id": "b11", "role": "conflict","src": [385.2, 428.8],  "note": "边界（作者自陈最大限制）：以最初配音为基准的固定时间线，改配音=动画/音效/字幕全重对齐；Computer Use操作剪映/达芬奇是新方向但远没有『一句话Astra出片』简单，Windows不能后台。画面：IP猫过山车（404.1）、窗口mock（411.1）"},
+    {"id": "b12", "role": "close",   "src": [428.8, 451.392],"note": "收束：SOP在公开仓库、你只需两件事（选好IP+定好设计规则）、新坑沉淀。尾段保留作者气口：449.64起1.75s静音+尾帧（复刻其固定时间线，不剪tail）"}
+  ],
+  "keep": [
+    {"src": [0, 451.392], "beats": ["b1", "b2", "b3", "b4", "b5", "b6", "b7", "b8", "b9", "b10", "b11", "b12"],
+     "note": "单段全保留：作者旁白 06:27–06:51 自陈『这套AI制作流程是以最初的配音为基准的…只适合在确定好的时间线上做内容』= 固定时间线零内切。谱的 keep/edits 维度在本片的正确决策就是【不切】"}
+  ],
+  "edits": [],
+  "effects": {
+    "zoom": {
+      "factor": 1.0,
+      "items": [],
+      "note": "无推拉：画面动态由作者 Remotion 动画承担（复刻不叠加自有运镜）"
+    },
+    "callouts": [],
+    "whoosh_joins": [],
+    "fades": {"video_in": 0, "video_out": 0, "audio_out": 0}
+  },
+  "subtitle": {
+    "playres": [1280, 720],
+    "font_stack": ["PingFang SC", "Hiragino Sans GB", "Microsoft Ya Hei"],
+    "styles": {
+      "default": {"font": "$FONT_STACK[0]", "size": 40, "spacing": 0, "primary": "&H00231F20", "outline": "&H00FFFFFF", "outline_w": 2, "shadow": 0, "border_style": 3, "alignment": 2, "margin_v": 40,
+        "note": "声明作者卡片观感：白底圆角卡+深字底部居中；执行器 ASS 模板为描边样式（BorderStyle 固定1），burn=false 时本样式不烧录"},
+      "callout": {"font": "$FONT_STACK[0]", "size": 52, "spacing": 1, "primary": "&H0000FFFF", "outline": "&H00202020", "outline_w": 3, "shadow": 1, "border_style": 1, "alignment": 8, "margin_v": 60,
+        "note": "执行器 ASS 头固定声明 Callout 样式（本片 callouts=[] 不产生任何事件，仅满足模板）"}
+    },
+    "burn": false,
+    "burn_note": "源片已烧录作者定稿字幕卡（229 张 ±1s），复刻渲染不二次压字；ASS 产物照常生成，用于与作者卡正向比对",
+    "line_rules": {"max_len": 16, "max_gap": 0.7, "min_dur": 0.8, "break_on_join": true, "edge_tolerance": 0.08, "overlap_guard": 0.05,
+      "note": "沿用 v1 样本默认值，未按本片结果调参——比对要测的正是『通用规则 vs 主播实际断句』"},
+    "fixes": [
+      ["FFMPag", "FFmpeg"], ["FFM pag", "FFmpeg"],
+      ["Chadcard", "ChatCut"], ["chartcard", "ChatCut"], ["chatcard", "ChatCut"],
+      ["促剪", "粗剪"],
+      ["hyperframes", "HyperFrames"], ["Hyperfram", "HyperFrame"],
+      ["remotion", "Remotion"], ["workbuddy", "WorkBuddy"],
+      ["agentmd", "AGENTS.md"], ["agent", "Agent"], ["Agen", "Agent"], ["a ent", "Agent"],
+      ["recordly", "Recordly"], ["record里", "Recordly"], ["recode里", "Recordly"],
+      ["D3.MD", "DESIGN.md"],
+      ["googleflow", "Google Flow"], ["google flow", "Google Flow"], ["Googleflow", "Google Flow"],
+      ["codex", "Codex"], ["Codex里", "Codex 里"],
+      ["三位摄像机", "三维摄像机"],
+      ["时间戳击下来", "时间戳记下来"],
+      ["你在自己做", "你得自己做"],
+      ["自己V到的", "自己味道的"], ["嘴V调", "嘴微调"],
+      ["动画十二原则", "动画12原则"], ["迪士尼的动画12原则", "迪士尼的动画12原则"],
+      ["学A1就是", "学AE就是"],
+      ["这没想到", "真没想到"],
+      ["一代电脑", "一台电脑"],
+      ["短短的图形动画", "Duang Duang的图形动画"],
+      ["拆解近代", "拆解学习"],
+      ["FFmpeg让", "FFmpeg，让"], ["美刀", "美刀"]
+    ],
+    "open_questions": [
+      "00:57–00:59 『Recordly』后音频两引擎均听为『上手机用自带动画』，作者字幕卡只写『上手即用』——疑口播多说了半句被字幕舍掉，fixes 不越权改语义，仅修正专名",
+      "02:21–24 『Duang Duang』按画面字幕校正（两引擎均听成『短短的』），已入 fixes；若按纯音频原则该处应保留『短短的』",
+      "作者卡样式（白底圆角、逐句烧录）未在渲染层复刻（burn=false）；如需视觉复刻需执行器支持 BorderStyle=3 圆角卡模板，另行扩展"
+    ]
+  },
+  "audio": {
+    "join_crossfade_s": 0.008,
+    "whoosh_recipe": "同 v1 样本（本片 join=0 未触发）",
+    "bgm": {"status": "n/a_source_mixed", "recipe": "旁白+音效+BGM 已混在源片内，谱不重混（作者旁白 05:30：人声/音效/BGM 音量范围写进经验）"}
+  },
+  "render": {
+    "video": {"codec": "libx264", "crf": 18, "preset": "medium", "pix_fmt": "yuv420p"},
+    "audio": {"codec": "aac", "bitrate": "160k"},
+    "mux": "movflags +faststart",
+    "zoom_crop": {"cw": 1280, "ch": 720, "note": "factor=1.0，zoom items 为空，实际不裁切"}
+  },
+  "rhythm_stats": {
+    "join_out_times": [],
+    "segment_lengths_s": [451.392],
+    "cut_interval_mean_s": null,
+    "silence_evidence": {
+      "detector": "silencedetect noise=-35dB d=0.6",
+      "internal_silences_ge_0.6s": 9,
+      "internal_max_s": 0.892,
+      "tail_silence_s": 1.75,
+      "pause_tighten_rule_hits": 0,
+      "note": "v1 交付管线停顿收紧规则（静音≥1.0s）在本片命中 0 处；唯一 ≥1s 静音是片尾 1.75s，作者保留至全长——两条独立证据（声学+作者自陈原则）同向：edits=[]"
+    },
+    "note": "教程片节奏不在切点而在章节：451s 内部无任何删除/重排；beat 层承担全部结构语义（12 beat，8 个声学停顿边界+3 个转折词边界）"
+  },
+  "acceptance": {
+    "expected_duration": 451.392,
+    "duration_tolerance_s": 0.5,
+    "qc_frames": [["section_card", 15.5], ["broll_recordly", 57.5], ["agents_screen", 61.5], ["black_transition", 312.1], ["tail", 449.5]],
+    "checks": [
+      "时长对账：渲染成片 vs expected_duration 差 <0.5s",
+      "渲染 vs 原片整片 PSNR：全保留重编码，预期高值（≥35dB）但非 inf——与逆向样本（从原始素材带重建，PSNR=inf）含义不同，诚实区分",
+      "字幕层正向比对：执行器 ASS 行 vs 作者 229 张字幕卡（匹配率/文本相似/时刻偏差），作者卡只在比对阶段使用",
+      "beat 层正向比对：谱 beats vs 知识库 §5 模块表（边界偏差 ±4s 判一致），已知 KB m4 end=118s 与其内容注记矛盾（表内 typo 嫌疑），以词级证据仲裁",
+      "音画同步抽检：QC 帧目检 + 尾段静音位置与原片一致"
+    ],
+    "open_items": [
+      "花字/推拉/BGM 属作者动画层，谱不重造（effects 留空是本片的正确正向决策，不是缺口）",
+      "beat 边界标注者已读过 KB §5 模块表，存在锚定偏差风险；缓解：边界一律取词级声学证据（停顿/转折词时刻），比对揭示的偏差如实呈现",
+      "ASS 与作者卡的样式差（描边 vs 白卡）未量化——本片不烧录，留待需要视觉复刻的工单"
+    ]
+  }
+}

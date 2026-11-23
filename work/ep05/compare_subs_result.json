@@ -1,0 +1,84 @@
+{
+ "our_lines": 237,
+ "author_cards": 229,
+ "card_matched_sim>=0.5": 182,
+ "card_matched_sim>=0.85": 26,
+ "card_match_rate": 0.795,
+ "median_offset_s": 0.61,
+ "line_start_precision(±1.5s)": 0.966,
+ "card_start_recall(±1.5s)": 1.0,
+ "unmatched_sample": [
+  {
+   "card": "都放在公开仓库里",
+   "t": 14,
+   "best": "使用方法和提示词都放在公",
+   "sim": 0.4
+  },
+  {
+   "card": "剪辑、拼接和处理音视频",
+   "t": 20,
+   "best": "AI能通过代码剪辑、拼接",
+   "sim": 0.38
+  },
+  {
+   "card": "常见的有ChatCut、HyperFrames、Remotion",
+   "t": 24,
+   "best": "具常见的有Chad",
+   "sim": 0.36
+  },
+  {
+   "card": "因为在动画精修",
+   "t": 28,
+   "best": "动画精修、复杂运镜和景深",
+   "sim": 0.44
+  },
+  {
+   "card": "Remotion会强于HyperFrames",
+   "t": 32,
+   "best": "这些方面Remotion",
+   "sim": 0.47
+  },
+  {
+   "card": "之前WorkBuddy那期视频我用的是HyperFrames",
+   "t": 33,
+   "best": "buddy那期视频我用",
+   "sim": 0.49
+  },
+  {
+   "card": "其他都是用的Remotion",
+   "t": 36,
+   "best": "frames其他都是用的",
+   "sim": 0.46
+  },
+  {
+   "card": "你可以去对比看一下",
+   "t": 38,
+   "best": "对比看一下至于chart",
+   "sim": 0.48
+  },
+  {
+   "card": "先用ChatCut粗剪完",
+   "t": 53,
+   "best": "出字幕先用chart",
+   "sim": 0.45
+  },
+  {
+   "card": "上手即用",
+   "t": 59,
+   "best": "Recordly上手机用自",
+   "sim": 0.35
+  },
+  {
+   "card": "先在当前项目下",
+   "t": 63,
+   "best": "正式开始制作之前先在当前",
+   "sim": 0.42
+  },
+  {
+   "card": "建立AGENTS.md规则文档",
+   "t": 65,
+   "best": "d规则文档这个文档主要关",
+   "sim": 0.38
+  }
+ ]
+}
