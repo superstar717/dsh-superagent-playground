@@ -185,10 +185,37 @@ const names = root.get('tools').schemas().map(schema => schema.name)
 
 ---
 
+## ⑩–⑫ 真实任务矩阵（2026-11-24 追加，`scripts/verify-real-matrix.mjs`）
+
+复用 ② 的模式（fake ctx 直调插件 `execute`，真实 `~/.local/bin/zcode`，`requireApproval:false`），每场景独立 mkdtemp 沙盒，逐场景前台跑。**7/7 PASS**（2026-11-24 实测）：
+
+| # | 场景 | 结果 | 关键证据 |
+|---|---|---|---|
+| ⑩a | `plan` | PASS 56s | 读 note.txt 并原样复述 marker；沙盒无模型写入（模型自述「未创建/修改/删除、未执行命令」）——plan 的写入/命令限制生效 |
+| ⑩b | `build` | PASS 179s | Write/Bash 均被拒：`No permission client configured for Write` / `...for Bash`；**CLI 仍 exit 0**（与权限文档「工具拒绝后进程也可能返回 0」逐字吻合）；模型如实报告并未绕过 |
+| ⑩c | `edit` | PASS 94s | `edit.txt` 创建成功（content=`ok`）——工作区编辑免审批生效 |
+| ⑩d | `yolo` | PASS 90s | bash `printf 'ok\n' > yolo.txt` 执行成功并被模型自校验（cat/od）——命令放行生效 |
+| ⑪a | `attach` | PASS 59s | 相对路径附件 `brief.md` → 口令 `ZCODE-ATTACH-PASS-9K4` 原文回传（`resolveAttachments` 相对解析顺带验证） |
+| ⑪b | `resume` | PASS 85s | 第一跳存暗号得 `sess_3441cf04-5ace-4e73-9276-259200788ddb`；`--resume` 第二跳答出暗号「蓝鲸42」——会话连续性生效 |
+| ⑫ | `timeout` | PASS 20s | `timeout_ms=15000` + yolo `sleep 300`：`timedOut=true`、`ok=false`、durationMs=17117（15s+SIGTERM 宽限）、stderr 含 `[zcode-tool] timed out after 15000 ms; process group killed`、pgrep 基线对比**无孤儿进程** |
+
+**实测发现（非缺陷，记录在案）**：
+
+- ZCode CLI 会在 cwd 自建脚手架点目录（`.mimosa`、`.video_agent`）——「无模型写入」断言必须过滤点文件（首跑 plan 因断言过严误 FAIL，多耗 1 次配额后修正）。
+- `build` 场景 179s 明显长于其他场景：模型在写入被拒后自行排查并如实汇报（未绕过），属 plan/build 模式下模型行为的正常开销。
+- 超时场景中 CLI 被杀在 JSON 输出之前 → `sessionId=null`（该路径未断言 sessionId）。
+
+**复跑入口**：`node scripts/verify-real-matrix.mjs`（全量 7 场景）或 `--only <name>`（单场景重试，不重复烧配额）；`ZCODE_TOOL_ZCODE=<fake>` 可干跑脚本通路；`--json` 机器可读输出。
+
+**仍不当作已验证**：调用方 abort（`AbortSignal` 取消）真实路径未构造（仅单测 fake 覆盖）；`guarded` 模式的真实长任务未单独重跑（② 的基础任务已覆盖该模式）。
+
+---
+
 ## 未验证 / 已知限制（不当作已验证）
 
 1. ~~**线上 GUI 的审批点击路径**未实际点过~~ → **已由 ⑥ 补上「ask→allowed-once→真实执行」证据**；残留不确定性仅为「人工点击 vs 自动应答器」不可从事件区分。
 2. ~~**superagent profile 冷启动**未重启验证~~ → **已由 ⑨ 关闭**：33 轮重启中 30 轮探针 PASS（`126 tools, zcode_run found`），patch 亦在每轮 `dump-config` 中保持 `requireApproval: false`。
-3. `mode` 的 `plan/build/edit/yolo` 未逐个跑真实任务；仅验证 `guarded` 与参数构造/白名单。
-4. `attach` / `resume` 未对真实 ZCode 跑通（仅 argv 构造与单测；ZCode 文档确认参数面）。
-5. 超时/取消的真实 ZCode 长任务未构造（`runProcess` 层已用 fake 长任务验证杀进程组）。
+3. ~~`mode` 的 `plan/build/edit/yolo` 未逐个跑真实任务~~ → **已由 ⑩ 关闭**（7/7 PASS，语义与权限文档吻合）。
+4. ~~`attach` / `resume` 未对真实 ZCode 跑通~~ → **已由 ⑪ 关闭**（附件内容回传 + 跨调用会话续接均实证）。
+5. ~~超时/取消的真实 ZCode 长任务未构造~~ → **超时已由 ⑫ 关闭**（进程组整体被杀、无孤儿）；**取消（caller abort）真实路径仍未构造**，仅单测 fake 覆盖。
+6. `verify-live.mjs` 曾把本地契约的 `approval=ask` 写死输出、易误读为线上值 → 已修正（本地行改标 `approval(default config)=ask`，新增 `live-config` 探针从 `dsh --dump-config` 读实际 `requireApproval`；2026-11-24 实测输出 `requireApproval=false (approval off)`）。

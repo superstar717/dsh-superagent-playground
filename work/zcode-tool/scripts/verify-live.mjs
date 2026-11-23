@@ -3,9 +3,13 @@
  * Verify that @local/zcode-tool is usable.
  *
  * Default (zero cost):
- *   1. local contract self-check (default mode, explicit --mode, approval ask);
+ *   1. local contract self-check (default mode, explicit --mode, approval ask
+ *      under the default config);
  *   2. live DSH host registration via the host inspector: reads the Cordis root
- *      Context in the Host realm and checks `tools.schemas()` contains zcode_run.
+ *      Context in the Host realm and checks `tools.schemas()` contains zcode_run;
+ *   3. live effective config via `dsh --dump-config`: reports the deployed
+ *      requireApproval value (the local contract above always shows the code
+ *      default `ask`, which may differ from the live profile patch).
  *
  * `--real` additionally runs one tiny real ZCode prompt through the plugin's
  * execute path. This consumes Z.ai coding-plan quota (~66k input tokens for a
@@ -16,9 +20,14 @@
  *   ZCODE_TOOL_ZCODE=/path/to/fake node scripts/verify-live.mjs --real  # test the verifier itself
  */
 
+import { execFile } from 'node:child_process'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { accessSync, constants, readdirSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { promisify } from 'node:util'
+
+const execFileAsync = promisify(execFile)
 
 import {
   apply,
@@ -153,6 +162,90 @@ async function probeLiveRegistration(port) {
   }
 }
 
+/**
+ * Extract the effective `requireApproval` of the zcode-tool entry from a
+ * `dsh --dump-config` dump. Returns true/false, or undefined when the section
+ * cannot be found. When several zcode-tool sections exist (e.g. base + patched),
+ * the last one wins — patches are applied last.
+ */
+export function parseRequireApproval(dump) {
+  if (typeof dump !== 'string') return undefined
+  let inSection = false
+  let value
+  for (const line of dump.split(/\r?\n/)) {
+    const isZcodeMarker = /zcode-tool/.test(line) && (/^\s*#\s*==\s/.test(line) || /^\s*-\s*id:/.test(line))
+    if (isZcodeMarker) {
+      inSection = true
+      value = undefined
+      continue
+    }
+    if (!inSection) continue
+    if (/^\s*#\s*==\s/.test(line) || /^\s*-\s*id:/.test(line)) {
+      inSection = false
+      continue
+    }
+    const match = /^\s*requireApproval:\s*(true|false)\s*$/.exec(line)
+    if (match) value = match[1] === 'true'
+  }
+  return value
+}
+
+const DUMP_PROFILE = 'superagent'
+
+/**
+ * Locate the `dsh` CLI without relying on the caller's PATH: execFile does not
+ * go through a shell, so non-interactive environments often miss the nvm bin
+ * directory. `ZCODE_TOOL_DSH` overrides.
+ */
+function resolveDshPath() {
+  const override = process.env.ZCODE_TOOL_DSH
+  if (override && override.trim().length > 0) return override.trim()
+  const candidates = []
+  const nvmVersions = join(homedir(), '.nvm', 'versions', 'node')
+  try {
+    const versions = readdirSync(nvmVersions)
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+      .reverse()
+    for (const version of versions) candidates.push(join(nvmVersions, version, 'bin', 'dsh'))
+  } catch {
+    // nvm not installed or unreadable.
+  }
+  for (const dir of ['/usr/local/bin', '/opt/homebrew/bin']) candidates.push(join(dir, 'dsh'))
+  for (const candidate of candidates) {
+    try {
+      accessSync(candidate, constants.X_OK)
+      return candidate
+    } catch {
+      // Try the next candidate.
+    }
+  }
+  return 'dsh'
+}
+
+/** Best-effort live config probe; unresolved is reported, never fatal. */
+async function probeLiveConfig() {
+  const dshPath = resolveDshPath()
+  let stdout
+  try {
+    const result = await execFileAsync(
+      dshPath,
+      ['--profile', DUMP_PROFILE, '--dump-config'],
+      { timeout: 30_000, maxBuffer: 16 * 1024 * 1024 },
+    )
+    stdout = result.stdout
+  } catch (error) {
+    const reason = error?.code === 'ENOENT'
+      ? `dsh CLI not found (tried PATH, nvm, Homebrew; override with ZCODE_TOOL_DSH)`
+      : `dsh --dump-config failed: ${String(error?.message ?? error).split('\n')[0]}`
+    return { resolved: false, note: reason }
+  }
+  const value = parseRequireApproval(stdout)
+  if (value === undefined) {
+    return { resolved: false, note: `no requireApproval found in the zcode-tool section of the ${DUMP_PROFILE} dump` }
+  }
+  return { resolved: true, requireApproval: value, profile: DUMP_PROFILE }
+}
+
 async function localChecks() {
   const normalized = normalizeToolArguments({ task: 'probe' }, {})
   if (normalized.mode !== 'guarded') throw new Error(`default mode is ${normalized.mode}, expected guarded`)
@@ -246,6 +339,12 @@ async function main() {
     }
     result.steps.push({ step: 'live-registration', ok: true, inspectorPort: port, ...live })
 
+    // Informational: the effective deployed config (profile patch may differ
+    // from the code default). Never fails the run; registration is the
+    // authority on plugin liveness.
+    const liveConfig = await probeLiveConfig()
+    result.steps.push({ step: 'live-config', ok: true, ...liveConfig })
+
     if (options.real) {
       const real = await realCheck().catch(error => fail('real-zcode', error))
       if (!real.ok || !real.sessionId) {
@@ -267,7 +366,13 @@ async function main() {
         continue
       }
       if (step.step === 'local-contract') {
-        console.log(`[PASS] local contract: default mode=${step.defaultMode}, params=${step.parameters.join(',')}, approval=ask`)
+        console.log(`[PASS] local contract: default mode=${step.defaultMode}, params=${step.parameters.join(',')}, approval(default config)=ask`)
+      } else if (step.step === 'live-config') {
+        if (step.resolved) {
+          console.log(`[PASS] live config (profile ${step.profile}, dump-config): requireApproval=${step.requireApproval} (${step.requireApproval ? 'approval ask' : 'approval off'})`)
+        } else {
+          console.log(`[WARN] live config unresolved: ${step.note} (the local contract value above is the code default, not the live patch)`)
+        }
       } else if (step.step === 'live-registration') {
         console.log(`[PASS] live host registration (inspector ${step.inspectorPort}): ${step.toolCount} tools, zcode_run found, params=${step.parameters.join(',')}, mode default=${step.modeDefault}`)
       } else if (step.step === 'real-zcode') {
