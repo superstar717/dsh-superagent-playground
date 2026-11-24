@@ -1,0 +1,25 @@
+#!/bin/sh
+# gh-agent — 工单/worker 的 gh 入口（dsh-superagent 的 worker-bin/gh 会 exec 到这里）。
+# 2026-11-13（工单 ae3297f806b9 P2/E133）：`gh pr create` 前做同文件重叠预检并警告（不拦截）。
+#   为什么放在这里：PreToolUse hook 子进程读不到登录钥匙串（gh 401），而本入口与 gh 命令
+#   同一环境；警告写到命令 stderr，在 PR 创建前就可见。预检失败只记日志，不影响 gh 本身。
+#   显式豁免：命令前加 DSH_PR_OVERLAP_OK=1。
+# 备份：gh-agent.bak-20261113。
+GH_CONFIG_DIR="$HOME/.config/gh-agent"
+export GH_CONFIG_DIR
+
+_prefixed_pr_create=0
+_prev=""
+for _arg in "$@"; do
+  if [ "$_prev" = "pr" ] && [ "$_arg" = "create" ]; then
+    _prefixed_pr_create=1
+    break
+  fi
+  _prev="$_arg"
+done
+
+if [ "$_prefixed_pr_create" = "1" ] && [ "${DSH_PR_OVERLAP_OK:-0}" != "1" ]; then
+  "$HOME/.dsh/bin/gh-pr-overlap-precheck.sh" >&2 || true
+fi
+
+exec gh "$@"
