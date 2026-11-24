@@ -96,3 +96,18 @@
 千万不要给workbody在瞎装skill了。很多人看到他能做视频，就以为所有视频skill都用一句话就能成片。其实有的是帮你做动效视频的，有的是帮你剪口播的，装错了skill，你等于再瞎指挥这条按场景给你讲清楚啊，什么场景该用哪个kill。第一个hyper frames手里没有视频素材，只有一篇文章或者一条推文的，就用这个它的逻辑是用HTMLCSS和动画。 内容做成可以渲染的MP4的视频，你可以直接跟work bar里说，帮我用hyper frames做一条30秒测评视频。主题是视频ski怎么选？每个工具做成一张动态卡片，最后渲染成MP4，有文字内容，没有视频素材的时候，直接用它。第二个remotion，最适合批量产出视频。比如排行榜数据周报固定栏目系列教程，它不是帮你硬做一条，而是用代码写一个视频。 模板以后换了数据都能批量生成新视频，想做每周AI工具榜单的呃，每周产品更新一次生产多条视频的，用remotion就很合适。第三个，video cut skill，特别适合中文创作者。你拍的是中文口播呃，想删口误删停顿，处理重复的句子，还要生成字幕，优先看它它不是凭空生成视频，而是处理你已经拍好的口播素材。工作流程大致是先转录视频。 频在识别口误和静音，生成一个审核页面，让你确认删哪里啊，哪里要剪掉。然后已经拍了中文口播，想让AI帮你剪干净的，就用这个第四个video use也是处理已有素材，但更通用。你像口播旅行片vlog都适合，可以把一堆原始素材都丢给他啊，帮你删停顿加字幕调色，甚至加动画图表，要注意，它通常需要。 配置环境要得装FMMPEG和python有多个原始片段，想做成更完整的一个剪辑视频，用这个第5个genativemedia skills，这不是剪辑工具，它是1个AI素材生成的工具箱，能生成图片视频音乐音效，呃，比如做产品广告吧。那么缺主画面之外的辅助画面，也没有背景音乐和音效的，它就派上用场。 但它需要配置API生成视频和音乐，通常会产生一点费用啊，更适合用来补素材，不建议拿它单独生成一整条视频。第六个s dance to skill，最容易被误会。因为它不是直接用来生视频的，它的作用是帮你写即梦s dance专业版的视频提示词，你可以让它写一条15秒AI产品广告的提示词，再把提示词放进即梦里去跑，所以它不是剪辑师。 也不是视频生成器，只负责把提示词给你写到位。最后总结一下啊，只有文章推文产品介绍的，用hyper frame要批量做栏目视频的，你就用remotion拍中文口播要剪干净的，用video cut skill一堆原始素材要剪用video use缺AI图片视频和音乐素材的，你就用genative media skills，只想写视频提示词，用c dance too。 skill就够了。不要问哪个skill更强大。你要明白的是自己现在在做什么，是写内容剪素材还是批量出片，场景不一样，用的skill也不一样。我是luca，每天讲解1个AI知识或产品案例，我们明天继续。
 
 > ASR 专名纠错对照（以字幕为准）：workbody/hyper frames→WorkBuddy/HyperFrames；kill→Skill；FMMPEG→FFmpeg；genativemedia skills→Generative Media Skills；s dance/c dance too skill→Seedance 2 Skill；luca→Lucas。
+
+## 四、工具可用性落实（2026-11-24 追加，用户指出「没用视频里的工具」后）
+
+机制初版把视频 6 个工具整体标为「WorkBuddy 侧，仅对照」——**经检索核实这是过度保守**：其中 3 个公开可装，已装进本机并验证（AGENTS.md 二十四节分流表 v2）：
+
+| 视频工具 | 可用性 | 验证方式 |
+|---|---|---|
+| HyperFrames | ✅ 已装可用 | `npm i -g hyperframes`（0.9.89，Apache-2.0，[heygen-com/hyperframes](https://github.com/heygen-com/hyperframes)）→ `init` 空白模板 → `render` **真出 10s MP4**（41.9s，系统 Chrome 路径；见 `work/extract/hyperframes-e2e/`）。坑：默认 chrome-headless-shell 走 storage.googleapis.com 被墙 60s stall，须 `export HYPERFRAMES_BROWSER_PATH=系统Chrome`（LESSONS E214） |
+| Remotion | ✅ 本机已有 | `remotion-video-toolkit` skill（渲染链本轮未单独实测，如实标注） |
+| Seedance 2 Skill | ✅ 已装可用 | [dexhunter/seedance2-skill](https://github.com/dexhunter/seedance2-skill) 中文版 SKILL.md（纯提示词指引 436 行，安全审计 0 可疑项）→ 装于 `~/.agents/skills/seedance-prompt-zh/`，会话技能目录已实载；生成本身在即梦平台（有费用） |
+| Video Cut Skill | ⏸ 未发现公开安装渠道（本轮检索式下；WorkBuddy 技能广场侧） | 本机等价=剪辑谱路线 |
+| Video Use | ⏸ 同上 | 本机等价=剪辑谱/剪映 |
+| Generative Media Skills | ⏸ 同上（能力类别，非单一公开仓库） | 本机等价=Mago/补素材路线 |
+
+诚实边界：HyperFrames 只验了空白模板渲染链，真实内容工程的出片质量未评估；⏸ 三个未发现≠不存在（后续 WorkBuddy 技能导出为 SKILL.md 文件夹时可直接并入）。

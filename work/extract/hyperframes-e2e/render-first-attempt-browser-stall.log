@@ -1,0 +1,37 @@
+
+◆  Rendering hf-test → /private/tmp/hf-test/renders/hf-test_2026-11-24_21-29-11.mp4
+   30fps · looks (CRF 16) · auto workers (8 cores usable)
+   GPU: browser GPU (auto-detect)
+
+Checking browser...
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+[hyperframes] Still getting Chrome ready; the first use downloads it. Set HYPERFRAMES_BROWSER_PATH to use an installed Chrome instead.
+Browser not available
+
+✗  Chrome not found
+
+   Failed to install chrome-headless-shell 158.0.8127.36: The Chrome download from storage.googleapis.com stalled: no data for 60s.
+   
+   Point hyperframes at the Chrome already installed here instead:
+   
+     export HYPERFRAMES_BROWSER_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+   
+   Run `hyperframes doctor` to see which Chrome was found. Then re-run your command. Any Chrome build works for the screenshot capture path; install a real chrome-headless-shell later if you need the perf-optimized BeginFrame path. Alternatively, run inside the hyperframes Docker image which ships a compatible headless-shell.
+   Run: npx hyperframes browser ensure
+
+@hf-diagnostic {"version":1,"operation":"render","code":"RENDER_FAILED"}
