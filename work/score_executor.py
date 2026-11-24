@@ -216,7 +216,7 @@ def render(score, work, source, ass_name, base_name, out_name, segs, dur):
     for i in range(n):
         d = segs[i]["end"] - segs[i]["start"]
         fc += "[%d:a]afade=t=in:st=0:d=%.3f,afade=t=out:st=%.3f:d=%.3f[a%d];" % (
-            i, xf, max(d - xf * 1.25, 0), xf, i)
+            i, xf, max(d - xf, 0), xf, i)
     fc += "".join("[%d:v][a%d]" % (i, i) for i in range(n))
     fc += "concat=n=%d:v=1:a=1[v][a]" % n
     args += ["-filter_complex", fc, "-map", "[v]", "-map", "[a]",
